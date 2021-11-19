@@ -1,0 +1,12 @@
+type CanisterId = principal;
+type Cycles = nat;
+type Milliseconds = nat64;
+type TimestampMillis = nat64;
+type TimestampNanos = nat64;
+
+type Version =
+    record {
+        major: nat32;
+        minor: nat32;
+        patch: nat32;
+    };

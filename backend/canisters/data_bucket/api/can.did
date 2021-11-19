@@ -1,0 +1,24 @@
+import "../../../libraries/types/can.did";
+
+type PutChunkArgs =
+    record {
+        blob_id: nat;
+        mime_type: text;
+        total_chunks: nat32;
+        index: nat32;
+        bytes: blob;
+    };
+
+type PutChunkResponse =
+    variant {
+        Success;
+        NotAuthorised;
+        BlobAlreadyExists;
+        ChunkAlreadyExists;
+        ChunkTooBig;
+        Full;
+    };
+
+service : {
+    put_chunk: (PutChunkArgs) -> (PutChunkResponse);
+}

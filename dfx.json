@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "data_bucket": {
+      "type": "custom",
+      "candid": "backend/canisters/data_bucket/api/can.did",
+      "wasm": "target/wasm32-unknown-unknown/release/data_bucket_canister_impl-opt.wasm",
+      "build": "./generate-wasm.sh data_bucket_impl"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "bind": "https://ic0.app/",
+      "type": "persistent"
+    }
+  },
+  "version": 1
+}

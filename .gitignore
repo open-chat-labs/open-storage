@@ -1,0 +1,12 @@
+.dfx/
+target/
+dist/
+node_modules/
+
+**/*.rs.bk
+
+package-lock.json
+
+.DS_Store
+**/*.env
+**/*.pem

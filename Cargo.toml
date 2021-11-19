@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "backend/canisters/data_bucket/api",
+    "backend/canisters/data_bucket/impl",
+    "backend/libraries/candid_gen",
+    "backend/libraries/env",
+    "backend/libraries/types",
+    "backend/libraries/utils"
+]
+
+[profile.release]
+lto = true
+opt-level = "z"
+codegen-units = 1
