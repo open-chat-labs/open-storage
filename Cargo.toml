@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "backend/canisters/data_bucket/api",
-    "backend/canisters/data_bucket/impl",
+    "backend/canisters/bucket/api",
+    "backend/canisters/bucket/impl",
     "backend/libraries/candid_gen",
     "backend/libraries/env",
     "backend/libraries/types",
