@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 candid = "0.7.7"
+hex = "0.4.3"
 serde = "1.0.126"
