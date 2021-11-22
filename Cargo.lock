@@ -915,6 +915,7 @@ name = "types"
 version = "0.1.0"
 dependencies = [
  "candid",
+ "hex",
  "serde",
 ]
 
@@ -941,6 +942,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "ic-cdk",
+ "sha2",
  "types",
 ]
 

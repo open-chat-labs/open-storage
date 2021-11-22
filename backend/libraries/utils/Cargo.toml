@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
+sha2 = "0.9.8"
 types = { path = "../types" }
