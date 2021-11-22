@@ -405,6 +405,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "index_canister"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "candid_gen",
+ "serde",
+ "serde_bytes",
+]
+
+[[package]]
+name = "index_canister_impl"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "env",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "serde",
+]
+
+[[package]]
 name = "indexmap"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
