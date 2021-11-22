@@ -1,9 +1,10 @@
-use candid::{CandidType, Principal};
+use candid::CandidType;
 use serde::Deserialize;
+use types::UserId;
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Args {
-    pub principal: Principal,
+    pub user_id: UserId,
     pub blob_size: u64,
 }
 

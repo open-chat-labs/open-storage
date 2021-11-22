@@ -20,13 +20,13 @@ type UploadChunkResponse =
     };
 
 service: {
-    upload_chunk;
-    add_blob_reference;
-    remove_blob_reference;
+    upload_chunk: (UploadChunkArgs) -> (UploadChunkResponse);
+    //add_blob_reference;
+    //remove_blob_reference;
 
-    c2c_add_user;
-    c2c_delete_user;
-    c2c_delete_accessor;
+    //c2c_add_user;
+    //c2c_delete_user;
+    //c2c_delete_accessor;
 
-    http_request;
+    //http_request;
 }

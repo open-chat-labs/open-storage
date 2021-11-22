@@ -1,8 +1,11 @@
+type AccessorId = principal;
 type CanisterId = principal;
 type Cycles = nat;
+type Hash = nat;
 type Milliseconds = nat64;
 type TimestampMillis = nat64;
 type TimestampNanos = nat64;
+type UserId = principal;
 
 type Version =
     record {

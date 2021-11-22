@@ -79,8 +79,8 @@ data_bucket::c2c_delete_chat
 data_bucket_index
 -----------------
 pub struct Data {
-    pub users: HashMap<Principal, UserRecord>,
-    pub blobs: HashMap<BlobId, BlobRecord>,
+    pub users: HashMap<UserId, UserRecord>,
+    pub blobs: HashMap<Hash, BlobRecord>,
     pub active_buckets: Vec<BucketRecord>,
     pub full_buckets: Vec<BucketRecord>,
 }
@@ -91,8 +91,8 @@ pub struct UserRecord {
 }
 
 pub struct BlobRecord {
-    pub size: u64,
     pub bucket: CanisterId,
+    pub size: u64,
 }
 
 pub struct BucketRecord {
@@ -100,10 +100,10 @@ pub struct BucketRecord {
     pub bytes_used: u64,
 }
 
-    register_user
-    update_user
-    delete_user
-    allocated_bucket(blob_id)
-    c2c_add_blob_reference
-    c2c_remove_blob_reference
-    heartbeat (topup buckets, upgrade buckets, push registered users, and push updated "bytes left" for each user in batches to each data_bucket)
+register_user
+update_user
+delete_user
+allocated_bucket(blob_id)
+c2c_add_blob_reference
+c2c_remove_blob_reference
+heartbeat (topup buckets, upgrade buckets, push registered users, and push updated "bytes left" for each user in batches to each data_bucket)

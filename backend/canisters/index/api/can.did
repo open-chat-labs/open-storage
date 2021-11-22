@@ -1,6 +1,8 @@
+import "../../../libraries/types/can.did";
+
 type AddUserArgs =
     record {
-        principal: Principal;
+        user_id: UserId;
         byte_limit: nat64;
     };
 
@@ -12,7 +14,7 @@ type AddUserResponse =
 
 type UpdateUserArgs =
     record {
-        principal: Principal;
+        user_id: UserId;
         byte_limit: opt nat64;
     };
 
@@ -24,7 +26,7 @@ type UpdateUserResponse =
 
 type DeleteUserArgs =
     record {
-        principal: Principal;
+        user_id: UserId;
     };
 
 type DeleteUserResponse = 
@@ -34,7 +36,7 @@ type DeleteUserResponse =
 
 type DeleteAccessorArgs =
     record {
-        principal: Principal;
+        accessor_id: AccessorId;
     };
 
 type DeleteAccessorResponse = 
