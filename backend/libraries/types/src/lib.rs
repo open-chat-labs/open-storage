@@ -1,5 +1,11 @@
 use candid::Principal;
 
+mod timestamped;
+mod version;
+
+pub use timestamped::*;
+pub use version::*;
+
 pub type AccessorId = Principal;
 pub type BlobId = u128;
 pub type CanisterId = Principal;

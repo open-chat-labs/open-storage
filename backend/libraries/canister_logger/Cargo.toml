@@ -1,15 +1,16 @@
 [package]
-name = "env"
+name = "canister_logger"
 version = "0.1.0"
+authors = ["Hamish Peebles <hamishpeebles@gmail.com>", "Matt Grogan <megrogan@gmail.com>", "Julian Jelfs <julian.jelfs@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 candid = "0.7.7"
-getrandom = { version = "0.2.3", features = ["js"] }
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 serde = "1.0.126"
-serde_bytes = "0.11.5"
+tracing = "0.1.29"
+tracing-attributes = "0.1.11"
+tracing-subscriber = "0.2.25"
 types = { path = "../types" }
-utils = { path = "../utils" }

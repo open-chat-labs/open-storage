@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 candid = "0.7.7"
-env = { path = "../../../libraries/env" }
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 serde = "1.0.126"
+utils = { path = "../../../libraries/utils" }
