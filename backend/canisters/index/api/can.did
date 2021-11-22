@@ -1,40 +1,59 @@
+import "../../../libraries/types/can.did";
+
 type AddUserArgs =
     record {
-        principal: Principal;
-        byte_limit: u64;
+        user_id: UserId;
+        byte_limit: nat64;
     };
 
 type AddUserResponse = 
     variant {
-
+        Success;
+        UserAlreadyExists;
     };
 
 type UpdateUserArgs =
     record {
-        principal: Principal;
-        byte_limit: opt u64;
+        user_id: UserId;
+        byte_limit: opt nat64;
+    };
+
+type UpdateUserResponse = 
+    variant {
+        Success;
+        UserNotFound;
     };
 
 type DeleteUserArgs =
     record {
+        user_id: UserId;
+    };
+
+type DeleteUserResponse = 
+    variant {
+        Success;
     };
 
 type DeleteAccessorArgs =
     record {
+        accessor_id: AccessorId;
     };
 
-type C2C_AddBlobReferenceArgs =
-    record {
-    };
-
-type C2C_RemoveBlobReferenceArgs =
-    record {
+type DeleteAccessorResponse = 
+    variant {
+        Success;
     };
 
 type AllocatedBucketArgs =
     record {
-        blob_id: BlobId;
-        blob_size: u64;
+        blob_hash: Hash;
+        blob_size: nat64;
+    };
+
+type AllocatedBucketResponse = 
+    variant {
+        Success;
+        AllowanceReached;
     };
 
 service: {
@@ -42,9 +61,5 @@ service: {
     update_user: (UpdateUserArgs) -> (UpdateUserResponse);
     delete_user: (DeleteUserArgs) -> (DeleteUserResponse);
     delete_accessor: (DeleteAccessorArgs) -> (DeleteAccessorResponse);
-
-    c2c_add_blob_reference: (C2C_AddBlobReferenceArgs) -> (C2C_AddBlobReferenceResponse);
-    c2c_remove_blob_reference: (C2C_RemoveBlobReferenceArgs) -> (C2C_RemoveBlobReferenceResponse);
-    
     allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
 }

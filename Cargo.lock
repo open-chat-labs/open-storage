@@ -122,6 +122,7 @@ dependencies = [
  "candid_gen",
  "serde",
  "serde_bytes",
+ "types",
 ]
 
 [[package]]
@@ -402,6 +403,28 @@ dependencies = [
  "serde_bytes",
  "sha2",
  "thiserror",
+]
+
+[[package]]
+name = "index_canister"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "candid_gen",
+ "serde",
+ "serde_bytes",
+ "types",
+]
+
+[[package]]
+name = "index_canister_impl"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "env",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "serde",
 ]
 
 [[package]]
@@ -941,6 +964,7 @@ checksum = "b4ae116fef2b7fea257ed6440d3cfcff7f190865f170cdad00bb6465bf18ecba"
 name = "utils"
 version = "0.1.0"
 dependencies = [
+ "generic-array",
  "ic-cdk",
  "sha2",
  "types",
