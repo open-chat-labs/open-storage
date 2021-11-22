@@ -1,17 +1,15 @@
 [package]
-name = "bucket_canister_impl"
+name = "canister_logger"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[lib]
-path = "src/lib.rs"
-crate-type = ["cdylib"]
-
 [dependencies]
 candid = "0.7.7"
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
-ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 serde = "1.0.126"
-utils = { path = "../../../libraries/utils" }
+tracing = "0.1.29"
+tracing-attributes = "0.1.11"
+tracing-subscriber = "0.2.25"
+types = { path = "../types" }

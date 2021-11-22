@@ -1,6 +1,6 @@
-use env::Environment;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use utils::env::Environment;
 
 mod lifecycle;
 mod model;

@@ -3,9 +3,12 @@ members = [
     "backend/canisters/bucket/api",
     "backend/canisters/bucket/impl",
     "backend/canisters/index/api",
+    "backend/canisters/index/c2c_client",
     "backend/canisters/index/impl",
     "backend/libraries/candid_gen",
-    "backend/libraries/env",
+    "backend/libraries/canister_api_macros",
+    "backend/libraries/canister_client_macros",
+    "backend/libraries/canister_logger",
     "backend/libraries/types",
     "backend/libraries/utils"
 ]

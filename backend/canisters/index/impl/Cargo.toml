@@ -11,7 +11,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 candid = "0.7.7"
-env = { path = "../../../libraries/env" }
+canister_api_macros = { path = "../../../libraries/canister_api_macros" }
+canister_logger = { path = "../../../libraries/canister_logger" }
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
+index_canister = { path = "../api" }
 serde = "1.0.126"
+tracing = "0.1.29"
+types = { path = "../../../libraries/types" }
+utils = { path = "../../../libraries/utils" }
