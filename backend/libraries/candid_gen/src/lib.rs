@@ -34,7 +34,7 @@ fn get_method_attribute(attrs: AttributeArgs) -> MethodAttribute {
     let canister_name = if let NestedMeta::Meta(Meta::Path(c)) = attrs.get(0).unwrap() {
         let value = c.get_ident().unwrap().to_string();
         match value.as_str() {
-            "data_bucket" => {
+            "bucket" => {
                 format!("{}_canister", value)
             }
             _ => panic!("Unrecognised 'canister_name' value: {:?}", value),

@@ -1,0 +1,50 @@
+type AddUserArgs =
+    record {
+        principal: Principal;
+        byte_limit: u64;
+    };
+
+type AddUserResponse = 
+    variant {
+
+    };
+
+type UpdateUserArgs =
+    record {
+        principal: Principal;
+        byte_limit: opt u64;
+    };
+
+type DeleteUserArgs =
+    record {
+    };
+
+type DeleteAccessorArgs =
+    record {
+    };
+
+type C2C_AddBlobReferenceArgs =
+    record {
+    };
+
+type C2C_RemoveBlobReferenceArgs =
+    record {
+    };
+
+type AllocatedBucketArgs =
+    record {
+        blob_id: BlobId;
+        blob_size: u64;
+    };
+
+service: {
+    add_user: (AddUserArgs) -> (AddUserResponse);
+    update_user: (UpdateUserArgs) -> (UpdateUserResponse);
+    delete_user: (DeleteUserArgs) -> (DeleteUserResponse);
+    delete_accessor: (DeleteAccessorArgs) -> (DeleteAccessorResponse);
+
+    c2c_add_blob_reference: (C2C_AddBlobReferenceArgs) -> (C2C_AddBlobReferenceResponse);
+    c2c_remove_blob_reference: (C2C_RemoveBlobReferenceArgs) -> (C2C_RemoveBlobReferenceResponse);
+    
+    allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
+}

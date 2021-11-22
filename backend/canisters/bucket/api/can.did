@@ -1,6 +1,6 @@
 import "../../../libraries/types/can.did";
 
-type PutChunkArgs =
+type UploadChunkArgs =
     record {
         blob_id: nat;
         mime_type: text;
@@ -9,7 +9,7 @@ type PutChunkArgs =
         bytes: blob;
     };
 
-type PutChunkResponse =
+type UploadChunkResponse =
     variant {
         Success;
         NotAuthorised;
@@ -19,6 +19,14 @@ type PutChunkResponse =
         Full;
     };
 
-service : {
-    put_chunk: (PutChunkArgs) -> (PutChunkResponse);
+service: {
+    upload_chunk;
+    add_blob_reference;
+    remove_blob_reference;
+
+    c2c_add_user;
+    c2c_delete_user;
+    c2c_delete_accessor;
+
+    http_request;
 }

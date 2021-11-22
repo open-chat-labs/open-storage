@@ -1,5 +1,5 @@
 [package]
-name = "data_bucket_canister_impl"
+name = "bucket_canister_impl"
 version = "0.1.0"
 edition = "2018"
 
