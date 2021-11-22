@@ -2,6 +2,8 @@
 members = [
     "backend/canisters/bucket/api",
     "backend/canisters/bucket/impl",
+    "backend/canisters/index/api",
+    "backend/canisters/index/impl",
     "backend/libraries/candid_gen",
     "backend/libraries/env",
     "backend/libraries/types",
