@@ -40,10 +40,7 @@ fn get_method_attribute(attrs: AttributeArgs) -> MethodAttribute {
             _ => panic!("Unrecognised 'canister_name' value: {:?}", value),
         }
     } else {
-        panic!(
-            "Unrecognised 'canister_name' value: {:?}",
-            attrs.get(0).unwrap()
-        );
+        panic!("Unrecognised 'canister_name' value: {:?}", attrs.get(0).unwrap());
     };
 
     let method_name = if let NestedMeta::Meta(Meta::Path(m)) = attrs.get(1).unwrap() {

@@ -13,11 +13,7 @@ pub struct CanisterToUpgrade<A: CandidType> {
     pub args: A,
 }
 
-pub async fn upgrade<A: CandidType>(
-    canister_id: CanisterId,
-    wasm_module: Vec<u8>,
-    args: A,
-) -> Result<(), canister::Error> {
+pub async fn upgrade<A: CandidType>(canister_id: CanisterId, wasm_module: Vec<u8>, args: A) -> Result<(), canister::Error> {
     #[derive(CandidType, Deserialize)]
     struct StartOrStopCanisterArgs {
         canister_id: Principal,
@@ -44,12 +40,8 @@ pub async fn upgrade<A: CandidType>(
     }
 
     let stop_canister_args = StartOrStopCanisterArgs { canister_id };
-    let stop_canister_response: CallResult<()> = api::call::call(
-        Principal::management_canister(),
-        "stop_canister",
-        (stop_canister_args,),
-    )
-    .await;
+    let stop_canister_response: CallResult<()> =
+        api::call::call(Principal::management_canister(), "stop_canister", (stop_canister_args,)).await;
 
     if let Err((code, msg)) = stop_canister_response {
         let code = code as u8;
@@ -67,12 +59,8 @@ pub async fn upgrade<A: CandidType>(
         wasm_module,
         arg: candid::encode_one(args).unwrap(),
     };
-    let install_code_response: CallResult<()> = api::call::call(
-        Principal::management_canister(),
-        "install_code",
-        (install_code_args,),
-    )
-    .await;
+    let install_code_response: CallResult<()> =
+        api::call::call(Principal::management_canister(), "install_code", (install_code_args,)).await;
 
     let mut error = None;
     if let Err((code, msg)) = install_code_response {
@@ -87,12 +75,8 @@ pub async fn upgrade<A: CandidType>(
 
     // Call 'start canister' regardless of if 'install_code' succeeded or not.
     let start_canister_args = StartOrStopCanisterArgs { canister_id };
-    let start_canister_response: CallResult<()> = api::call::call(
-        Principal::management_canister(),
-        "start_canister",
-        (start_canister_args,),
-    )
-    .await;
+    let start_canister_response: CallResult<()> =
+        api::call::call(Principal::management_canister(), "start_canister", (start_canister_args,)).await;
 
     if let Err((code, msg)) = start_canister_response {
         let code = code as u8;

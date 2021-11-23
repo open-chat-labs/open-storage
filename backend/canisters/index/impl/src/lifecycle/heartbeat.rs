@@ -54,7 +54,6 @@ mod ensure_sufficient_active_buckets {
             canister_wasm: runtime_state.data.bucket_canister_wasm.clone(),
             cycles_to_use: cycles_required,
             init_canister_args: bucket_canister::init::Args {
-                index_canister_id: runtime_state.env.canister_id(),
                 wasm_version: runtime_state.data.bucket_canister_wasm.version,
                 test_mode: runtime_state.data.test_mode,
             },
@@ -64,13 +63,7 @@ mod ensure_sufficient_active_buckets {
     async fn create_bucket(args: CreateBucketArgs) {
         let wasm_arg = candid::encode_one(args.init_canister_args).unwrap();
 
-        let result = canister::create_and_install(
-            None,
-            args.canister_wasm.module,
-            wasm_arg,
-            args.cycles_to_use,
-        )
-        .await;
+        let result = canister::create_and_install(None, args.canister_wasm.module, wasm_arg, args.cycles_to_use).await;
 
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
@@ -80,9 +73,6 @@ mod ensure_sufficient_active_buckets {
 
     fn commit(mut bucket: BucketRecord, runtime_state: &mut RuntimeState) {
         bucket.users_to_sync = runtime_state.data.users.keys().copied().collect();
-        runtime_state
-            .data
-            .active_buckets
-            .insert(bucket.canister_id, bucket);
+        runtime_state.data.active_buckets.insert(bucket.canister_id, bucket);
     }
 }

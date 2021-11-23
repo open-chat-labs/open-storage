@@ -45,11 +45,7 @@ struct Data {
 }
 
 impl Data {
-    fn new(
-        service_principals: Vec<Principal>,
-        bucket_canister_wasm: CanisterWasm,
-        test_mode: bool,
-    ) -> Data {
+    fn new(service_principals: Vec<Principal>, bucket_canister_wasm: CanisterWasm, test_mode: bool) -> Data {
         Data {
             service_principals: service_principals.into_iter().collect(),
             bucket_canister_wasm,
