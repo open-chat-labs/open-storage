@@ -1,5 +1,5 @@
-use crate::BlobRecord;
 use crate::guards::caller_is_bucket;
+use crate::BlobRecord;
 use crate::{RuntimeState, RUNTIME_STATE};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -26,7 +26,7 @@ fn c2c_add_blob_reference_impl(args: Args, runtime_state: &mut RuntimeState) -> 
 
     runtime_state.data.blobs.entry(args.blob_hash).or_insert_with(|| BlobRecord {
         bucket,
-        size: args.blob_size
+        size: args.blob_size,
     });
 
     Response::Success

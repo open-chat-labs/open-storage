@@ -17,7 +17,7 @@ fn c2c_remove_blob_reference_impl(args: Args, runtime_state: &mut RuntimeState) 
         return Response::UserNotFound;
     }
 
-    if let Some(blob_hash) = args.blob_hash {
+    if let Some(blob_hash) = args.blob_hash_to_delete {
         runtime_state.data.blobs.remove_entry(&blob_hash);
     }
 
