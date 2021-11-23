@@ -3,7 +3,7 @@ use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet, VecDeque};
-use types::{CanisterId, Hash, Timestamped, UserId, Version};
+use types::{CanisterId, CanisterWasm, Hash, Timestamped, UserId, Version};
 use utils::env::Environment;
 
 mod guards;
@@ -37,19 +37,21 @@ impl RuntimeState {
 #[derive(Serialize, Deserialize)]
 struct Data {
     pub service_principals: HashSet<Principal>,
+    pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecord>,
     pub blobs: HashMap<Hash, BlobRecord>,
-    pub active_buckets: Vec<BucketRecord>,
+    pub active_buckets: HashMap<CanisterId, BucketRecord>,
     pub test_mode: bool,
 }
 
 impl Data {
-    fn new(service_principals: Vec<Principal>, test_mode: bool) -> Data {
+    fn new(service_principals: Vec<Principal>, bucket_canister_wasm: CanisterWasm, test_mode: bool) -> Data {
         Data {
             service_principals: service_principals.into_iter().collect(),
+            bucket_canister_wasm,
             users: HashMap::new(),
             blobs: HashMap::new(),
-            active_buckets: Vec::new(),
+            active_buckets: HashMap::new(),
             test_mode,
         }
     }
@@ -70,6 +72,18 @@ pub struct BlobRecord {
 #[derive(Serialize, Deserialize)]
 pub struct BucketRecord {
     pub canister_id: CanisterId,
+    pub wasm_version: Version,
     pub bytes_used: u64,
     pub users_to_sync: VecDeque<UserId>,
+}
+
+impl BucketRecord {
+    pub fn new(canister_id: CanisterId, wasm_version: Version) -> BucketRecord {
+        BucketRecord {
+            canister_id,
+            wasm_version,
+            bytes_used: 0,
+            users_to_sync: VecDeque::new(),
+        }
+    }
 }

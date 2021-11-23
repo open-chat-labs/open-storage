@@ -1,8 +1,10 @@
 use candid::Principal;
 
+mod canister_wasm;
 mod timestamped;
 mod version;
 
+pub use canister_wasm::*;
 pub use timestamped::*;
 pub use version::*;
 

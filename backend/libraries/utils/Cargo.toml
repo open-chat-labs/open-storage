@@ -10,5 +10,8 @@ candid = "0.7.7"
 generic-array = "0.14.4"
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 rand = "0.7.3"
+serde = "1.0.126"
+serde_bytes = "0.11.5"
 sha2 = "0.9.8"
+tracing = "0.1.29"
 types = { path = "../types" }

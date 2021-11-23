@@ -1,5 +1,5 @@
-use crate::UserRecord;
 use crate::guards::caller_is_service_principal;
+use crate::UserRecord;
 use crate::{RuntimeState, RUNTIME_STATE};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -16,12 +16,15 @@ fn add_user_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         return Response::UserAlreadyExists;
     }
 
-    runtime_state.data.users.insert(args.user_id, UserRecord {
-        byte_limit: args.byte_limit,
-        bytes_used: 0,
-    });
+    runtime_state.data.users.insert(
+        args.user_id,
+        UserRecord {
+            byte_limit: args.byte_limit,
+            bytes_used: 0,
+        },
+    );
 
-    for bucket in runtime_state.data.active_buckets.iter_mut() {
+    for bucket in runtime_state.data.active_buckets.values_mut() {
         bucket.users_to_sync.push_back(args.user_id);
     }
 
