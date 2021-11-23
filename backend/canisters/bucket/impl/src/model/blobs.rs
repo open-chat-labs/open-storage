@@ -146,14 +146,12 @@ impl ReferenceCounts {
             let count = e.get_mut();
             if *count > 1 {
                 *count -= 1;
-                *count
+                return *count;
             } else {
                 e.remove();
-                0
             }
-        } else {
-            0
         }
+        0
     }
 }
 
