@@ -52,8 +52,15 @@ type AllocatedBucketArgs =
 
 type AllocatedBucketResponse = 
     variant {
-        Success;
+        Success: AllocatedBucketResult;
         AllowanceReached;
+        UserNotFound;
+        BucketUnavailable;
+    };
+
+type AllocatedBucketResult =
+    record {
+        canister_id: CanisterId;
     };
 
 type UserArgs =

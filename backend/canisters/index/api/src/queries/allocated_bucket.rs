@@ -1,6 +1,6 @@
 use candid::CandidType;
 use serde::Deserialize;
-use types::Hash;
+use types::{CanisterId, Hash};
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Args {
@@ -10,6 +10,13 @@ pub struct Args {
 
 #[derive(CandidType, Deserialize, Debug)]
 pub enum Response {
-    Success,
+    Success(Result),
     AllowanceReached,
+    UserNotFound,
+    BucketUnavailable,
+}
+
+#[derive(CandidType, Deserialize, Debug)]
+pub struct Result {
+    pub canister_id: CanisterId,
 }

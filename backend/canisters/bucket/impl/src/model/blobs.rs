@@ -176,7 +176,7 @@ impl AccessorsMap {
     }
 
     pub fn remove(&mut self, accessor_id: &AccessorId) -> Option<HashSet<BlobId>> {
-        self.map.remove(&accessor_id)
+        self.map.remove(accessor_id)
     }
 }
 

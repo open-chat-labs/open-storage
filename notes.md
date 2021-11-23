@@ -67,13 +67,12 @@ data_bucket::http_request
 3. Confirm the "chat_id" matches a reference held against the blob
 
 data_bucket::upload_chunk
-data_bucket::add_blob_reference
-data_bucket::remove_blob_reference
+data_bucket::copy_blob
+data_bucket::remove_blob
 data_bucket::http_request
-data_bucket::c2c_register_user
-data_bucket::c2c_users_updated
-data_bucket::c2c_delete_chat
-    delete_accessor?
+data_bucket::c2c_add_user
+data_bucket::c2c_delete_user
+data_bucket::c2c_delete_accessor
 
 
 data_bucket_index
@@ -100,10 +99,10 @@ pub struct BucketRecord {
     pub bytes_used: u64,
 }
 
-register_user
+add_user
 update_user
 delete_user
 allocated_bucket(blob_id)
 c2c_add_blob_reference
 c2c_remove_blob_reference
-heartbeat (topup buckets, upgrade buckets, push registered users, and push updated "bytes left" for each user in batches to each data_bucket)
+heartbeat (topup buckets, upgrade buckets, push registered users in batches to each data_bucket, delete users and accessors in batches from each data_bucket)

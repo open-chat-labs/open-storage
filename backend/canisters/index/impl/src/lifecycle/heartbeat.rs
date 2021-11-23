@@ -1,4 +1,4 @@
-use crate::{BucketRecord, RuntimeState, RUNTIME_STATE};
+use crate::{RuntimeState, RUNTIME_STATE};
 use ic_cdk_macros::heartbeat;
 use tracing::error;
 use types::{CanisterWasm, Cycles};
@@ -16,6 +16,7 @@ fn heartbeat() {
 
 mod ensure_sufficient_active_buckets {
     use super::*;
+    use crate::model::buckets::BucketRecord;
     use PrepareResponse::*;
 
     pub fn run() {
@@ -41,7 +42,7 @@ mod ensure_sufficient_active_buckets {
     }
 
     fn prepare(runtime_state: &RuntimeState) -> PrepareResponse {
-        if runtime_state.data.active_buckets.len() >= TARGET_ACTIVE_BUCKETS {
+        if runtime_state.data.buckets.active_count() >= TARGET_ACTIVE_BUCKETS {
             return AlreadySufficientActiveBuckets;
         }
 
@@ -73,6 +74,6 @@ mod ensure_sufficient_active_buckets {
 
     fn commit(mut bucket: BucketRecord, runtime_state: &mut RuntimeState) {
         bucket.users_to_sync = runtime_state.data.users.keys().copied().collect();
-        runtime_state.data.active_buckets.insert(bucket.canister_id, bucket);
+        runtime_state.data.buckets.add(bucket);
     }
 }
