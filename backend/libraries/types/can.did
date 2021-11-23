@@ -1,4 +1,5 @@
 type AccessorId = principal;
+type BlobId = nat;
 type CanisterId = principal;
 type Cycles = nat;
 type Hash = nat;

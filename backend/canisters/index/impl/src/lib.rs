@@ -1,8 +1,9 @@
+use crate::model::buckets::Buckets;
 use candid::Principal;
 use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use types::{CanisterId, CanisterWasm, Hash, Timestamped, UserId, Version};
 use utils::env::Environment;
 
@@ -35,7 +36,7 @@ impl RuntimeState {
 
     pub fn is_caller_bucket(&self) -> bool {
         let caller = self.env.caller();
-        self.data.active_buckets.contains_key(&caller) || self.data.full_buckets.contains_key(&caller)
+        self.data.buckets.get(&caller).is_some()
     }
 }
 
@@ -45,8 +46,7 @@ struct Data {
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecord>,
     pub blobs: HashMap<Hash, BlobRecord>,
-    pub active_buckets: HashMap<CanisterId, BucketRecord>,
-    pub full_buckets: HashMap<CanisterId, BucketRecord>,
+    pub buckets: Buckets,
     pub test_mode: bool,
 }
 
@@ -57,8 +57,7 @@ impl Data {
             bucket_canister_wasm,
             users: HashMap::new(),
             blobs: HashMap::new(),
-            active_buckets: HashMap::new(),
-            full_buckets: HashMap::new(),
+            buckets: Buckets::default(),
             test_mode,
         }
     }
@@ -74,23 +73,4 @@ pub struct UserRecord {
 pub struct BlobRecord {
     pub bucket: CanisterId,
     pub size: u64,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct BucketRecord {
-    pub canister_id: CanisterId,
-    pub wasm_version: Version,
-    pub bytes_used: u64,
-    pub users_to_sync: VecDeque<UserId>,
-}
-
-impl BucketRecord {
-    pub fn new(canister_id: CanisterId, wasm_version: Version) -> BucketRecord {
-        BucketRecord {
-            canister_id,
-            wasm_version,
-            bytes_used: 0,
-            users_to_sync: VecDeque::new(),
-        }
-    }
 }

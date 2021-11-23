@@ -6,10 +6,10 @@ use index_canister::user::*;
 #[query]
 #[trace]
 fn user(_args: Args) -> Response {
-    RUNTIME_STATE.with(|state| user_impl(state.borrow_mut().as_mut().unwrap()))
+    RUNTIME_STATE.with(|state| user_impl(state.borrow().as_ref().unwrap()))
 }
 
-fn user_impl(runtime_state: &mut RuntimeState) -> Response {
+fn user_impl(runtime_state: &RuntimeState) -> Response {
     let user_id = runtime_state.env.caller();
     if let Some(user) = runtime_state.data.users.get(&user_id) {
         Response::Success(UserRecord {
