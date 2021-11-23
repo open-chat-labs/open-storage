@@ -2,6 +2,7 @@ use candid_gen::generate_candid_method;
 
 fn main() {
     generate_candid_method!(index, allocated_bucket, query);
+    generate_candid_method!(index, user, query);
 
     generate_candid_method!(index, add_user, update);
     generate_candid_method!(index, delete_accessor, update);

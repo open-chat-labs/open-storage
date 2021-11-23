@@ -56,10 +56,27 @@ type AllocatedBucketResponse =
         AllowanceReached;
     };
 
+type UserArgs =
+    record {
+    };
+
+type UserResponse = 
+    variant {
+        Success: UserRecord;
+        UserNotFound;
+    };
+
+type UserRecord = 
+    record {
+        byte_limit: nat64;
+        bytes_used: nat64;
+    };
+
 service: {
     add_user: (AddUserArgs) -> (AddUserResponse);
     update_user: (UpdateUserArgs) -> (UpdateUserResponse);
     delete_user: (DeleteUserArgs) -> (DeleteUserResponse);
     delete_accessor: (DeleteAccessorArgs) -> (DeleteAccessorResponse);
     allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
+    user: (UserArgs) -> (UserResponse) query;
 }
