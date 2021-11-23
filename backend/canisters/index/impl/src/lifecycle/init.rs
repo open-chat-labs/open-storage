@@ -2,8 +2,8 @@ use crate::lifecycle::{init_logger, init_state};
 use crate::Data;
 use canister_api_macros::trace;
 use canister_logger::set_panic_hook;
-use index_canister::init::Args;
 use ic_cdk_macros::init;
+use index_canister::init::Args;
 use tracing::info;
 use utils::env::canister::CanisterEnv;
 
@@ -17,6 +17,7 @@ fn init(args: Args) {
 
     let data = Data::new(
         args.service_principals,
+        args.bucket_canister_wasm,
         args.test_mode,
     );
 

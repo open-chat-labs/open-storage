@@ -1,4 +1,4 @@
-use generic_array::{GenericArray, sequence::Split, typenum::U16};
+use generic_array::{sequence::Split, typenum::U16, GenericArray};
 use sha2::{Digest, Sha256};
 use types::Hash;
 

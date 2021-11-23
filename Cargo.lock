@@ -659,6 +659,7 @@ dependencies = [
 name = "index_canister_impl"
 version = "0.1.0"
 dependencies = [
+ "bucket_canister",
  "candid",
  "canister_api_macros",
  "canister_logger",
@@ -1750,6 +1751,7 @@ dependencies = [
  "candid",
  "hex",
  "serde",
+ "serde_bytes",
 ]
 
 [[package]]
@@ -1784,7 +1786,10 @@ dependencies = [
  "generic-array",
  "ic-cdk",
  "rand 0.7.3",
+ "serde",
+ "serde_bytes",
  "sha2",
+ "tracing",
  "types",
 ]
 

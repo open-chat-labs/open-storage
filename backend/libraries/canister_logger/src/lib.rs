@@ -21,9 +21,15 @@ use types::TimestampMillis;
 
 const DEFAULT_MAX_MESSAGES: usize = 100;
 
-pub fn init_logger(enable_trace: bool, max_messages: Option<usize>, time_fn: fn() -> TimestampMillis) -> LogMessagesWrapper {
-    let log_messages_container = LogMessagesContainer::new(max_messages.unwrap_or(DEFAULT_MAX_MESSAGES));
-    let trace_messages_container = LogMessagesContainer::new(max_messages.unwrap_or(DEFAULT_MAX_MESSAGES));
+pub fn init_logger(
+    enable_trace: bool,
+    max_messages: Option<usize>,
+    time_fn: fn() -> TimestampMillis,
+) -> LogMessagesWrapper {
+    let log_messages_container =
+        LogMessagesContainer::new(max_messages.unwrap_or(DEFAULT_MAX_MESSAGES));
+    let trace_messages_container =
+        LogMessagesContainer::new(max_messages.unwrap_or(DEFAULT_MAX_MESSAGES));
 
     let log_messages_wrapper = LogMessagesWrapper {
         logs: log_messages_container.clone(),
@@ -148,7 +154,11 @@ impl LogMessages {
     }
 
     pub fn get(&self, since: TimestampMillis) -> Vec<LogMessage> {
-        self.messages.iter().skip_while(|l| l.timestamp <= since).cloned().collect()
+        self.messages
+            .iter()
+            .skip_while(|l| l.timestamp <= since)
+            .cloned()
+            .collect()
     }
 
     pub fn push(&mut self, message: LogMessage) {
