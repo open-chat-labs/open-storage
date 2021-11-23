@@ -32,6 +32,11 @@ impl RuntimeState {
         let caller = self.env.caller();
         self.data.service_principals.contains(&caller)
     }
+
+    pub fn is_caller_bucket(&self) -> bool {
+        let caller = self.env.caller();
+        self.data.active_buckets.contains_key(&caller) || self.data.full_buckets.contains_key(&caller)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -41,6 +46,7 @@ struct Data {
     pub users: HashMap<UserId, UserRecord>,
     pub blobs: HashMap<Hash, BlobRecord>,
     pub active_buckets: HashMap<CanisterId, BucketRecord>,
+    pub full_buckets: HashMap<CanisterId, BucketRecord>,
     pub test_mode: bool,
 }
 
@@ -52,6 +58,7 @@ impl Data {
             users: HashMap::new(),
             blobs: HashMap::new(),
             active_buckets: HashMap::new(),
+            full_buckets: HashMap::new(),
             test_mode,
         }
     }
