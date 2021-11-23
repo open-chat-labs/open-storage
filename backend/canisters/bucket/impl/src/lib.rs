@@ -1,7 +1,12 @@
+use crate::model::blobs::Blobs;
+use crate::model::users::Users;
+use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use types::{CanisterId, TimestampMillis, Timestamped, Version};
 use utils::env::Environment;
 
+mod guards;
 mod lifecycle;
 mod model;
 mod queries;
@@ -9,6 +14,8 @@ mod updates;
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();
+    static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
+    static WASM_VERSION: RefCell<Timestamped<Version>> = RefCell::default();
 }
 
 struct RuntimeState {
@@ -20,7 +27,33 @@ impl RuntimeState {
     pub fn new(env: Box<dyn Environment>, data: Data) -> RuntimeState {
         RuntimeState { env, data }
     }
+
+    pub fn is_caller_index_canister(&self) -> bool {
+        let caller = self.env.caller();
+        caller == self.data.index_canister_id
+    }
+
+    pub fn is_caller_known_user(&self) -> bool {
+        let caller = self.env.caller();
+        self.data.users.exists(&caller)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
-struct Data {}
+struct Data {
+    index_canister_id: CanisterId,
+    users: Users,
+    blobs: Blobs,
+    created: TimestampMillis,
+}
+
+impl Data {
+    pub fn new(index_canister_id: CanisterId, now: TimestampMillis) -> Data {
+        Data {
+            index_canister_id,
+            users: Users::default(),
+            blobs: Blobs::default(),
+            created: now,
+        }
+    }
+}

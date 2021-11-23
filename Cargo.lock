@@ -150,13 +150,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "bucket_canister_c2c_client"
+version = "0.1.0"
+dependencies = [
+ "bucket_canister",
+ "canister_client_macros",
+ "ic-cdk",
+ "tracing",
+ "types",
+]
+
+[[package]]
 name = "bucket_canister_impl"
 version = "0.1.0"
 dependencies = [
+ "bucket_canister",
  "candid",
+ "canister_api_macros",
+ "canister_logger",
  "ic-cdk",
  "ic-cdk-macros",
  "serde",
+ "serde_bytes",
+ "tracing",
+ "types",
  "utils",
 ]
 

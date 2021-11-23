@@ -2,31 +2,38 @@ import "../../../libraries/types/can.did";
 
 type UploadChunkArgs =
     record {
-        blob_id: nat;
+        blob_id: BlobId;
+        hash: Hash;
         mime_type: text;
-        total_chunks: nat32;
-        index: nat32;
+        accessors: vec AccessorId;
+        chunk_index: nat32;
+        chunk_size: nat32;
+        total_size: nat32;
         bytes: blob;
     };
 
 type UploadChunkResponse =
     variant {
         Success;
-        NotAuthorised;
         BlobAlreadyExists;
         ChunkAlreadyExists;
-        ChunkTooBig;
+        HashMismatch;
         Full;
+    };
+
+type DeleteBlobArgs =
+    record {
+        blob_id: BlobId;
+    };
+
+type DeleteBlobResponse =
+    variant {
+        Success;
+        NotAuthorized;
+        NotFound;
     };
 
 service: {
     upload_chunk: (UploadChunkArgs) -> (UploadChunkResponse);
-    //add_blob_reference;
-    //remove_blob_reference;
-
-    //c2c_add_user;
-    //c2c_delete_user;
-    //c2c_delete_accessor;
-
-    //http_request;
+    delete_blob: (DeleteBlobArgs) -> (DeleteBlobResponse);
 }
