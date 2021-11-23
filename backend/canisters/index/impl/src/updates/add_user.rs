@@ -28,5 +28,9 @@ fn add_user_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         bucket.users_to_sync.push_back(args.user_id);
     }
 
+    for bucket in runtime_state.data.full_buckets.values_mut() {
+        bucket.users_to_sync.push_back(args.user_id);
+    }
+
     Response::Success
 }
