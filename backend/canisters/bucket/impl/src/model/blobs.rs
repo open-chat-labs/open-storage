@@ -8,7 +8,7 @@ use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Blobs {
-    blobs: HashMap<BlobId, BlobReference>,
+    blob_references: HashMap<BlobId, BlobReference>,
     pending_blobs: HashMap<BlobId, PendingBlob>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
@@ -26,7 +26,7 @@ struct BlobReference {
 
 impl Blobs {
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
-        if self.blobs.contains_key(&args.blob_id) {
+        if self.blob_references.contains_key(&args.blob_id) {
             return PutChunkResult::BlobAlreadyExists;
         }
 
@@ -69,7 +69,7 @@ impl Blobs {
     }
 
     pub fn remove_blob_reference(&mut self, user_id: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
-        if let Occupied(e) = self.blobs.entry(blob_id) {
+        if let Occupied(e) = self.blob_references.entry(blob_id) {
             if e.get().creator != user_id {
                 RemoveBlobReferenceResult::NotAuthorized
             } else {
@@ -92,7 +92,7 @@ impl Blobs {
     pub fn remove_accessor(&mut self, accessor_id: &AccessorId) {
         if let Some(blob_ids) = self.accessors_map.remove(accessor_id) {
             for blob_id in blob_ids.into_iter() {
-                if let Occupied(mut e) = self.blobs.entry(blob_id) {
+                if let Occupied(mut e) = self.blob_references.entry(blob_id) {
                     let blob_reference = e.get_mut();
                     blob_reference.accessors.remove(accessor_id);
                     if blob_reference.accessors.is_empty() {
@@ -111,7 +111,7 @@ impl Blobs {
             self.accessors_map.link(*accessor_id, blob_id);
         }
 
-        self.blobs.insert(
+        self.blob_references.insert(
             blob_id,
             BlobReference {
                 creator: completed_blob.creator,
