@@ -23,7 +23,8 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
         .data
         .blobs
         .get(&args.blob_hash)
-        .map(|b| b.bucket)
+        .map(|b| b.buckets.first().copied())
+        .flatten()
         .or_else(|| runtime_state.data.buckets.allocate(args.blob_hash));
 
     if let Some(canister_id) = bucket {

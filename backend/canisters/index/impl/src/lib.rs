@@ -71,6 +71,6 @@ pub struct UserRecord {
 
 #[derive(Serialize, Deserialize)]
 pub struct BlobRecord {
-    pub bucket: CanisterId,
+    pub buckets: Vec<CanisterId>,
     pub size: u64,
 }
