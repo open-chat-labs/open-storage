@@ -15,8 +15,8 @@ fn delete_blob_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let caller = runtime_state.env.caller();
 
     match runtime_state.data.blobs.remove_blob_reference(caller, args.blob_id) {
-        RemoveBlobReferenceResult::Success => Success,
-        RemoveBlobReferenceResult::SuccessBlobDeleted => Success,
+        RemoveBlobReferenceResult::Success(_) => Success,
+        RemoveBlobReferenceResult::SuccessBlobDeleted(_) => Success,
         RemoveBlobReferenceResult::NotAuthorized => NotAuthorized,
         RemoveBlobReferenceResult::NotFound => NotFound,
     }

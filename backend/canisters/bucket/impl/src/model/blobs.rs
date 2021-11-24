@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
-use types::{AccessorId, BlobId, Hash, TimestampMillis, UserId};
+use types::{AccessorId, BlobId, BlobReferenceRemoved, Hash, TimestampMillis, UserId};
 use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
@@ -17,11 +17,11 @@ pub struct Blobs {
 }
 
 #[derive(Serialize, Deserialize)]
-struct BlobReference {
-    creator: UserId,
-    accessors: HashSet<AccessorId>,
-    hash: Hash,
-    created: TimestampMillis,
+pub struct BlobReference {
+    pub creator: UserId,
+    pub accessors: HashSet<AccessorId>,
+    pub hash: Hash,
+    pub created: TimestampMillis,
 }
 
 impl Blobs {
@@ -74,36 +74,46 @@ impl Blobs {
                 RemoveBlobReferenceResult::NotAuthorized
             } else {
                 let blob_reference = e.remove();
-                for accessor_id in blob_reference.accessors.into_iter() {
-                    self.accessors_map.unlink(accessor_id, &blob_id);
+                for accessor_id in blob_reference.accessors.iter() {
+                    self.accessors_map.unlink(*accessor_id, &blob_id);
                 }
                 if self.reference_counts.decr(blob_reference.hash) == 0 {
                     self.data.remove(&blob_reference.hash);
-                    return RemoveBlobReferenceResult::SuccessBlobDeleted;
+                    return RemoveBlobReferenceResult::SuccessBlobDeleted(blob_reference);
                 }
 
-                RemoveBlobReferenceResult::Success
+                RemoveBlobReferenceResult::Success(blob_reference)
             }
         } else {
             RemoveBlobReferenceResult::NotFound
         }
     }
 
-    pub fn remove_accessor(&mut self, accessor_id: &AccessorId) {
+    pub fn remove_accessor(&mut self, accessor_id: &AccessorId) -> Vec<BlobReferenceRemoved> {
+        let mut blob_references_removed = Vec::new();
+
         if let Some(blob_ids) = self.accessors_map.remove(accessor_id) {
             for blob_id in blob_ids.into_iter() {
                 if let Occupied(mut e) = self.blob_references.entry(blob_id) {
                     let blob_reference = e.get_mut();
                     blob_reference.accessors.remove(accessor_id);
                     if blob_reference.accessors.is_empty() {
-                        if self.reference_counts.decr(blob_reference.hash) == 0 {
+                        let delete_blob = self.reference_counts.decr(blob_reference.hash) == 0;
+                        if delete_blob {
                             self.data.remove(&blob_reference.hash);
                         }
-                        e.remove();
+                        let blob_reference = e.remove();
+                        blob_references_removed.push(BlobReferenceRemoved {
+                            user_id: blob_reference.creator,
+                            blob_hash: blob_reference.hash,
+                            blob_deleted: delete_blob,
+                        });
                     }
                 }
             }
         }
+
+        blob_references_removed
     }
 
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
@@ -270,8 +280,8 @@ pub enum PutChunkResult {
 }
 
 pub enum RemoveBlobReferenceResult {
-    Success,
-    SuccessBlobDeleted,
+    Success(BlobReference),
+    SuccessBlobDeleted(BlobReference),
     NotAuthorized,
     NotFound,
 }
