@@ -1,6 +1,6 @@
 use candid::CandidType;
 use serde::Deserialize;
-use types::{AccessorId, UserId};
+use types::{AccessorId, Hash, UserId};
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Args {
@@ -11,5 +11,17 @@ pub struct Args {
 
 #[derive(CandidType, Deserialize, Debug)]
 pub enum Response {
-    Success,
+    Success(SuccessResult),
+}
+
+#[derive(CandidType, Deserialize, Debug)]
+pub struct SuccessResult {
+    blob_references_removed: Vec<BlobReferenceRemoved>,
+}
+
+#[derive(CandidType, Deserialize, Debug)]
+pub struct BlobReferenceRemoved {
+    pub user_id: UserId,
+    pub blob_hash: Hash,
+    pub blob_deleted: bool,
 }

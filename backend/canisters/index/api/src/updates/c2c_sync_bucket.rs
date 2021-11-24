@@ -4,8 +4,8 @@ use types::{BlobId, Hash, UserId};
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Args {
-    pub add_blob_references: Vec<AddBlobReferenceRequest>,
-    pub remove_blob_references: Vec<RemoveBlobReferenceRequest>,
+    pub blob_references_added: Vec<BlobReferenceAdded>,
+    pub blob_references_removed: Vec<BlobReferenceRemoved>,
 }
 
 #[derive(CandidType, Deserialize, Debug)]
@@ -14,7 +14,7 @@ pub enum Response {
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-pub struct AddBlobReferenceRequest {
+pub struct BlobReferenceAdded {
     pub blob_id: BlobId,
     pub user_id: UserId,
     pub blob_hash: Hash,
@@ -22,7 +22,7 @@ pub struct AddBlobReferenceRequest {
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-pub struct RemoveBlobReferenceRequest {
+pub struct BlobReferenceRemoved {
     pub user_id: UserId,
     pub blob_hash: Hash,
     pub blob_deleted: bool,
@@ -30,17 +30,17 @@ pub struct RemoveBlobReferenceRequest {
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct SuccessResult {
-    pub add_blob_reference_failures: Vec<AddBlobReferenceFailure>,
+    pub blob_references_rejected: Vec<RejectedBlobReference>,
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-pub struct AddBlobReferenceFailure {
+pub struct RejectedBlobReference {
     pub blob_id: BlobId,
-    pub reason: AddBlobReferenceFailureReason,
+    pub reason: RejectedBlobReferenceReason,
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-pub enum AddBlobReferenceFailureReason {
+pub enum RejectedBlobReferenceReason {
     AllowanceReached,
     UserNotFound,
 }
