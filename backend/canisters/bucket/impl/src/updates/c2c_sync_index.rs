@@ -1,6 +1,7 @@
 use crate::guards::caller_is_index_canister;
 use crate::model::blobs::RemoveBlobReferenceResult;
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::model::index_sync_queue::EventToSync;
+use crate::{RuntimeState, MAX_EVENTS_TO_SYNC_PER_BATCH, RUNTIME_STATE};
 use bucket_canister::c2c_sync_index::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -13,31 +14,18 @@ fn c2c_sync_index(args: Args) -> Response {
 }
 
 fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
-    let mut blob_references_removed: Vec<BlobReferenceRemoved> = Vec::new();
-
     for user_id in args.users_added {
         runtime_state.data.users.add(user_id);
     }
 
+    let mut blob_references_removed: Vec<BlobReferenceRemoved> = Vec::new();
+
     for user_id in args.users_removed {
         if let Some(blob_ids) = runtime_state.data.users.remove(user_id) {
             for blob_id in blob_ids {
-                match runtime_state.data.blobs.remove_blob_reference(user_id, blob_id) {
-                    RemoveBlobReferenceResult::Success(b) => {
-                        blob_references_removed.push(BlobReferenceRemoved {
-                            user_id,
-                            blob_hash: b.hash,
-                            blob_deleted: false,
-                        });
-                    }
-                    RemoveBlobReferenceResult::SuccessBlobDeleted(b) => {
-                        blob_references_removed.push(BlobReferenceRemoved {
-                            user_id,
-                            blob_hash: b.hash,
-                            blob_deleted: true,
-                        });
-                    }
-                    _ => {}
+                if let RemoveBlobReferenceResult::Success(b) = runtime_state.data.blobs.remove_blob_reference(user_id, blob_id)
+                {
+                    blob_references_removed.push(b)
                 }
             }
         }
@@ -45,6 +33,19 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
 
     for accessor_id in args.accessors_removed {
         blob_references_removed.extend(runtime_state.data.blobs.remove_accessor(&accessor_id));
+    }
+
+    if blob_references_removed.len() > MAX_EVENTS_TO_SYNC_PER_BATCH {
+        // If there are too many events to sync in a single batch, queue the excess events to be
+        // synced later via heartbeat
+        let excess = blob_references_removed.split_off(MAX_EVENTS_TO_SYNC_PER_BATCH);
+
+        for removed in excess {
+            runtime_state
+                .data
+                .index_sync_queue
+                .push(EventToSync::BlobReferenceRemoved(removed));
+        }
     }
 
     Success(SuccessResult { blob_references_removed })

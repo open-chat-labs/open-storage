@@ -2,6 +2,7 @@ use crate::{Data, RuntimeState, LOG_MESSAGES, RUNTIME_STATE, WASM_VERSION};
 use types::{Timestamped, Version};
 use utils::env::Environment;
 
+mod heartbeat;
 mod init;
 // mod inspect_message;
 // mod post_upgrade;

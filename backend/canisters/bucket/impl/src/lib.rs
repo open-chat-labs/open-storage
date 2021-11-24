@@ -1,4 +1,5 @@
 use crate::model::blobs::Blobs;
+use crate::model::index_sync_queue::IndexSyncQueue;
 use crate::model::users::Users;
 use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
@@ -11,6 +12,8 @@ mod lifecycle;
 mod model;
 mod queries;
 mod updates;
+
+const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();
@@ -44,6 +47,7 @@ struct Data {
     index_canister_id: CanisterId,
     users: Users,
     blobs: Blobs,
+    index_sync_queue: IndexSyncQueue,
     created: TimestampMillis,
 }
 
@@ -53,6 +57,7 @@ impl Data {
             index_canister_id,
             users: Users::default(),
             blobs: Blobs::default(),
+            index_sync_queue: IndexSyncQueue::default(),
             created: now,
         }
     }

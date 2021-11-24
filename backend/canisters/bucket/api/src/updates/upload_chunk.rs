@@ -11,7 +11,7 @@ pub struct Args {
     pub accessors: Vec<AccessorId>,
     pub chunk_index: u32,
     pub chunk_size: u32,
-    pub total_size: u32,
+    pub total_size: u64,
     pub bytes: ByteBuf,
 }
 
