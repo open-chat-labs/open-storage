@@ -1,5 +1,3 @@
-mod c2c_add_users;
-mod c2c_remove_accessors;
-mod c2c_remove_users;
+mod c2c_sync_index;
 mod delete_blob;
 mod upload_chunk;
