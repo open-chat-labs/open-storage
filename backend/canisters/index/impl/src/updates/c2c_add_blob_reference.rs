@@ -24,10 +24,19 @@ fn c2c_add_blob_reference_impl(args: Args, runtime_state: &mut RuntimeState) -> 
 
     let bucket = runtime_state.env.caller();
 
-    runtime_state.data.blobs.entry(args.blob_hash).or_insert_with(|| BlobRecord {
-        bucket,
-        size: args.blob_size,
-    });
+    runtime_state
+        .data
+        .blobs
+        .entry(args.blob_hash)
+        .and_modify(|b| {
+            if !b.buckets.contains(&bucket) {
+                b.buckets.push(bucket);
+            }
+        })
+        .or_insert_with(|| BlobRecord {
+            buckets: vec![bucket],
+            size: args.blob_size,
+        });
 
     Response::Success
 }
