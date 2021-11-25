@@ -21,6 +21,7 @@ pub enum Response {
     BlobAlreadyExists,
     ChunkAlreadyExists,
     AllowanceReached,
+    UserNotFound,
     HashMismatch,
     Full,
 }

@@ -25,9 +25,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         match status {
             BlobStatus::Complete(_) | BlobStatus::Rejected(RejectedReason::HashMismatch) => return BlobAlreadyExists,
             BlobStatus::Rejected(RejectedReason::AllowanceReached) => return AllowanceReached,
-            BlobStatus::Rejected(RejectedReason::UserNotFound) => {
-                panic!("Data inconsistency. User not found in index. User: {}", user_id)
-            }
+            BlobStatus::Rejected(RejectedReason::UserNotFound) => return UserNotFound,
             BlobStatus::Uploading(c) => index_sync_complete = *c,
         }
     } else {
