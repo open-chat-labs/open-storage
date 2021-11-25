@@ -1,6 +1,9 @@
+use crate::model::bucket_sync_state::BucketSyncState;
+use crate::model::bucket_sync_state::EventToSync;
+use bucket_canister::c2c_sync_index;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, VecDeque};
-use types::{CanisterId, Hash, UserId, Version};
+use std::collections::HashMap;
+use types::{CanisterId, Hash, Version};
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Buckets {
@@ -14,6 +17,14 @@ impl Buckets {
             .iter()
             .find(|b| &b.canister_id == canister_id)
             .or_else(|| self.full_buckets.get(canister_id))
+    }
+
+    pub fn get_mut(&mut self, canister_id: &CanisterId) -> Option<&mut BucketRecord> {
+        if let Some(bucket) = self.active_buckets.iter_mut().find(|b| &b.canister_id == canister_id) {
+            Some(bucket)
+        } else {
+            self.full_buckets.get_mut(canister_id)
+        }
     }
 
     pub fn active_count(&self) -> usize {
@@ -31,19 +42,29 @@ impl Buckets {
             Some(self.active_buckets[index].canister_id)
         }
     }
-
-    pub fn sync_user(&mut self, user_id: UserId) {
-        for bucket in self.active_buckets.iter_mut() {
-            bucket.users_to_sync.push_back(user_id);
-        }
-
-        for bucket in self.full_buckets.values_mut() {
-            bucket.users_to_sync.push_back(user_id);
+    pub fn sync_event(&mut self, event: EventToSync) {
+        for bucket in self.iter_mut() {
+            bucket.sync_state.enqueue(event.clone());
         }
     }
 
     pub fn add(&mut self, bucket: BucketRecord) {
         self.active_buckets.push(bucket);
+    }
+
+    pub fn pop_args_for_next_sync(&mut self) -> Vec<(CanisterId, c2c_sync_index::Args)> {
+        self.iter_mut()
+            .filter_map(|bucket| {
+                bucket
+                    .sync_state
+                    .pop_args_for_next_sync()
+                    .map(|args| (bucket.canister_id, args))
+            })
+            .collect()
+    }
+
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut BucketRecord> {
+        self.active_buckets.iter_mut().chain(self.full_buckets.values_mut())
     }
 }
 
@@ -52,7 +73,7 @@ pub struct BucketRecord {
     pub canister_id: CanisterId,
     pub wasm_version: Version,
     pub bytes_used: u64,
-    pub users_to_sync: VecDeque<UserId>,
+    pub sync_state: BucketSyncState,
 }
 
 impl BucketRecord {
@@ -61,7 +82,7 @@ impl BucketRecord {
             canister_id,
             wasm_version,
             bytes_used: 0,
-            users_to_sync: VecDeque::new(),
+            sync_state: BucketSyncState::default(),
         }
     }
 }

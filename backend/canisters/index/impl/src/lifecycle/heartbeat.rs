@@ -1,7 +1,9 @@
+use crate::model::bucket_sync_state::EventToSync;
 use crate::{RuntimeState, RUNTIME_STATE};
+use bucket_canister::c2c_sync_index::{Args, Response, SuccessResult};
 use ic_cdk_macros::heartbeat;
 use tracing::error;
-use types::{CanisterWasm, Cycles};
+use types::{CanisterId, CanisterWasm, Cycles};
 use utils::canister;
 use utils::consts::CREATE_CANISTER_CYCLES_FEE;
 
@@ -11,6 +13,8 @@ const TARGET_ACTIVE_BUCKETS: usize = 4;
 
 #[heartbeat]
 fn heartbeat() {
+    // TODO: archive full buckets
+    sync_users_with_buckets::run();
     ensure_sufficient_active_buckets::run();
 }
 
@@ -73,7 +77,50 @@ mod ensure_sufficient_active_buckets {
     }
 
     fn commit(mut bucket: BucketRecord, runtime_state: &mut RuntimeState) {
-        bucket.users_to_sync = runtime_state.data.users.keys().copied().collect();
+        for user_id in runtime_state.data.users.keys() {
+            bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
+        }
         runtime_state.data.buckets.add(bucket);
+    }
+}
+
+mod sync_users_with_buckets {
+    use super::*;
+
+    pub fn run() {
+        for (canister_id, args) in RUNTIME_STATE.with(|state| next_batch(state.borrow_mut().as_mut().unwrap())) {
+            ic_cdk::block_on(send_to_bucket(canister_id, args));
+        }
+    }
+
+    fn next_batch(runtime_state: &mut RuntimeState) -> Vec<(CanisterId, Args)> {
+        runtime_state.data.buckets.pop_args_for_next_sync()
+    }
+
+    async fn send_to_bucket(canister_id: CanisterId, args: Args) {
+        match bucket_canister_c2c_client::c2c_sync_index(canister_id, &args).await {
+            Ok(Response::Success(result)) => {
+                RUNTIME_STATE.with(|state| handle_success(canister_id, result, state.borrow_mut().as_mut().unwrap()));
+            }
+            Err(_) => {
+                RUNTIME_STATE.with(|state| handle_error(canister_id, args, state.borrow_mut().as_mut().unwrap()));
+            }
+        }
+    }
+
+    fn handle_success(canister_id: CanisterId, result: SuccessResult, runtime_state: &mut RuntimeState) {
+        for br_removed in result.blob_references_removed {
+            runtime_state.data.remove_blob_reference(canister_id, br_removed);
+        }
+
+        if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {
+            bucket.sync_state.mark_sync_completed();
+        }
+    }
+
+    fn handle_error(canister_id: CanisterId, args: Args, runtime_state: &mut RuntimeState) {
+        if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {
+            bucket.sync_state.mark_sync_failed(args);
+        }
     }
 }

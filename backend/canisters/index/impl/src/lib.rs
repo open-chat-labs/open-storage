@@ -5,7 +5,10 @@ use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use types::{CanisterWasm, Timestamped, UserId, Version};
+use types::{
+    BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRejectedReason, BlobReferenceRemoved, CanisterId, CanisterWasm,
+    Timestamped, UserId, Version,
+};
 use utils::env::Environment;
 
 mod guards;
@@ -13,6 +16,8 @@ mod lifecycle;
 mod model;
 mod queries;
 mod updates;
+
+const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();
@@ -60,6 +65,45 @@ impl Data {
             blob_buckets: BlobBuckets::default(),
             buckets: Buckets::default(),
             test_mode,
+        }
+    }
+
+    pub fn add_blob_reference(
+        &mut self,
+        bucket: CanisterId,
+        br_added: BlobReferenceAdded,
+    ) -> Result<(), BlobReferenceRejected> {
+        if let Some(user) = self.users.get_mut(&br_added.uploaded_by) {
+            if user.bytes_used + br_added.blob_size > user.byte_limit {
+                return Err(BlobReferenceRejected {
+                    blob_id: br_added.blob_id,
+                    reason: BlobReferenceRejectedReason::AllowanceReached,
+                });
+            } else {
+                user.bytes_used += br_added.blob_size;
+            }
+        } else {
+            return Err(BlobReferenceRejected {
+                blob_id: br_added.blob_id,
+                reason: BlobReferenceRejectedReason::UserNotFound,
+            });
+        }
+
+        self.blob_buckets.add(br_added.blob_hash, br_added.blob_size, bucket);
+        Ok(())
+    }
+
+    pub fn remove_blob_reference(&mut self, bucket: CanisterId, br_removed: BlobReferenceRemoved) {
+        let blob_size = if br_removed.blob_deleted {
+            self.blob_buckets.remove(br_removed.blob_hash, bucket)
+        } else {
+            self.blob_buckets.get(&br_removed.blob_hash).map(|r| r.size)
+        };
+
+        if let Some(blob_size) = blob_size {
+            if let Some(user) = self.users.get_mut(&br_removed.uploaded_by) {
+                user.bytes_used -= blob_size;
+            }
         }
     }
 }

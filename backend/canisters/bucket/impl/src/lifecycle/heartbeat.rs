@@ -22,7 +22,7 @@ mod sync_index {
         runtime_state
             .data
             .index_sync_state
-            .get_args_for_next_sync()
+            .pop_args_for_next_sync()
             .map(|args| (runtime_state.data.index_canister_id, args))
     }
 

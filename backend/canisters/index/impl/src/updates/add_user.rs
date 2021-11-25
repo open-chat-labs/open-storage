@@ -1,4 +1,5 @@
 use crate::guards::caller_is_service_principal;
+use crate::model::bucket_sync_state::EventToSync;
 use crate::UserRecord;
 use crate::{RuntimeState, RUNTIME_STATE};
 use canister_api_macros::trace;
@@ -24,6 +25,6 @@ fn add_user_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         },
     );
 
-    runtime_state.data.buckets.sync_user(args.user_id);
+    runtime_state.data.buckets.sync_event(EventToSync::UserAdded(args.user_id));
     Response::Success
 }

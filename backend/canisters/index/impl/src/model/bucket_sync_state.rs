@@ -1,20 +1,20 @@
 use crate::MAX_EVENTS_TO_SYNC_PER_BATCH;
-use index_canister::c2c_sync_bucket::Args;
+use bucket_canister::c2c_sync_index::Args;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use types::{BlobReferenceAdded, BlobReferenceRemoved};
+use types::{AccessorId, UserId};
 
-// We want to send events to the index in order, so while a sync is in progress we avoid sending
+// We want to send events to the each bucket in order, so while a sync is in progress we avoid sending
 // more events in case the first batch fails and the second succeeds. If a sync fails, the args that
 // were sent are stored so that they can be retried again.
 #[derive(Serialize, Deserialize, Default)]
-pub struct IndexSyncState {
+pub struct BucketSyncState {
     queue: VecDeque<EventToSync>,
     in_progress: bool,
     args_to_retry: Option<Args>,
 }
 
-impl IndexSyncState {
+impl BucketSyncState {
     pub fn enqueue(&mut self, event: EventToSync) {
         self.queue.push_back(event);
     }
@@ -29,15 +29,17 @@ impl IndexSyncState {
             None
         } else {
             let mut args = Args {
-                blob_references_added: Vec::new(),
-                blob_references_removed: Vec::new(),
+                users_added: Vec::new(),
+                users_removed: Vec::new(),
+                accessors_removed: Vec::new(),
             };
 
             for _ in 0..MAX_EVENTS_TO_SYNC_PER_BATCH {
                 if let Some(event) = self.queue.pop_front() {
                     match event {
-                        EventToSync::BlobReferenceAdded(a) => args.blob_references_added.push(a),
-                        EventToSync::BlobReferenceRemoved(r) => args.blob_references_removed.push(r),
+                        EventToSync::UserAdded(a) => args.users_added.push(a),
+                        EventToSync::UserRemoved(r) => args.users_removed.push(r),
+                        EventToSync::AccessorRemoved(r) => args.accessors_removed.push(r),
                     }
                 } else {
                     break;
@@ -58,8 +60,9 @@ impl IndexSyncState {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum EventToSync {
-    BlobReferenceAdded(BlobReferenceAdded),
-    BlobReferenceRemoved(BlobReferenceRemoved),
+    UserAdded(UserId),
+    UserRemoved(UserId),
+    AccessorRemoved(AccessorId),
 }
