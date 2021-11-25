@@ -17,7 +17,7 @@ mod model;
 mod queries;
 mod updates;
 
-const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
+const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();

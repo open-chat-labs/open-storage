@@ -19,7 +19,7 @@ impl IndexSyncState {
         self.queue.push_back(event);
     }
 
-    pub fn get_args_for_next_sync(&mut self) -> Option<Args> {
+    pub fn pop_args_for_next_sync(&mut self) -> Option<Args> {
         if self.in_progress {
             None
         } else if let Some(args) = self.args_to_retry.take() {
