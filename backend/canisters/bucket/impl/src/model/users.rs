@@ -28,20 +28,20 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    blobs_created: HashMap<BlobId, BlobStatus>,
+    blobs_uploaded: HashMap<BlobId, BlobStatus>,
 }
 
 impl UserRecord {
-    pub fn blobs_created(&self) -> Vec<BlobId> {
-        self.blobs_created.keys().copied().collect()
+    pub fn blobs_uploaded(&self) -> Vec<BlobId> {
+        self.blobs_uploaded.keys().copied().collect()
     }
 
     pub fn blob_status(&self, blob_id: &BlobId) -> Option<&BlobStatus> {
-        self.blobs_created.get(blob_id)
+        self.blobs_uploaded.get(blob_id)
     }
 
     pub fn set_blob_status(&mut self, blob_id: BlobId, status: BlobStatus) -> Option<BlobStatus> {
-        self.blobs_created.insert(blob_id, status)
+        self.blobs_uploaded.insert(blob_id, status)
     }
 }
 
