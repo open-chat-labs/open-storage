@@ -1,28 +1,27 @@
-use candid::Principal;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use types::{BlobId, BlobReferenceRejectedReason};
+use types::{BlobId, BlobReferenceRejectedReason, UserId};
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Users {
-    users: HashMap<Principal, UserRecord>,
+    users: HashMap<UserId, UserRecord>,
 }
 
 impl Users {
-    pub fn add(&mut self, principal: Principal) -> bool {
-        self.users.insert(principal, UserRecord::default()).is_none()
+    pub fn add(&mut self, user_id: UserId) -> bool {
+        self.users.insert(user_id, UserRecord::default()).is_none()
     }
 
-    pub fn remove(&mut self, principal: Principal) -> Option<UserRecord> {
-        self.users.remove(&principal)
+    pub fn remove(&mut self, user_id: UserId) -> Option<UserRecord> {
+        self.users.remove(&user_id)
     }
 
-    pub fn exists(&self, principal: &Principal) -> bool {
-        self.users.contains_key(principal)
+    pub fn exists(&self, user_id: &UserId) -> bool {
+        self.users.contains_key(user_id)
     }
 
-    pub fn get_mut(&mut self, principal: &Principal) -> Option<&mut UserRecord> {
-        self.users.get_mut(principal)
+    pub fn get_mut(&mut self, user_id: &UserId) -> Option<&mut UserRecord> {
+        self.users.get_mut(user_id)
     }
 }
 
