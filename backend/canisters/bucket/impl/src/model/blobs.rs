@@ -18,7 +18,7 @@ pub struct Blobs {
 
 #[derive(Serialize, Deserialize)]
 pub struct BlobReference {
-    pub creator: UserId,
+    pub uploaded_by: UserId,
     pub accessors: HashSet<AccessorId>,
     pub hash: Hash,
     pub created: TimestampMillis,
@@ -37,8 +37,8 @@ impl Blobs {
         let completed_blob: Option<PendingBlob> = match self.pending_blobs.entry(blob_id) {
             Vacant(e) => {
                 blob_reference_added = Some(BlobReferenceAdded {
+                    uploaded_by: args.uploaded_by,
                     blob_id,
-                    user_id: args.creator,
                     blob_hash: args.hash,
                     blob_size: args.total_size,
                 });
@@ -81,7 +81,7 @@ impl Blobs {
 
     pub fn remove_blob_reference(&mut self, user_id: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
         if let Occupied(e) = self.blob_references.entry(blob_id) {
-            if e.get().creator != user_id {
+            if e.get().uploaded_by != user_id {
                 RemoveBlobReferenceResult::NotAuthorized
             } else {
                 let blob_reference = e.remove();
@@ -121,7 +121,7 @@ impl Blobs {
                         }
                         let blob_reference = e.remove();
                         blob_references_removed.push(BlobReferenceRemoved {
-                            user_id: blob_reference.creator,
+                            user_id: blob_reference.uploaded_by,
                             blob_hash: blob_reference.hash,
                             blob_deleted: delete_blob,
                         });
@@ -141,7 +141,7 @@ impl Blobs {
         self.blob_references.insert(
             blob_id,
             BlobReference {
-                creator: completed_blob.creator,
+                uploaded_by: completed_blob.uploaded_by,
                 accessors: completed_blob.accessors,
                 hash: completed_blob.hash,
                 created: now,
@@ -209,7 +209,7 @@ impl AccessorsMap {
 
 #[derive(Serialize, Deserialize)]
 struct PendingBlob {
-    creator: UserId,
+    uploaded_by: UserId,
     created: TimestampMillis,
     hash: Hash,
     mime_type: String,
@@ -239,7 +239,7 @@ impl PendingBlob {
 }
 
 pub struct PutChunkArgs {
-    creator: UserId,
+    uploaded_by: UserId,
     blob_id: BlobId,
     hash: Hash,
     mime_type: String,
@@ -252,9 +252,9 @@ pub struct PutChunkArgs {
 }
 
 impl PutChunkArgs {
-    pub fn new(creator: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
+    pub fn new(uploaded_by: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
         Self {
-            creator,
+            uploaded_by,
             blob_id: upload_chunk_args.blob_id,
             hash: upload_chunk_args.hash,
             mime_type: upload_chunk_args.mime_type,
@@ -273,7 +273,7 @@ impl From<PutChunkArgs> for PendingBlob {
         let chunk_count = (((args.total_size - 1) / (args.chunk_size as u64)) + 1) as u32;
 
         let mut pending_blob = Self {
-            creator: args.creator,
+            uploaded_by: args.uploaded_by,
             created: args.now,
             hash: args.hash,
             mime_type: args.mime_type,

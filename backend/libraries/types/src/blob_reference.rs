@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct BlobReferenceAdded {
+    pub uploaded_by: UserId,
     pub blob_id: BlobId,
-    pub user_id: UserId,
     pub blob_hash: Hash,
     pub blob_size: u64,
 }
