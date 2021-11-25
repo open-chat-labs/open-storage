@@ -8,7 +8,7 @@ type UploadChunkArgs =
         accessors: vec AccessorId;
         chunk_index: nat32;
         chunk_size: nat32;
-        total_size: nat32;
+        total_size: nat64;
         bytes: blob;
     };
 
