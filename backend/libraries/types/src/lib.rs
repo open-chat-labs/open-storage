@@ -1,11 +1,13 @@
 use candid::Principal;
 
 mod blob_reference;
+mod blob_status;
 mod canister_wasm;
 mod timestamped;
 mod version;
 
 pub use blob_reference::*;
+pub use blob_status::*;
 pub use canister_wasm::*;
 pub use timestamped::*;
 pub use version::*;

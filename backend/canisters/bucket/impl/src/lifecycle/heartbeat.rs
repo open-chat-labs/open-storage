@@ -1,4 +1,4 @@
-use crate::model::users::BlobStatus;
+use crate::model::users::BlobStatusInternal;
 use crate::{RuntimeState, RUNTIME_STATE};
 use ic_cdk_macros::heartbeat;
 use index_canister::c2c_sync_bucket::{Args, Response, SuccessResult};
@@ -47,9 +47,9 @@ mod sync_index {
 
             if let Some(user_id) = runtime_state.data.blobs.uploaded_by(&blob_id) {
                 if let Some(user) = runtime_state.data.users.get_mut(&user_id) {
-                    let old_status = user.set_blob_status(blob_id, BlobStatus::Rejected(reason));
+                    let old_status = user.set_blob_status(blob_id, BlobStatusInternal::Rejected(reason));
 
-                    if let Some(BlobStatus::Uploading(_)) = old_status {
+                    if let Some(BlobStatusInternal::Uploading(_)) = old_status {
                         runtime_state.data.blobs.remove_pending_blob(&blob_id);
                     } else {
                         runtime_state.data.blobs.remove_blob_reference(user_id, blob_id);

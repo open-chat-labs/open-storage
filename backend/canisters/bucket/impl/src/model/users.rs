@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use types::{BlobId, BlobReferenceRejectedReason, UserId};
+use types::{BlobId, RejectedReason, UserId};
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Users {
@@ -20,6 +20,10 @@ impl Users {
         self.users.contains_key(user_id)
     }
 
+    pub fn get(&self, user_id: &UserId) -> Option<&UserRecord> {
+        self.users.get(user_id)
+    }
+
     pub fn get_mut(&mut self, user_id: &UserId) -> Option<&mut UserRecord> {
         self.users.get_mut(user_id)
     }
@@ -27,7 +31,7 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    blobs_uploaded: HashMap<BlobId, BlobStatus>,
+    blobs_uploaded: HashMap<BlobId, BlobStatusInternal>,
 }
 
 impl UserRecord {
@@ -35,17 +39,17 @@ impl UserRecord {
         self.blobs_uploaded.keys().copied().collect()
     }
 
-    pub fn blob_status(&self, blob_id: &BlobId) -> Option<&BlobStatus> {
+    pub fn blob_status(&self, blob_id: &BlobId) -> Option<&BlobStatusInternal> {
         self.blobs_uploaded.get(blob_id)
     }
 
-    pub fn set_blob_status(&mut self, blob_id: BlobId, status: BlobStatus) -> Option<BlobStatus> {
+    pub fn set_blob_status(&mut self, blob_id: BlobId, status: BlobStatusInternal) -> Option<BlobStatusInternal> {
         self.blobs_uploaded.insert(blob_id, status)
     }
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum BlobStatus {
+pub enum BlobStatusInternal {
     Complete(IndexSyncComplete),
     Uploading(IndexSyncComplete),
     Rejected(RejectedReason),
@@ -55,20 +59,4 @@ pub enum BlobStatus {
 pub enum IndexSyncComplete {
     Yes,
     No,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum RejectedReason {
-    UserNotFound,
-    AllowanceReached,
-    HashMismatch,
-}
-
-impl From<BlobReferenceRejectedReason> for RejectedReason {
-    fn from(reason: BlobReferenceRejectedReason) -> Self {
-        match reason {
-            BlobReferenceRejectedReason::AllowanceReached => RejectedReason::AllowanceReached,
-            BlobReferenceRejectedReason::UserNotFound => RejectedReason::UserNotFound,
-        }
-    }
 }

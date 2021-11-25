@@ -19,12 +19,21 @@ pub struct Blobs {
 #[derive(Serialize, Deserialize)]
 pub struct BlobReference {
     pub uploaded_by: UserId,
+    pub created: TimestampMillis,
     pub accessors: HashSet<AccessorId>,
     pub hash: Hash,
-    pub created: TimestampMillis,
+    pub mime_type: String,
 }
 
 impl Blobs {
+    pub fn get_reference(&self, blob_id: &BlobId) -> Option<&BlobReference> {
+        self.blob_references.get(blob_id)
+    }
+
+    pub fn get_pending_blob(&self, blob_id: &BlobId) -> Option<&PendingBlob> {
+        self.pending_blobs.get(blob_id)
+    }
+
     pub fn uploaded_by(&self, blob_id: &BlobId) -> Option<UserId> {
         self.blob_references
             .get(blob_id)
@@ -152,6 +161,10 @@ impl Blobs {
         self.data.contains_key(hash)
     }
 
+    pub fn data_size(&self, hash: &Hash) -> Option<u64> {
+        self.data.get(hash).map(|b| b.len() as u64)
+    }
+
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
         for accessor_id in completed_blob.accessors.iter() {
             self.accessors_map.link(*accessor_id, blob_id);
@@ -161,9 +174,10 @@ impl Blobs {
             blob_id,
             BlobReference {
                 uploaded_by: completed_blob.uploaded_by,
+                created: now,
                 accessors: completed_blob.accessors,
                 hash: completed_blob.hash,
-                created: now,
+                mime_type: completed_blob.mime_type,
             },
         );
         self.reference_counts.incr(completed_blob.hash);
@@ -227,16 +241,16 @@ impl AccessorsMap {
 }
 
 #[derive(Serialize, Deserialize)]
-struct PendingBlob {
-    uploaded_by: UserId,
-    created: TimestampMillis,
-    hash: Hash,
-    mime_type: String,
-    accessors: HashSet<AccessorId>,
-    chunk_size: u32,
-    total_size: u64,
-    remaining_chunks: HashSet<u32>,
-    bytes: ByteBuf,
+pub struct PendingBlob {
+    pub uploaded_by: UserId,
+    pub created: TimestampMillis,
+    pub hash: Hash,
+    pub mime_type: String,
+    pub accessors: HashSet<AccessorId>,
+    pub chunk_size: u32,
+    pub total_size: u64,
+    pub remaining_chunks: HashSet<u32>,
+    pub bytes: ByteBuf,
 }
 
 impl PendingBlob {

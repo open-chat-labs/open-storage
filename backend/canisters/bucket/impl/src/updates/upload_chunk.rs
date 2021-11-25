@@ -1,12 +1,12 @@
 use crate::guards::caller_is_known_user;
 use crate::model::blobs::{PutChunkArgs, PutChunkResult};
 use crate::model::index_sync_state::EventToSync;
-use crate::model::users::{BlobStatus, IndexSyncComplete, RejectedReason};
+use crate::model::users::{BlobStatusInternal, IndexSyncComplete};
 use crate::{RuntimeState, RUNTIME_STATE};
 use bucket_canister::upload_chunk::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
-use types::{BlobReferenceRemoved, UserId};
+use types::{BlobReferenceRemoved, RejectedReason, UserId};
 
 #[update(guard = "caller_is_known_user")]
 #[trace]
@@ -23,19 +23,21 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let mut index_sync_complete = IndexSyncComplete::No;
     if let Some(status) = user.blob_status(&blob_id) {
         match status {
-            BlobStatus::Complete(_) | BlobStatus::Rejected(RejectedReason::HashMismatch) => return BlobAlreadyExists,
-            BlobStatus::Rejected(RejectedReason::AllowanceReached) => return AllowanceReached,
-            BlobStatus::Rejected(RejectedReason::UserNotFound) => return UserNotFound,
-            BlobStatus::Uploading(c) => index_sync_complete = *c,
+            BlobStatusInternal::Complete(_) | BlobStatusInternal::Rejected(RejectedReason::HashMismatch) => {
+                return BlobAlreadyExists
+            }
+            BlobStatusInternal::Rejected(RejectedReason::AllowanceReached) => return AllowanceReached,
+            BlobStatusInternal::Rejected(RejectedReason::UserNotFound) => return UserNotFound,
+            BlobStatusInternal::Uploading(c) => index_sync_complete = *c,
         }
     } else {
-        user.set_blob_status(blob_id, BlobStatus::Uploading(IndexSyncComplete::No));
+        user.set_blob_status(blob_id, BlobStatusInternal::Uploading(IndexSyncComplete::No));
     }
 
     match runtime_state.data.blobs.put_chunk(PutChunkArgs::new(user_id, args, now)) {
         PutChunkResult::Success(r) => {
             if r.blob_completed {
-                user.set_blob_status(blob_id, BlobStatus::Complete(index_sync_complete));
+                user.set_blob_status(blob_id, BlobStatusInternal::Complete(index_sync_complete));
             }
             if let Some(blob_reference_added) = r.blob_reference_added {
                 runtime_state
@@ -51,7 +53,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             // When there is a hash mismatch, the blob has already been removed from the list of
             // pending blobs, so we now need to update the status and tell the index canister to
             // remove the blob reference.
-            user.set_blob_status(blob_id, BlobStatus::Rejected(RejectedReason::HashMismatch));
+            user.set_blob_status(blob_id, BlobStatusInternal::Rejected(RejectedReason::HashMismatch));
 
             // We only need to remove the blob reference from the index canister if this blob
             // consists of multiple chunks. If the blob is a single chunk then the Success case of
