@@ -42,6 +42,10 @@ impl BlobBuckets {
     pub fn bucket(&self, hash: &Hash) -> Option<CanisterId> {
         self.blobs.get(hash).map(|r| r.buckets.first().copied()).flatten()
     }
+
+    pub fn get(&self, hash: &Hash) -> Option<&BlobRecord> {
+        self.blobs.get(hash)
+    }
 }
 
 #[derive(Serialize, Deserialize)]

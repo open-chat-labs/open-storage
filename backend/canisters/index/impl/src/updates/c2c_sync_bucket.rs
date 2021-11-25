@@ -41,7 +41,13 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
     }
 
     for br_removed in args.blob_references_removed {
-        if let Some(blob_size) = runtime_state.data.blob_buckets.remove(br_removed.blob_hash, bucket) {
+        let blob_size = if br_removed.blob_deleted {
+            runtime_state.data.blob_buckets.remove(br_removed.blob_hash, bucket)
+        } else {
+            runtime_state.data.blob_buckets.get(&br_removed.blob_hash).map(|r| r.size)
+        };
+
+        if let Some(blob_size) = blob_size {
             if let Some(user) = runtime_state.data.users.get_mut(&br_removed.user_id) {
                 user.bytes_used -= blob_size;
             }
