@@ -1,10 +1,11 @@
+use crate::model::blob_buckets::BlobBuckets;
 use crate::model::buckets::Buckets;
 use candid::Principal;
 use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use types::{CanisterId, CanisterWasm, Hash, Timestamped, UserId, Version};
+use types::{CanisterWasm, Timestamped, UserId, Version};
 use utils::env::Environment;
 
 mod guards;
@@ -45,7 +46,7 @@ struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecord>,
-    pub blobs: HashMap<Hash, BlobRecord>,
+    pub blob_buckets: BlobBuckets,
     pub buckets: Buckets,
     pub test_mode: bool,
 }
@@ -56,7 +57,7 @@ impl Data {
             service_principals: service_principals.into_iter().collect(),
             bucket_canister_wasm,
             users: HashMap::new(),
-            blobs: HashMap::new(),
+            blob_buckets: BlobBuckets::default(),
             buckets: Buckets::default(),
             test_mode,
         }
@@ -67,10 +68,4 @@ impl Data {
 pub struct UserRecord {
     pub byte_limit: u64,
     pub bytes_used: u64,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct BlobRecord {
-    pub buckets: Vec<CanisterId>,
-    pub size: u64,
 }
