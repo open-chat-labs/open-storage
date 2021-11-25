@@ -24,22 +24,22 @@ type UpdateUserResponse =
         UserNotFound;
     };
 
-type DeleteUserArgs =
+type RemoveUserArgs =
     record {
         user_id: UserId;
     };
 
-type DeleteUserResponse = 
+type RemoveUserResponse = 
     variant {
         Success;
     };
 
-type DeleteAccessorArgs =
+type RemoveAccessorArgs =
     record {
         accessor_id: AccessorId;
     };
 
-type DeleteAccessorResponse = 
+type RemoveAccessorResponse = 
     variant {
         Success;
     };
@@ -82,8 +82,8 @@ type UserRecord =
 service: {
     add_user: (AddUserArgs) -> (AddUserResponse);
     update_user: (UpdateUserArgs) -> (UpdateUserResponse);
-    delete_user: (DeleteUserArgs) -> (DeleteUserResponse);
-    delete_accessor: (DeleteAccessorArgs) -> (DeleteAccessorResponse);
+    remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
+    remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
     allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
     user: (UserArgs) -> (UserResponse) query;
 }
