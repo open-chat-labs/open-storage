@@ -1,8 +1,8 @@
 use candid::CandidType;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use types::{AccessorId, BlobReferenceRemoved, UserId};
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct Args {
     pub users_added: Vec<UserId>,
     pub users_removed: Vec<UserId>,
