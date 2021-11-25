@@ -48,7 +48,7 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
         };
 
         if let Some(blob_size) = blob_size {
-            if let Some(user) = runtime_state.data.users.get_mut(&br_removed.user_id) {
+            if let Some(user) = runtime_state.data.users.get_mut(&br_removed.uploaded_by) {
                 user.bytes_used -= blob_size;
             }
         }

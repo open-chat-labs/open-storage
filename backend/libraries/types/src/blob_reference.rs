@@ -12,7 +12,7 @@ pub struct BlobReferenceAdded {
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct BlobReferenceRemoved {
-    pub user_id: UserId,
+    pub uploaded_by: UserId,
     pub blob_hash: Hash,
     pub blob_deleted: bool,
 }

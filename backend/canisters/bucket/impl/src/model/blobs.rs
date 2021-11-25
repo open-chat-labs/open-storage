@@ -79,9 +79,9 @@ impl Blobs {
         })
     }
 
-    pub fn remove_blob_reference(&mut self, user_id: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
+    pub fn remove_blob_reference(&mut self, uploaded_by: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
         if let Occupied(e) = self.blob_references.entry(blob_id) {
-            if e.get().uploaded_by != user_id {
+            if e.get().uploaded_by != uploaded_by {
                 RemoveBlobReferenceResult::NotAuthorized
             } else {
                 let blob_reference = e.remove();
@@ -96,7 +96,7 @@ impl Blobs {
                 }
 
                 RemoveBlobReferenceResult::Success(BlobReferenceRemoved {
-                    user_id,
+                    uploaded_by,
                     blob_hash: blob_reference.hash,
                     blob_deleted,
                 })
@@ -121,7 +121,7 @@ impl Blobs {
                         }
                         let blob_reference = e.remove();
                         blob_references_removed.push(BlobReferenceRemoved {
-                            user_id: blob_reference.uploaded_by,
+                            uploaded_by: blob_reference.uploaded_by,
                             blob_hash: blob_reference.hash,
                             blob_deleted: delete_blob,
                         });
