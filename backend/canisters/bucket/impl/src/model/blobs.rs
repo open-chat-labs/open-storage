@@ -26,11 +26,11 @@ pub struct BlobReference {
 }
 
 impl Blobs {
-    pub fn get_reference(&self, blob_id: &BlobId) -> Option<&BlobReference> {
+    pub fn blob_reference(&self, blob_id: &BlobId) -> Option<&BlobReference> {
         self.blob_references.get(blob_id)
     }
 
-    pub fn get_pending_blob(&self, blob_id: &BlobId) -> Option<&PendingBlob> {
+    pub fn pending_blob(&self, blob_id: &BlobId) -> Option<&PendingBlob> {
         self.pending_blobs.get(blob_id)
     }
 

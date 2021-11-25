@@ -19,7 +19,7 @@ fn blob_status_impl(args: Args, runtime_state: &RuntimeState) -> Response {
     if let Some(status_internal) = user.blob_status(&args.blob_id) {
         let status = match status_internal {
             BlobStatusInternal::Complete(c) => {
-                let blob_reference = runtime_state.data.blobs.get_reference(&args.blob_id).unwrap_or_else(|| {
+                let blob_reference = runtime_state.data.blobs.blob_reference(&args.blob_id).unwrap_or_else(|| {
                     panic!("Data inconsistency. Blob reference not found. BlobId: {}", args.blob_id);
                 });
 
@@ -31,7 +31,7 @@ fn blob_status_impl(args: Args, runtime_state: &RuntimeState) -> Response {
                 })
             }
             BlobStatusInternal::Uploading(c) => {
-                let pending_blob = runtime_state.data.blobs.get_pending_blob(&args.blob_id).unwrap_or_else(|| {
+                let pending_blob = runtime_state.data.blobs.pending_blob(&args.blob_id).unwrap_or_else(|| {
                     panic!("Data inconsistency. Pending blob not found. BlobId: {}", args.blob_id);
                 });
 
