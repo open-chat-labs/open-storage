@@ -1,6 +1,6 @@
 use crate::guards::caller_is_index_canister;
 use crate::model::blobs::RemoveBlobReferenceResult;
-use crate::model::index_sync_queue::EventToSync;
+use crate::model::index_sync_state::EventToSync;
 use crate::{RuntimeState, MAX_EVENTS_TO_SYNC_PER_BATCH, RUNTIME_STATE};
 use bucket_canister::c2c_sync_index::{Response::*, *};
 use canister_api_macros::trace;
@@ -43,8 +43,8 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
         for removed in excess {
             runtime_state
                 .data
-                .index_sync_queue
-                .push(EventToSync::BlobReferenceRemoved(removed));
+                .index_sync_state
+                .enqueue(EventToSync::BlobReferenceRemoved(removed));
         }
     }
 
