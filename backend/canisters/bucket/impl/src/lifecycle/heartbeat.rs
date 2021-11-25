@@ -1,3 +1,4 @@
+use crate::model::users::BlobStatus;
 use crate::{RuntimeState, RUNTIME_STATE};
 use ic_cdk_macros::heartbeat;
 use index_canister::c2c_sync_bucket::{Args, Response, SuccessResult};
@@ -36,9 +37,28 @@ mod sync_index {
         }
     }
 
-    fn handle_success(_result: SuccessResult, runtime_state: &mut RuntimeState) {
+    fn handle_success(result: SuccessResult, runtime_state: &mut RuntimeState) {
+        // For each blob that is rejected by the index canister we want to do 2 things -
+        // 1. Record the reason against the user so that they can determine what happened
+        // 2. Delete any additional data we have held for that blob
+        for blob_reference_rejected in result.blob_references_rejected {
+            let blob_id = blob_reference_rejected.blob_id;
+            let reason = blob_reference_rejected.reason.into();
+
+            if let Some(user_id) = runtime_state.data.blobs.uploaded_by(&blob_id) {
+                if let Some(user) = runtime_state.data.users.get_mut(&user_id) {
+                    let old_status = user.set_blob_status(blob_id, BlobStatus::Rejected(reason));
+
+                    if let Some(BlobStatus::Uploading(_)) = old_status {
+                        runtime_state.data.blobs.remove_pending_blob(&blob_id);
+                    } else {
+                        runtime_state.data.blobs.remove_blob_reference(user_id, blob_id);
+                    }
+                }
+            }
+        }
+
         runtime_state.data.index_sync_state.mark_sync_completed();
-        // TODO handle rejected blobs
     }
 
     fn handle_error(args: Args, runtime_state: &mut RuntimeState) {

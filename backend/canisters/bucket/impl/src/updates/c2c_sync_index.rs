@@ -21,8 +21,8 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
     let mut blob_references_removed: Vec<BlobReferenceRemoved> = Vec::new();
 
     for user_id in args.users_removed {
-        if let Some(blob_ids) = runtime_state.data.users.remove(user_id) {
-            for blob_id in blob_ids {
+        if let Some(user) = runtime_state.data.users.remove(user_id) {
+            for blob_id in user.blobs_created() {
                 if let RemoveBlobReferenceResult::Success(b) = runtime_state.data.blobs.remove_blob_reference(user_id, blob_id)
                 {
                     blob_references_removed.push(b)
