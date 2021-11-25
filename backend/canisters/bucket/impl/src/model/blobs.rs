@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
-use types::{AccessorId, BlobId, BlobReferenceRemoved, Hash, TimestampMillis, UserId};
+use types::{AccessorId, BlobId, BlobReferenceAdded, BlobReferenceRemoved, Hash, TimestampMillis, UserId};
 use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
@@ -18,7 +18,7 @@ pub struct Blobs {
 
 #[derive(Serialize, Deserialize)]
 pub struct BlobReference {
-    pub creator: UserId,
+    pub uploaded_by: UserId,
     pub accessors: HashSet<AccessorId>,
     pub hash: Hash,
     pub created: TimestampMillis,
@@ -32,9 +32,16 @@ impl Blobs {
 
         let blob_id = args.blob_id;
         let now = args.now;
+        let mut blob_reference_added = None;
 
         let completed_blob: Option<PendingBlob> = match self.pending_blobs.entry(blob_id) {
             Vacant(e) => {
+                blob_reference_added = Some(BlobReferenceAdded {
+                    uploaded_by: args.uploaded_by,
+                    blob_id,
+                    blob_hash: args.hash,
+                    blob_size: args.total_size,
+                });
                 let pending_blob: PendingBlob = args.into();
                 if pending_blob.is_completed() {
                     Some(pending_blob)
@@ -56,33 +63,43 @@ impl Blobs {
             }
         };
 
+        let mut blob_completed = false;
         if let Some(completed_blob) = completed_blob {
             let hash = hash_bytes(&completed_blob.bytes);
             if hash != completed_blob.hash {
                 return PutChunkResult::HashMismatch;
             }
             self.insert_completed_blob(blob_id, completed_blob, now);
-            PutChunkResult::Complete
-        } else {
-            PutChunkResult::Success
+            blob_completed = true;
         }
+
+        PutChunkResult::Success(PutChunkResultSuccess {
+            blob_completed,
+            blob_reference_added,
+        })
     }
 
-    pub fn remove_blob_reference(&mut self, user_id: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
+    pub fn remove_blob_reference(&mut self, uploaded_by: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
         if let Occupied(e) = self.blob_references.entry(blob_id) {
-            if e.get().creator != user_id {
+            if e.get().uploaded_by != uploaded_by {
                 RemoveBlobReferenceResult::NotAuthorized
             } else {
                 let blob_reference = e.remove();
                 for accessor_id in blob_reference.accessors.iter() {
                     self.accessors_map.unlink(*accessor_id, &blob_id);
                 }
+
+                let mut blob_deleted = false;
                 if self.reference_counts.decr(blob_reference.hash) == 0 {
                     self.data.remove(&blob_reference.hash);
-                    return RemoveBlobReferenceResult::SuccessBlobDeleted(blob_reference);
+                    blob_deleted = true;
                 }
 
-                RemoveBlobReferenceResult::Success(blob_reference)
+                RemoveBlobReferenceResult::Success(BlobReferenceRemoved {
+                    uploaded_by,
+                    blob_hash: blob_reference.hash,
+                    blob_deleted,
+                })
             }
         } else {
             RemoveBlobReferenceResult::NotFound
@@ -93,7 +110,7 @@ impl Blobs {
         let mut blob_references_removed = Vec::new();
 
         if let Some(blob_ids) = self.accessors_map.remove(accessor_id) {
-            for blob_id in blob_ids.into_iter() {
+            for blob_id in blob_ids {
                 if let Occupied(mut e) = self.blob_references.entry(blob_id) {
                     let blob_reference = e.get_mut();
                     blob_reference.accessors.remove(accessor_id);
@@ -104,7 +121,7 @@ impl Blobs {
                         }
                         let blob_reference = e.remove();
                         blob_references_removed.push(BlobReferenceRemoved {
-                            user_id: blob_reference.creator,
+                            uploaded_by: blob_reference.uploaded_by,
                             blob_hash: blob_reference.hash,
                             blob_deleted: delete_blob,
                         });
@@ -124,7 +141,7 @@ impl Blobs {
         self.blob_references.insert(
             blob_id,
             BlobReference {
-                creator: completed_blob.creator,
+                uploaded_by: completed_blob.uploaded_by,
                 accessors: completed_blob.accessors,
                 hash: completed_blob.hash,
                 created: now,
@@ -192,13 +209,13 @@ impl AccessorsMap {
 
 #[derive(Serialize, Deserialize)]
 struct PendingBlob {
-    creator: UserId,
+    uploaded_by: UserId,
     created: TimestampMillis,
     hash: Hash,
     mime_type: String,
     accessors: HashSet<AccessorId>,
     chunk_size: u32,
-    total_size: u32,
+    total_size: u64,
     remaining_chunks: HashSet<u32>,
     bytes: ByteBuf,
 }
@@ -222,22 +239,22 @@ impl PendingBlob {
 }
 
 pub struct PutChunkArgs {
-    creator: UserId,
+    uploaded_by: UserId,
     blob_id: BlobId,
     hash: Hash,
     mime_type: String,
     accessors: Vec<AccessorId>,
     chunk_index: u32,
     chunk_size: u32,
-    total_size: u32,
+    total_size: u64,
     bytes: ByteBuf,
     now: TimestampMillis,
 }
 
 impl PutChunkArgs {
-    pub fn new(creator: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
+    pub fn new(uploaded_by: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
         Self {
-            creator,
+            uploaded_by,
             blob_id: upload_chunk_args.blob_id,
             hash: upload_chunk_args.hash,
             mime_type: upload_chunk_args.mime_type,
@@ -253,10 +270,10 @@ impl PutChunkArgs {
 
 impl From<PutChunkArgs> for PendingBlob {
     fn from(args: PutChunkArgs) -> Self {
-        let chunk_count = ((args.total_size - 1) / args.chunk_size) + 1;
+        let chunk_count = (((args.total_size - 1) / (args.chunk_size as u64)) + 1) as u32;
 
         let mut pending_blob = Self {
-            creator: args.creator,
+            uploaded_by: args.uploaded_by,
             created: args.now,
             hash: args.hash,
             mime_type: args.mime_type,
@@ -272,16 +289,19 @@ impl From<PutChunkArgs> for PendingBlob {
 }
 
 pub enum PutChunkResult {
-    Success,
-    Complete,
+    Success(PutChunkResultSuccess),
     BlobAlreadyExists,
     ChunkAlreadyExists,
     HashMismatch,
 }
 
+pub struct PutChunkResultSuccess {
+    pub blob_completed: bool,
+    pub blob_reference_added: Option<BlobReferenceAdded>,
+}
+
 pub enum RemoveBlobReferenceResult {
-    Success(BlobReference),
-    SuccessBlobDeleted(BlobReference),
+    Success(BlobReferenceRemoved),
     NotAuthorized,
     NotFound,
 }

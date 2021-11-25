@@ -16,7 +16,7 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
     let mut blob_references_rejected = Vec::new();
 
     for br_added in args.blob_references_added {
-        if let Some(user) = runtime_state.data.users.get_mut(&br_added.user_id) {
+        if let Some(user) = runtime_state.data.users.get_mut(&br_added.uploaded_by) {
             if user.bytes_used + br_added.blob_size > user.byte_limit {
                 blob_references_rejected.push(BlobReferenceRejected {
                     blob_id: br_added.blob_id,
@@ -48,7 +48,7 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
         };
 
         if let Some(blob_size) = blob_size {
-            if let Some(user) = runtime_state.data.users.get_mut(&br_removed.user_id) {
+            if let Some(user) = runtime_state.data.users.get_mut(&br_removed.uploaded_by) {
                 user.bytes_used -= blob_size;
             }
         }

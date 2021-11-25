@@ -170,6 +170,8 @@ dependencies = [
  "canister_logger",
  "ic-cdk",
  "ic-cdk-macros",
+ "index_canister",
+ "index_canister_c2c_client",
  "serde",
  "serde_bytes",
  "tracing",

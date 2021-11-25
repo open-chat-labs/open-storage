@@ -1,18 +1,18 @@
 use crate::{BlobId, Hash, UserId};
 use candid::CandidType;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct BlobReferenceAdded {
+    pub uploaded_by: UserId,
     pub blob_id: BlobId,
-    pub user_id: UserId,
     pub blob_hash: Hash,
     pub blob_size: u64,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct BlobReferenceRemoved {
-    pub user_id: UserId,
+    pub uploaded_by: UserId,
     pub blob_hash: Hash,
     pub blob_deleted: bool,
 }

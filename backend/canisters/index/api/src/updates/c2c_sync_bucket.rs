@@ -1,8 +1,8 @@
 use candid::CandidType;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use types::{BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRemoved};
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct Args {
     pub blob_references_added: Vec<BlobReferenceAdded>,
     pub blob_references_removed: Vec<BlobReferenceRemoved>,
