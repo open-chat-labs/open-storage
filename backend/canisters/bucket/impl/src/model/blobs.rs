@@ -77,6 +77,7 @@ impl Blobs {
                 return PutChunkResult::HashMismatch(HashMismatch {
                     provided_hash: completed_blob.hash,
                     actual_hash: hash,
+                    chunk_count: completed_blob.chunk_count(),
                 });
             }
             self.insert_completed_blob(blob_id, completed_blob, now);
@@ -251,9 +252,17 @@ impl PendingBlob {
         }
     }
 
+    pub fn chunk_count(&self) -> u32 {
+        calc_chunk_count(self.chunk_size, self.total_size)
+    }
+
     pub fn is_completed(&self) -> bool {
         self.remaining_chunks.is_empty()
     }
+}
+
+fn calc_chunk_count(chunk_size: u32, total_size: u64) -> u32 {
+    (((total_size - 1) / (chunk_size as u64)) + 1) as u32
 }
 
 pub struct PutChunkArgs {
@@ -288,7 +297,7 @@ impl PutChunkArgs {
 
 impl From<PutChunkArgs> for PendingBlob {
     fn from(args: PutChunkArgs) -> Self {
-        let chunk_count = (((args.total_size - 1) / (args.chunk_size as u64)) + 1) as u32;
+        let chunk_count = calc_chunk_count(args.chunk_size, args.total_size);
 
         let mut pending_blob = Self {
             uploaded_by: args.uploaded_by,
@@ -327,4 +336,5 @@ pub enum RemoveBlobReferenceResult {
 pub struct HashMismatch {
     pub provided_hash: Hash,
     pub actual_hash: Hash,
+    pub chunk_count: u32,
 }

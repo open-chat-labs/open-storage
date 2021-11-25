@@ -52,14 +52,21 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             // pending blobs, so we now need to update the status and tell the index canister to
             // remove the blob reference.
             user.set_blob_status(blob_id, BlobStatus::Rejected(RejectedReason::HashMismatch));
-            runtime_state
-                .data
-                .index_sync_state
-                .enqueue(EventToSync::BlobReferenceRemoved(BlobReferenceRemoved {
-                    uploaded_by: user_id,
-                    blob_hash: hm.provided_hash,
-                    blob_deleted: !runtime_state.data.blobs.contains_hash(&hm.provided_hash),
-                }));
+
+            // We only need to remove the blob reference from the index canister if this blob
+            // consists of multiple chunks. If the blob is a single chunk then the Success case of
+            // this match statement will never have been reached so the blob reference will not have
+            // been added to the index canister.
+            if hm.chunk_count > 1 {
+                runtime_state
+                    .data
+                    .index_sync_state
+                    .enqueue(EventToSync::BlobReferenceRemoved(BlobReferenceRemoved {
+                        uploaded_by: user_id,
+                        blob_hash: hm.provided_hash,
+                        blob_deleted: !runtime_state.data.blobs.contains_hash(&hm.provided_hash),
+                    }));
+            }
 
             HashMismatch
         }
