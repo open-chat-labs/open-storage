@@ -25,6 +25,13 @@ pub struct BlobReference {
 }
 
 impl Blobs {
+    pub fn uploaded_by(&self, blob_id: &BlobId) -> Option<UserId> {
+        self.blob_references
+            .get(blob_id)
+            .map(|b| b.uploaded_by)
+            .or_else(|| self.pending_blobs.get(blob_id).map(|b| b.uploaded_by))
+    }
+
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
         if self.blob_references.contains_key(&args.blob_id) {
             return PutChunkResult::BlobAlreadyExists;
@@ -67,7 +74,11 @@ impl Blobs {
         if let Some(completed_blob) = completed_blob {
             let hash = hash_bytes(&completed_blob.bytes);
             if hash != completed_blob.hash {
-                return PutChunkResult::HashMismatch;
+                return PutChunkResult::HashMismatch(HashMismatch {
+                    provided_hash: completed_blob.hash,
+                    actual_hash: hash,
+                    chunk_count: completed_blob.chunk_count(),
+                });
             }
             self.insert_completed_blob(blob_id, completed_blob, now);
             blob_completed = true;
@@ -106,6 +117,10 @@ impl Blobs {
         }
     }
 
+    pub fn remove_pending_blob(&mut self, blob_id: &BlobId) -> bool {
+        self.pending_blobs.remove(blob_id).is_some()
+    }
+
     pub fn remove_accessor(&mut self, accessor_id: &AccessorId) -> Vec<BlobReferenceRemoved> {
         let mut blob_references_removed = Vec::new();
 
@@ -131,6 +146,10 @@ impl Blobs {
         }
 
         blob_references_removed
+    }
+
+    pub fn contains_hash(&self, hash: &Hash) -> bool {
+        self.data.contains_key(hash)
     }
 
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
@@ -233,9 +252,17 @@ impl PendingBlob {
         }
     }
 
+    pub fn chunk_count(&self) -> u32 {
+        calc_chunk_count(self.chunk_size, self.total_size)
+    }
+
     pub fn is_completed(&self) -> bool {
         self.remaining_chunks.is_empty()
     }
+}
+
+fn calc_chunk_count(chunk_size: u32, total_size: u64) -> u32 {
+    (((total_size - 1) / (chunk_size as u64)) + 1) as u32
 }
 
 pub struct PutChunkArgs {
@@ -252,7 +279,7 @@ pub struct PutChunkArgs {
 }
 
 impl PutChunkArgs {
-    pub fn new(uploaded_by: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
+    pub fn new(uploaded_by: UserId, upload_chunk_args: UploadChunkArgs, now: TimestampMillis) -> Self {
         Self {
             uploaded_by,
             blob_id: upload_chunk_args.blob_id,
@@ -270,7 +297,7 @@ impl PutChunkArgs {
 
 impl From<PutChunkArgs> for PendingBlob {
     fn from(args: PutChunkArgs) -> Self {
-        let chunk_count = (((args.total_size - 1) / (args.chunk_size as u64)) + 1) as u32;
+        let chunk_count = calc_chunk_count(args.chunk_size, args.total_size);
 
         let mut pending_blob = Self {
             uploaded_by: args.uploaded_by,
@@ -292,7 +319,7 @@ pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
     BlobAlreadyExists,
     ChunkAlreadyExists,
-    HashMismatch,
+    HashMismatch(HashMismatch),
 }
 
 pub struct PutChunkResultSuccess {
@@ -304,4 +331,10 @@ pub enum RemoveBlobReferenceResult {
     Success(BlobReferenceRemoved),
     NotAuthorized,
     NotFound,
+}
+
+pub struct HashMismatch {
+    pub provided_hash: Hash,
+    pub actual_hash: Hash,
+    pub chunk_count: u32,
 }

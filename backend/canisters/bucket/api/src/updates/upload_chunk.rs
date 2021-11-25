@@ -20,6 +20,8 @@ pub enum Response {
     Success,
     BlobAlreadyExists,
     ChunkAlreadyExists,
+    AllowanceReached,
+    UserNotFound,
     HashMismatch,
     Full,
 }

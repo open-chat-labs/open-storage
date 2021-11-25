@@ -17,6 +17,8 @@ type UploadChunkResponse =
         Success;
         BlobAlreadyExists;
         ChunkAlreadyExists;
+        AllowanceReached;
+        UserNotFound;
         HashMismatch;
         Full;
     };
