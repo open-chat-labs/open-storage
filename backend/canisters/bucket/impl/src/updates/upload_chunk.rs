@@ -32,7 +32,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         user.set_blob_status(blob_id, BlobStatus::Uploading(IndexSyncComplete::No));
     }
 
-    match runtime_state.data.blobs.put_chunk(PutChunkArgs::new(user_id, now, args)) {
+    match runtime_state.data.blobs.put_chunk(PutChunkArgs::new(user_id, args, now)) {
         PutChunkResult::Success(r) => {
             if r.blob_completed {
                 user.set_blob_status(blob_id, BlobStatus::Complete(index_sync_complete));

@@ -270,7 +270,7 @@ pub struct PutChunkArgs {
 }
 
 impl PutChunkArgs {
-    pub fn new(uploaded_by: UserId, now: TimestampMillis, upload_chunk_args: UploadChunkArgs) -> Self {
+    pub fn new(uploaded_by: UserId, upload_chunk_args: UploadChunkArgs, now: TimestampMillis) -> Self {
         Self {
             uploaded_by,
             blob_id: upload_chunk_args.blob_id,
