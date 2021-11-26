@@ -16,6 +16,7 @@ type UploadChunkResponse =
     variant {
         Success;
         BlobAlreadyExists;
+        BlobTooBig: nat64;
         ChunkAlreadyExists;
         AllowanceReached;
         UserNotFound;

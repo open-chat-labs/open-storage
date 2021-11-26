@@ -6,6 +6,7 @@ use types::{BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRemoved};
 pub struct Args {
     pub blob_references_added: Vec<BlobReferenceAdded>,
     pub blob_references_removed: Vec<BlobReferenceRemoved>,
+    pub bytes_remaining: i64,
 }
 
 #[derive(CandidType, Deserialize, Debug)]

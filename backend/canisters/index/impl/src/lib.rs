@@ -17,8 +17,8 @@ mod model;
 mod queries;
 mod updates;
 
+const DEFAULT_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 Mb
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
-const DEFAULT_CHUNK_SIZE: u32 = 1 << 19; // 1/2 Mb
 const STATE_VERSION: StateVersion = StateVersion::V1;
 
 #[derive(CandidType, Serialize, Deserialize)]

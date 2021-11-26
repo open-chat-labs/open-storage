@@ -1,3 +1,4 @@
+use crate::{DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
@@ -14,6 +15,7 @@ pub struct Blobs {
     accessors_map: AccessorsMap,
     // TODO move this to stable memory
     data: HashMap<Hash, ByteBuf>,
+    bytes_used: u64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -42,6 +44,10 @@ impl Blobs {
     }
 
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
+        if args.total_size > MAX_BLOB_SIZE_BYTES {
+            return PutChunkResult::BlobTooBig(MAX_BLOB_SIZE_BYTES);
+        }
+
         if self.blob_references.contains_key(&args.blob_id) {
             return PutChunkResult::BlobAlreadyExists;
         }
@@ -111,7 +117,7 @@ impl Blobs {
 
                 let mut blob_deleted = false;
                 if self.reference_counts.decr(blob_reference.hash) == 0 {
-                    self.data.remove(&blob_reference.hash);
+                    self.remove_blob_data(&blob_reference.hash);
                     blob_deleted = true;
                 }
 
@@ -135,13 +141,14 @@ impl Blobs {
 
         if let Some(blob_ids) = self.accessors_map.remove(accessor_id) {
             for blob_id in blob_ids {
+                let mut blob_to_delete = None;
                 if let Occupied(mut e) = self.blob_references.entry(blob_id) {
                     let blob_reference = e.get_mut();
                     blob_reference.accessors.remove(accessor_id);
                     if blob_reference.accessors.is_empty() {
                         let delete_blob = self.reference_counts.decr(blob_reference.hash) == 0;
                         if delete_blob {
-                            self.data.remove(&blob_reference.hash);
+                            blob_to_delete = Some(blob_reference.hash);
                         }
                         let blob_reference = e.remove();
                         blob_references_removed.push(BlobReferenceRemoved {
@@ -150,6 +157,10 @@ impl Blobs {
                             blob_deleted: delete_blob,
                         });
                     }
+                }
+
+                if let Some(blob_to_delete) = blob_to_delete {
+                    self.remove_blob_data(&blob_to_delete);
                 }
             }
         }
@@ -163,6 +174,10 @@ impl Blobs {
 
     pub fn data_size(&self, hash: &Hash) -> Option<u64> {
         self.data.get(hash).map(|b| b.len() as u64)
+    }
+
+    pub fn bytes_remaining(&self) -> i64 {
+        (DATA_LIMIT_BYTES as i64) - (self.bytes_used as i64)
     }
 
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
@@ -181,7 +196,20 @@ impl Blobs {
             },
         );
         self.reference_counts.incr(completed_blob.hash);
-        self.data.entry(completed_blob.hash).or_insert(completed_blob.bytes);
+        self.add_blob_data_if_not_exists(completed_blob.hash, completed_blob.bytes);
+    }
+
+    fn add_blob_data_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
+        if let Vacant(e) = self.data.entry(hash) {
+            self.bytes_used += bytes.len() as u64;
+            e.insert(bytes);
+        }
+    }
+
+    fn remove_blob_data(&mut self, hash: &Hash) {
+        if let Some(bytes) = self.data.remove(hash) {
+            self.bytes_used -= bytes.len() as u64;
+        }
     }
 }
 
@@ -332,6 +360,7 @@ impl From<PutChunkArgs> for PendingBlob {
 pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
     BlobAlreadyExists,
+    BlobTooBig(u64),
     ChunkAlreadyExists,
     HashMismatch(HashMismatch),
 }

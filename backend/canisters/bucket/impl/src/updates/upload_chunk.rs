@@ -48,6 +48,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             Success
         }
         PutChunkResult::BlobAlreadyExists => BlobAlreadyExists,
+        PutChunkResult::BlobTooBig(max) => BlobTooBig(max),
         PutChunkResult::ChunkAlreadyExists => ChunkAlreadyExists,
         PutChunkResult::HashMismatch(hm) => {
             // When there is a hash mismatch, the blob has already been removed from the list of

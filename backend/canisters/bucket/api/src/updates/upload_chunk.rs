@@ -19,6 +19,7 @@ pub struct Args {
 pub enum Response {
     Success,
     BlobAlreadyExists,
+    BlobTooBig(u64),
     ChunkAlreadyExists,
     AllowanceReached,
     UserNotFound,
