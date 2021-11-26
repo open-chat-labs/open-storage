@@ -1,6 +1,6 @@
 use crate::model::blob_buckets::BlobBuckets;
 use crate::model::buckets::Buckets;
-use candid::Principal;
+use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -17,8 +17,14 @@ mod model;
 mod queries;
 mod updates;
 
-const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
 const DEFAULT_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 Mb
+const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
+const STATE_VERSION: StateVersion = StateVersion::V1;
+
+#[derive(CandidType, Serialize, Deserialize)]
+enum StateVersion {
+    V1,
+}
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();

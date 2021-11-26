@@ -18,7 +18,7 @@ fn init(args: Args) {
 
     let index_canister_id = env.caller();
 
-    let data = Data::new(index_canister_id, env.now());
+    let data = Data::new(index_canister_id, env.now(), args.test_mode);
 
     init_state(env, data, args.wasm_version);
 

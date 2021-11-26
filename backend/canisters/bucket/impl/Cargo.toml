@@ -20,6 +20,7 @@ index_canister = { path = "../../index/api" }
 index_canister_c2c_client = { path = "../../index/c2c_client" }
 serde = "1.0.126"
 serde_bytes = "0.11.5"
+serializer = { path = "../../../libraries/serializer" }
 tracing = "0.1.29"
 types = { path = "../../../libraries/types" }
 utils = { path = "../../../libraries/utils" }

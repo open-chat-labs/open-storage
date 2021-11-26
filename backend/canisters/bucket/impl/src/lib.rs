@@ -1,6 +1,7 @@
 use crate::model::blobs::Blobs;
 use crate::model::index_sync_state::IndexSyncState;
 use crate::model::users::Users;
+use candid::CandidType;
 use canister_logger::LogMessagesWrapper;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -13,9 +14,15 @@ mod model;
 mod queries;
 mod updates;
 
-const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
 const DATA_LIMIT_BYTES: u64 = 1 << 30; // 1Gb
 const MAX_BLOB_SIZE_BYTES: u64 = 100 * (1 << 20); // 100Mb
+const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
+const STATE_VERSION: StateVersion = StateVersion::V1;
+
+#[derive(CandidType, Serialize, Deserialize)]
+enum StateVersion {
+    V1,
+}
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();
@@ -51,16 +58,18 @@ struct Data {
     blobs: Blobs,
     index_sync_state: IndexSyncState,
     created: TimestampMillis,
+    test_mode: bool,
 }
 
 impl Data {
-    pub fn new(index_canister_id: CanisterId, now: TimestampMillis) -> Data {
+    pub fn new(index_canister_id: CanisterId, now: TimestampMillis, test_mode: bool) -> Data {
         Data {
             index_canister_id,
             users: Users::default(),
             blobs: Blobs::default(),
             index_sync_state: IndexSyncState::default(),
             created: now,
+            test_mode,
         }
     }
 }
