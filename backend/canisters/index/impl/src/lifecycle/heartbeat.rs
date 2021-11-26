@@ -9,7 +9,6 @@ use utils::consts::CREATE_CANISTER_CYCLES_FEE;
 
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
 const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 50_000_000_000_000; // 50T;
-const TARGET_ACTIVE_BUCKETS: usize = 4;
 
 #[heartbeat]
 fn heartbeat() {
@@ -23,7 +22,7 @@ mod ensure_sufficient_active_buckets {
     use PrepareResponse::*;
 
     pub fn run() {
-        match RUNTIME_STATE.with(|state| prepare(state.borrow().as_ref().unwrap())) {
+        match RUNTIME_STATE.with(|state| prepare(state.borrow_mut().as_mut().unwrap())) {
             AlreadySufficientActiveBuckets => (),
             CyclesBalanceTooLow => error!("Cycles balance too low to add a new bucket"),
             CreateBucket(args) => {
@@ -44,8 +43,8 @@ mod ensure_sufficient_active_buckets {
         CreateBucket(CreateBucketArgs),
     }
 
-    fn prepare(runtime_state: &RuntimeState) -> PrepareResponse {
-        if runtime_state.data.buckets.active_count() >= TARGET_ACTIVE_BUCKETS {
+    fn prepare(runtime_state: &mut RuntimeState) -> PrepareResponse {
+        if !runtime_state.data.buckets.set_creation_in_progress_if_needed() {
             return AlreadySufficientActiveBuckets;
         }
 
