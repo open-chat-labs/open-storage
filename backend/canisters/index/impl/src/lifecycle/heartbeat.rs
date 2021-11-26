@@ -13,9 +13,8 @@ const TARGET_ACTIVE_BUCKETS: usize = 4;
 
 #[heartbeat]
 fn heartbeat() {
-    // TODO: archive full buckets
-    sync_users_with_buckets::run();
     ensure_sufficient_active_buckets::run();
+    sync_users_with_buckets::run();
 }
 
 mod ensure_sufficient_active_buckets {

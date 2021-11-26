@@ -63,6 +63,13 @@ impl Buckets {
             .collect()
     }
 
+    pub fn archive(&mut self, canister_id: CanisterId) {
+        if let Some(index) = self.active_buckets.iter().position(|b| b.canister_id == canister_id) {
+            let bucket = self.active_buckets.remove(index);
+            self.full_buckets.insert(canister_id, bucket);
+        }
+    }
+
     fn iter_mut(&mut self) -> impl Iterator<Item = &mut BucketRecord> {
         self.active_buckets.iter_mut().chain(self.full_buckets.values_mut())
     }

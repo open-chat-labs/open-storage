@@ -18,7 +18,7 @@ mod queries;
 mod updates;
 
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
-const DEFAULT_CHUNK_SIZE: u32 = 1 << 19; // 1/2 Mb
+const DEFAULT_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 Mb
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();

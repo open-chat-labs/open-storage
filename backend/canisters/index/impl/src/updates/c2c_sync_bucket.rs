@@ -23,6 +23,10 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
         runtime_state.data.remove_blob_reference(bucket, br_removed);
     }
 
+    if args.bytes_remaining <= 0 {
+        runtime_state.data.buckets.archive(bucket);
+    }
+
     Response::Success(SuccessResult {
         blob_references_rejected,
     })
