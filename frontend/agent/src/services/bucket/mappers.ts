@@ -14,11 +14,17 @@ export function uploadChunkResponse(
     if ("BlobAlreadyExists" in candid) {
         return "blob_already_exists";
     }
+    if ("BlobSizeMismatch" in candid) {
+        return "blob_size_mismatch";
+    }
     if ("BlobTooBig" in candid) {
         return "blob_too_big";
     }
     if ("ChunkAlreadyExists" in candid) {
         return "chunk_already_exists";
+    }
+    if ("ChunkSizeMismatch" in candid) {
+        return "chunk_size_mismatch";
     }
     if ("AllowanceReached" in candid) {
         return "allowance_reached";

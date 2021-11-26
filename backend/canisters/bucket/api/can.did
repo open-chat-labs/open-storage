@@ -15,13 +15,15 @@ type UploadChunkArgs =
 type UploadChunkResponse =
     variant {
         Success;
-        BlobAlreadyExists;
-        BlobTooBig: nat64;
-        ChunkAlreadyExists;
         AllowanceReached;
-        UserNotFound;
-        HashMismatch;
+        BlobAlreadyExists;
+        BlobSizeMismatch;
+        BlobTooBig;
+        ChunkAlreadyExists;
+        ChunkSizeMismatch;
         Full;
+        HashMismatch;
+        UserNotFound;
     };
 
 type DeleteBlobArgs =

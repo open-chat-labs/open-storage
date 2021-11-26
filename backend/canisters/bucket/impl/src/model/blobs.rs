@@ -78,8 +78,11 @@ impl Blobs {
             }
             Occupied(mut e) => {
                 let pending_blob = e.get_mut();
-                if !pending_blob.add_chunk(args.chunk_index, args.bytes) {
-                    return PutChunkResult::ChunkAlreadyExists;
+                match pending_blob.add_chunk(args.chunk_index, args.bytes) {
+                    AddChunkResult::Success => {}
+                    AddChunkResult::BlobSizeMismatch(m) => return PutChunkResult::BlobSizeMismatch(m),
+                    AddChunkResult::ChunkAlreadyExists => return PutChunkResult::ChunkAlreadyExists,
+                    AddChunkResult::ChunkSizeMismatch(m) => return PutChunkResult::ChunkSizeMismatch(m),
                 }
                 if pending_blob.is_completed() {
                     Some(e.remove())
@@ -286,15 +289,36 @@ pub struct PendingBlob {
 }
 
 impl PendingBlob {
-    pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> bool {
+    pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> AddChunkResult {
         if self.remaining_chunks.remove(&chunk_index) {
-            let start_index = self.chunk_size * chunk_index;
+            let actual_chunk_size = bytes.len() as u64;
+            let provided_chunk_size = self.chunk_size as u64;
+            let start_index = provided_chunk_size * chunk_index as u64;
+            let actual_total_size = start_index + actual_chunk_size;
+            let is_last_chunk = self.is_completed();
+            if is_last_chunk && actual_total_size > self.total_size {
+                return AddChunkResult::BlobSizeMismatch(SizeMismatch {
+                    provided_size: self.total_size,
+                    actual_size: start_index + actual_chunk_size,
+                });
+            }
+
+            if (is_last_chunk && actual_chunk_size > provided_chunk_size)
+                || (!is_last_chunk && actual_chunk_size != provided_chunk_size)
+            {
+                return AddChunkResult::ChunkSizeMismatch(SizeMismatch {
+                    provided_size: provided_chunk_size,
+                    actual_size: actual_chunk_size,
+                });
+            }
+
+            // TODO: Improve performance by copying a block of memory in one go
             for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index as usize, b)) {
                 self.bytes[index] = byte;
             }
-            true
+            AddChunkResult::Success
         } else {
-            false
+            AddChunkResult::ChunkAlreadyExists
         }
     }
 
@@ -305,6 +329,13 @@ impl PendingBlob {
     pub fn is_completed(&self) -> bool {
         self.remaining_chunks.is_empty()
     }
+}
+
+pub enum AddChunkResult {
+    Success,
+    BlobSizeMismatch(SizeMismatch),
+    ChunkAlreadyExists,
+    ChunkSizeMismatch(SizeMismatch),
 }
 
 pub struct PutChunkArgs {
@@ -360,8 +391,10 @@ impl From<PutChunkArgs> for PendingBlob {
 pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
     BlobAlreadyExists,
+    BlobSizeMismatch(SizeMismatch),
     BlobTooBig(u64),
     ChunkAlreadyExists,
+    ChunkSizeMismatch(SizeMismatch),
     HashMismatch(HashMismatch),
 }
 
@@ -380,4 +413,9 @@ pub struct HashMismatch {
     pub provided_hash: Hash,
     pub actual_hash: Hash,
     pub chunk_count: u32,
+}
+
+pub struct SizeMismatch {
+    pub provided_size: u64,
+    pub actual_size: u64,
 }
