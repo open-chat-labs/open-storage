@@ -15,6 +15,7 @@ mod updates;
 
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
 const DATA_LIMIT_BYTES: u64 = 1 << 30; // 1Gb
+const MAX_BLOB_SIZE_BYTES: u64 = 100 * (1 << 20); // 100Mb
 
 thread_local! {
     static RUNTIME_STATE: RefCell<Option<RuntimeState>> = RefCell::default();
