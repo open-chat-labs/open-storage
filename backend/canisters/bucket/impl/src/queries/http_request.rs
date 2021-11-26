@@ -10,7 +10,7 @@ use num_traits::cast::ToPrimitive;
 use serde_bytes::ByteBuf;
 use std::borrow::Cow;
 use std::cmp::min;
-use types::{BlobId, CanisterId, TimestampMillis};
+use types::{BlobId, TimestampMillis};
 
 const BLOB_RESPONSE_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 MB
 const CACHE_HEADER_VALUE: &str = "public, max-age=100000000, immutable";
@@ -26,7 +26,7 @@ fn http_request(request: HttpRequest) -> HttpResponse {
     // }
 
     match extract_route(&request.url) {
-        Route::Blob(blob_id) => RUNTIME_STATE.with(|state| build_blob_response(blob_id, state.borrow().as_ref().unwrap())),
+        Route::Blob(blob_id) => RUNTIME_STATE.with(|state| start_streaming_blob(blob_id, state.borrow().as_ref().unwrap())),
         Route::Logs(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().logs)),
         Route::Traces(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().traces)),
         // Route::Metrics => RUNTIME_STATE.with(|state| get_metrics_impl(state.borrow().as_ref().unwrap())),
@@ -39,42 +39,38 @@ fn http_request_streaming_callback(token: Token) -> StreamingCallbackHttpRespons
     RUNTIME_STATE.with(|state| continue_streaming_blob(token, state.borrow().as_ref().unwrap()))
 }
 
-fn build_blob_response(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpResponse {
+fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpResponse {
     if let Some(blob_reference) = runtime_state.data.blobs.blob_reference(&blob_id) {
-        if let Some(bytes) = runtime_state.data.blobs.blob_bytes(&blob_reference.hash) {
+        if let Some(blob_bytes) = runtime_state.data.blobs.blob_bytes(&blob_reference.hash) {
             let canister_id = runtime_state.env.canister_id();
 
-            return start_streaming_blob(canister_id, blob_id, blob_reference.mime_type.clone(), bytes);
+            let (chunk_bytes, stream_next_chunk) = chunk_bytes(blob_bytes, 0);
+
+            let streaming_strategy = if stream_next_chunk {
+                Some(StreamingStrategy::Callback {
+                    callback: Func {
+                        principal: canister_id,
+                        method: "http_request_streaming_callback".to_string(),
+                    },
+                    token: build_token(blob_id, 1),
+                })
+            } else {
+                None
+            };
+
+            return HttpResponse {
+                status_code: 200,
+                headers: vec![
+                    HeaderField("Content-Type".to_string(), blob_reference.mime_type.clone()),
+                    HeaderField("Cache-Control".to_string(), CACHE_HEADER_VALUE.to_string()),
+                ],
+                body: Cow::Owned(chunk_bytes),
+                streaming_strategy,
+            };
         }
     }
 
     HttpResponse::not_found()
-}
-
-fn start_streaming_blob(canister_id: CanisterId, blob_id: u128, mime_type: String, blob: &ByteBuf) -> HttpResponse {
-    let (chunk_bytes, stream_next_chunk) = chunk_bytes(blob, 0);
-
-    let streaming_strategy = if stream_next_chunk {
-        Some(StreamingStrategy::Callback {
-            callback: Func {
-                principal: canister_id,
-                method: "http_request_streaming_callback".to_string(),
-            },
-            token: build_token(blob_id, 1),
-        })
-    } else {
-        None
-    };
-
-    HttpResponse {
-        status_code: 200,
-        headers: vec![
-            HeaderField("Content-Type".to_string(), mime_type),
-            HeaderField("Cache-Control".to_string(), CACHE_HEADER_VALUE.to_string()),
-        ],
-        body: Cow::Owned(chunk_bytes),
-        streaming_strategy,
-    }
 }
 
 fn continue_streaming_blob(token: Token, runtime_state: &RuntimeState) -> StreamingCallbackHttpResponse {
