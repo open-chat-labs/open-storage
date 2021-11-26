@@ -10,6 +10,7 @@ members = [
     "backend/libraries/canister_api_macros",
     "backend/libraries/canister_client_macros",
     "backend/libraries/canister_logger",
+    "backend/libraries/serializer",
     "backend/libraries/types",
     "backend/libraries/utils"
 ]

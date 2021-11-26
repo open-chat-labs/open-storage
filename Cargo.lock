@@ -174,6 +174,7 @@ dependencies = [
  "index_canister_c2c_client",
  "serde",
  "serde_bytes",
+ "serializer",
  "tracing",
  "types",
  "utils",
@@ -688,6 +689,7 @@ dependencies = [
  "ic-cdk-macros",
  "index_canister",
  "serde",
+ "serializer",
  "tracing",
  "types",
  "utils",
@@ -1403,6 +1405,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmp"
+version = "0.8.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f55e5fa1446c4d5dd1f5daeed2a4fe193071771a2636274d0d7a3b082aa7ad6"
+dependencies = [
+ "byteorder",
+ "num-traits",
+]
+
+[[package]]
+name = "rmp-serde"
+version = "1.0.0-beta.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05d18f64792a930cdb215b849eb75d8d7ffaaf70c3b9bd594b5ccc5ab63b4f70"
+dependencies = [
+ "byteorder",
+ "rmp",
+ "serde",
+]
+
+[[package]]
 name = "rustversion"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1491,6 +1514,14 @@ dependencies = [
  "proc-macro2",
  "serde",
  "syn",
+]
+
+[[package]]
+name = "serializer"
+version = "0.1.0"
+dependencies = [
+ "rmp-serde",
+ "serde",
 ]
 
 [[package]]
