@@ -1,4 +1,4 @@
-use crate::DATA_LIMIT_IN_BYTES;
+use crate::DATA_LIMIT_BYTES;
 use bucket_canister::upload_chunk::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
@@ -173,7 +173,7 @@ impl Blobs {
     }
 
     pub fn bytes_remaining(&self) -> i64 {
-        (DATA_LIMIT_IN_BYTES as i64) - (self.bytes_used as i64)
+        (DATA_LIMIT_BYTES as i64) - (self.bytes_used as i64)
     }
 
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
@@ -192,14 +192,14 @@ impl Blobs {
             },
         );
         self.reference_counts.incr(completed_blob.hash);
-        if !self.data.contains_key(&completed_blob.hash) {
-            self.add_blob_data(completed_blob.hash, completed_blob.bytes);
-        }
+        self.add_blob_data_if_not_exists(completed_blob.hash, completed_blob.bytes);
     }
 
-    fn add_blob_data(&mut self, hash: Hash, bytes: ByteBuf) {
-        self.bytes_used += bytes.len() as u64;
-        self.data.insert(hash, bytes);
+    fn add_blob_data_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
+        if let Vacant(e) = self.data.entry(hash) {
+            self.bytes_used += bytes.len() as u64;
+            e.insert(bytes);
+        }
     }
 
     fn remove_blob_data(&mut self, hash: &Hash) {
