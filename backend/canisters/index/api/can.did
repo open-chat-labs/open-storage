@@ -61,6 +61,7 @@ type AllocatedBucketResponse =
 type AllocatedBucketResult =
     record {
         canister_id: CanisterId;
+        chunk_size: nat32;
     };
 
 type UserArgs =
