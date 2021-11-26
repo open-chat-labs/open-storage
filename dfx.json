@@ -1,10 +1,16 @@
 {
   "canisters": {
-    "data_bucket": {
+    "bucket": {
       "type": "custom",
-      "candid": "backend/canisters/data_bucket/api/can.did",
-      "wasm": "target/wasm32-unknown-unknown/release/data_bucket_canister_impl-opt.wasm",
-      "build": "./generate-wasm.sh data_bucket_impl"
+      "candid": "backend/canisters/bucket/api/can.did",
+      "wasm": "target/wasm32-unknown-unknown/release/bucket_canister_impl-opt.wasm",
+      "build": "./generate-wasm.sh bucket_canister_impl"
+    },
+    "index": {
+      "type": "custom",
+      "candid": "backend/canisters/index/api/can.did",
+      "wasm": "target/wasm32-unknown-unknown/release/index_canister_impl-opt.wasm",
+      "build": "./generate-wasm.sh index_canister_impl"
     }
   },
   "defaults": {

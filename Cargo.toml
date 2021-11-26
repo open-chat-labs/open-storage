@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "backend/canister_installer",
     "backend/canisters/bucket/api",
     "backend/canisters/bucket/c2c_client",
     "backend/canisters/bucket/impl",
@@ -8,6 +9,7 @@ members = [
     "backend/canisters/index/impl",
     "backend/libraries/candid_gen",
     "backend/libraries/canister_api_macros",
+    "backend/libraries/canister_client",
     "backend/libraries/canister_client_macros",
     "backend/libraries/canister_logger",
     "backend/libraries/http_request",
