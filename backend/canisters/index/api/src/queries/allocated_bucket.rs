@@ -19,4 +19,5 @@ pub enum Response {
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Result {
     pub canister_id: CanisterId,
+    pub chunk_size: u32,
 }
