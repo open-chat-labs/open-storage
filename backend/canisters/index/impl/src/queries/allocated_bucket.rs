@@ -1,5 +1,5 @@
-use crate::{RuntimeState, RUNTIME_STATE};
 use crate::DEFAULT_CHUNK_SIZE;
+use crate::{RuntimeState, RUNTIME_STATE};
 use canister_api_macros::trace;
 use ic_cdk_macros::query;
 use index_canister::allocated_bucket::*;
@@ -27,7 +27,7 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
         .or_else(|| runtime_state.data.buckets.allocate(args.blob_hash));
 
     if let Some(canister_id) = bucket {
-        Response::Success(Result { 
+        Response::Success(Result {
             canister_id,
             chunk_size: DEFAULT_CHUNK_SIZE,
         })
