@@ -1,6 +1,7 @@
 export type UploadChunkResponse =
     | "success"
     | "blob_already_exists"
+    | "blob_too_big"
     | "chunk_already_exists"
     | "allowance_reached"
     | "user_not_found"

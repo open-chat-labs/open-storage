@@ -22,6 +22,7 @@ export interface UploadChunkArgs {
   'chunk_size' : number,
 }
 export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
+  { 'BlobTooBig' : bigint } |
   { 'Full' : null } |
   { 'BlobAlreadyExists' : null } |
   { 'Success' : null } |

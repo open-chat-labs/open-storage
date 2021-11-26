@@ -1,4 +1,4 @@
-use crate::DATA_LIMIT_BYTES;
+use crate::{DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
@@ -44,6 +44,10 @@ impl Blobs {
     }
 
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
+        if args.total_size > MAX_BLOB_SIZE_BYTES {
+            return PutChunkResult::BlobTooBig(MAX_BLOB_SIZE_BYTES);
+        }
+
         if self.blob_references.contains_key(&args.blob_id) {
             return PutChunkResult::BlobAlreadyExists;
         }
@@ -356,6 +360,7 @@ impl From<PutChunkArgs> for PendingBlob {
 pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
     BlobAlreadyExists,
+    BlobTooBig(u64),
     ChunkAlreadyExists,
     HashMismatch(HashMismatch),
 }
