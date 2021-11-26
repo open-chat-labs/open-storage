@@ -51,28 +51,6 @@ fn build_blob_response(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpRes
     HttpResponse::not_found()
 }
 
-fn continue_streaming_blob(token: Token, runtime_state: &RuntimeState) -> StreamingCallbackHttpResponse {
-    if let Route::Blob(blob_id) = extract_route(&token.key) {
-        let chunk_index = token.index.0.to_u32().unwrap();
-        let blobs = &runtime_state.data.blobs;
-
-        if let Some(bytes) = blobs.blob_reference(&blob_id).map(|r| blobs.blob_bytes(&r.hash)).flatten() {
-            let (chunk_bytes, stream_next_chunk) = chunk_bytes(bytes, chunk_index);
-
-            let token = if stream_next_chunk { Some(build_token(blob_id, chunk_index + 1)) } else { None };
-            return StreamingCallbackHttpResponse {
-                body: chunk_bytes,
-                token,
-            };
-        }
-    }
-
-    StreamingCallbackHttpResponse {
-        body: ByteBuf::new(),
-        token: None,
-    }
-}
-
 fn start_streaming_blob(canister_id: CanisterId, blob_id: u128, mime_type: String, blob: &ByteBuf) -> HttpResponse {
     let (chunk_bytes, stream_next_chunk) = chunk_bytes(blob, 0);
 
@@ -96,6 +74,28 @@ fn start_streaming_blob(canister_id: CanisterId, blob_id: u128, mime_type: Strin
         ],
         body: Cow::Owned(chunk_bytes),
         streaming_strategy,
+    }
+}
+
+fn continue_streaming_blob(token: Token, runtime_state: &RuntimeState) -> StreamingCallbackHttpResponse {
+    if let Route::Blob(blob_id) = extract_route(&token.key) {
+        let chunk_index = token.index.0.to_u32().unwrap();
+        let blobs = &runtime_state.data.blobs;
+
+        if let Some(bytes) = blobs.blob_reference(&blob_id).map(|r| blobs.blob_bytes(&r.hash)).flatten() {
+            let (chunk_bytes, stream_next_chunk) = chunk_bytes(bytes, chunk_index);
+
+            let token = if stream_next_chunk { Some(build_token(blob_id, chunk_index + 1)) } else { None };
+            return StreamingCallbackHttpResponse {
+                body: chunk_bytes,
+                token,
+            };
+        }
+    }
+
+    StreamingCallbackHttpResponse {
+        body: ByteBuf::new(),
+        token: None,
     }
 }
 
