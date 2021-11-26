@@ -73,3 +73,7 @@ impl Data {
         }
     }
 }
+
+pub fn calc_chunk_count(chunk_size: u32, total_size: u64) -> u32 {
+    (((total_size - 1) / (chunk_size as u64)) + 1) as u32
+}

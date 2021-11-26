@@ -168,10 +168,12 @@ dependencies = [
  "candid",
  "canister_api_macros",
  "canister_logger",
+ "http_request",
  "ic-cdk",
  "ic-cdk-macros",
  "index_canister",
  "index_canister_c2c_client",
+ "num-traits",
  "serde",
  "serde_bytes",
  "serializer",
@@ -535,6 +537,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "http_request"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "canister_logger",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "types",
+]
+
+[[package]]
 name = "ic-base-types"
 version = "0.8.0"
 source = "git+https://github.com/dfinity/ic?rev=bd3b73e075aea1cc81b23b38ccfb138ca4ab17ab#bd3b73e075aea1cc81b23b38ccfb138ca4ab17ab"
@@ -685,6 +699,7 @@ dependencies = [
  "canister_api_macros",
  "canister_logger",
  "cycles_utils",
+ "http_request",
  "ic-cdk",
  "ic-cdk-macros",
  "index_canister",

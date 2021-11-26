@@ -1,4 +1,4 @@
-use crate::{DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
+use crate::{calc_chunk_count, DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
@@ -34,6 +34,10 @@ impl Blobs {
 
     pub fn pending_blob(&self, blob_id: &BlobId) -> Option<&PendingBlob> {
         self.pending_blobs.get(blob_id)
+    }
+
+    pub fn blob_bytes(&self, hash: &Hash) -> Option<&ByteBuf> {
+        self.data.get(hash)
     }
 
     pub fn uploaded_by(&self, blob_id: &BlobId) -> Option<UserId> {
@@ -301,10 +305,6 @@ impl PendingBlob {
     pub fn is_completed(&self) -> bool {
         self.remaining_chunks.is_empty()
     }
-}
-
-fn calc_chunk_count(chunk_size: u32, total_size: u64) -> u32 {
-    (((total_size - 1) / (chunk_size as u64)) + 1) as u32
 }
 
 pub struct PutChunkArgs {
