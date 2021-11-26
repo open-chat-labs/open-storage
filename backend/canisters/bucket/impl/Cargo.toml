@@ -14,10 +14,12 @@ bucket_canister = { path = "../api" }
 candid = "0.7.7"
 canister_api_macros = { path = "../../../libraries/canister_api_macros" }
 canister_logger = { path = "../../../libraries/canister_logger" }
+http_request = { path = "../../../libraries/http_request" }
 ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
 index_canister = { path = "../../index/api" }
 index_canister_c2c_client = { path = "../../index/c2c_client" }
+num-traits = "0.2.14"
 serde = "1.0.126"
 serde_bytes = "0.11.5"
 serializer = { path = "../../../libraries/serializer" }
