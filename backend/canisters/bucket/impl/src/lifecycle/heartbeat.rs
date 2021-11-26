@@ -19,10 +19,11 @@ mod sync_index {
     }
 
     fn next_batch(runtime_state: &mut RuntimeState) -> Option<(CanisterId, Args)> {
+        let bytes_remaining = runtime_state.data.blobs.bytes_remaining();
         runtime_state
             .data
             .index_sync_state
-            .pop_args_for_next_sync()
+            .pop_args_for_next_sync(bytes_remaining)
             .map(|args| (runtime_state.data.index_canister_id, args))
     }
 
