@@ -3,9 +3,7 @@ use crate::{RuntimeState, RUNTIME_STATE};
 use bucket_canister::c2c_sync_index::{Args, Response, SuccessResult};
 use ic_cdk_macros::heartbeat;
 use tracing::error;
-use types::{CanisterId, CanisterWasm, Cycles};
-use utils::canister;
-use utils::consts::CREATE_CANISTER_CYCLES_FEE;
+use types::{CanisterId, CanisterWasm, Cycles, Version};
 
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
 const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 50_000_000_000_000; // 50T;
@@ -14,11 +12,14 @@ const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 50_000_000_000_000; // 50
 fn heartbeat() {
     ensure_sufficient_active_buckets::run();
     sync_users_with_buckets::run();
+    upgrade_canisters::run();
 }
 
 mod ensure_sufficient_active_buckets {
     use super::*;
     use crate::model::buckets::BucketRecord;
+    use utils::canister::create_and_install;
+    use utils::consts::CREATE_CANISTER_CYCLES_FEE;
     use PrepareResponse::*;
 
     pub fn run() {
@@ -66,7 +67,7 @@ mod ensure_sufficient_active_buckets {
     async fn create_bucket(args: CreateBucketArgs) {
         let wasm_arg = candid::encode_one(args.init_canister_args).unwrap();
 
-        let result = canister::create_and_install(None, args.canister_wasm.module, wasm_arg, args.cycles_to_use).await;
+        let result = create_and_install(None, args.canister_wasm.module, wasm_arg, args.cycles_to_use).await;
 
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
@@ -120,5 +121,64 @@ mod sync_users_with_buckets {
         if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {
             bucket.sync_state.mark_sync_failed(args);
         }
+    }
+}
+
+mod upgrade_canisters {
+    use super::*;
+    use utils::canister::{upgrade, FailedUpgrade};
+
+    type CanisterToUpgrade = utils::canister::CanisterToUpgrade<bucket_canister::post_upgrade::Args>;
+
+    pub fn run() {
+        if let Some(canister_to_upgrade) = RUNTIME_STATE.with(|state| next(state.borrow_mut().as_mut().unwrap())) {
+            ic_cdk::block_on(perform_upgrade(canister_to_upgrade));
+        }
+    }
+
+    fn next(runtime_state: &mut RuntimeState) -> Option<CanisterToUpgrade> {
+        let canister_id = runtime_state.data.canisters_requiring_upgrade.try_take_next()?;
+        let bucket = runtime_state.data.buckets.get(&canister_id)?;
+        let new_wasm = runtime_state.data.bucket_canister_wasm.decompress();
+
+        Some(CanisterToUpgrade {
+            canister_id,
+            current_wasm_version: bucket.wasm_version,
+            new_wasm: runtime_state.data.bucket_canister_wasm.decompress(),
+            args: bucket_canister::post_upgrade::Args {
+                wasm_version: new_wasm.version,
+            },
+        })
+    }
+
+    async fn perform_upgrade(canister_to_upgrade: CanisterToUpgrade) {
+        let canister_id = canister_to_upgrade.canister_id;
+        let from_version = canister_to_upgrade.current_wasm_version;
+        let to_version = canister_to_upgrade.new_wasm.version;
+
+        match upgrade(canister_id, canister_to_upgrade.new_wasm.module, canister_to_upgrade.args).await {
+            Ok(_) => {
+                RUNTIME_STATE.with(|state| on_success(canister_id, to_version, state.borrow_mut().as_mut().unwrap()));
+            }
+            Err(_) => {
+                RUNTIME_STATE
+                    .with(|state| on_failure(canister_id, from_version, to_version, state.borrow_mut().as_mut().unwrap()));
+            }
+        }
+    }
+
+    fn on_success(canister_id: CanisterId, to_version: Version, runtime_state: &mut RuntimeState) {
+        if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {
+            bucket.wasm_version = to_version;
+        }
+        runtime_state.data.canisters_requiring_upgrade.mark_success();
+    }
+
+    fn on_failure(canister_id: CanisterId, from_version: Version, to_version: Version, runtime_state: &mut RuntimeState) {
+        runtime_state.data.canisters_requiring_upgrade.mark_failure(FailedUpgrade {
+            canister_id,
+            from_version,
+            to_version,
+        });
     }
 }
