@@ -303,6 +303,7 @@ dependencies = [
  "ic-agent",
  "ic-utils",
  "index_canister",
+ "index_canister_client",
  "serde",
  "types",
 ]
@@ -334,6 +335,16 @@ dependencies = [
  "tracing",
  "tracing-attributes",
  "tracing-subscriber",
+ "types",
+]
+
+[[package]]
+name = "canister_upgrader"
+version = "0.1.0"
+dependencies = [
+ "canister_client",
+ "clap",
+ "tokio",
  "types",
 ]
 
@@ -1098,6 +1109,17 @@ dependencies = [
  "ic-cdk",
  "index_canister",
  "tracing",
+ "types",
+]
+
+[[package]]
+name = "index_canister_client"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "canister_client_macros",
+ "ic-agent",
+ "index_canister",
  "types",
 ]
 
