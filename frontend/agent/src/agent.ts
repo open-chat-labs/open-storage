@@ -1,4 +1,4 @@
-import { HttpAgent, Identity } from "@dfinity/agent";
+import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import async from "async";
 import { v1 as uuidv1 } from "uuid";
@@ -11,11 +11,7 @@ export class OpenStorageAgent {
     private readonly agent: HttpAgent;
     private readonly indexClient: IIndexClient;
 
-    constructor(identity: Identity, indexCanisterId: Principal, fetchRootKey: boolean = false) {
-        const agent = new HttpAgent({ identity });
-        if (fetchRootKey) {
-            agent.fetchRootKey();
-        }
+    constructor(agent: HttpAgent, indexCanisterId: Principal) {
         this.agent = agent;
         this.indexClient = new IndexClient(agent, indexCanisterId);
     }
@@ -26,20 +22,20 @@ export class OpenStorageAgent {
         bytes: ArrayBuffer,
         onProgress?: (percentComplete: number) => void): Promise<UploadBlobResponse> {
 
-        const hash = hashBytes(bytes);
+        const hash = Array.from(new Uint8Array(hashBytes(bytes)));
+        const blobSize = bytes.byteLength;
 
-        const allocatedBucketResponse = await this.indexClient.allocatedBucket(hash, BigInt(bytes.byteLength));
+        const allocatedBucketResponse = await this.indexClient.allocatedBucket(hash, BigInt(blobSize));
 
         if (allocatedBucketResponse.kind !== "success") {
             // TODO make this better!
             throw new Error(allocatedBucketResponse.kind);
         }
 
-        const bucketCanisterId = allocatedBucketResponse.canisterId;
         const blobId = OpenStorageAgent.newBlobId();
-        const blobSize = bytes.byteLength;
+        const bucketCanisterId = allocatedBucketResponse.canisterId;
         const chunkSize = allocatedBucketResponse.chunkSize;
-        const chunkCount = ((blobSize - 1) / chunkSize) + 1;
+        const chunkCount = Math.ceil(blobSize / chunkSize);
         const chunkIndexes = [...Array(chunkCount).keys()];
 
         const bucketClient = new BucketClient(this.agent, bucketCanisterId);
