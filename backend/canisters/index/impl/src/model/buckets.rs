@@ -79,6 +79,10 @@ impl Buckets {
         }
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = &BucketRecord> {
+        self.active_buckets.iter().chain(self.full_buckets.values())
+    }
+
     fn iter_mut(&mut self) -> impl Iterator<Item = &mut BucketRecord> {
         self.active_buckets.iter_mut().chain(self.full_buckets.values_mut())
     }

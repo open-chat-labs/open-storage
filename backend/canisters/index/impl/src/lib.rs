@@ -9,6 +9,7 @@ use types::{
     BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRejectedReason, BlobReferenceRemoved, CanisterId, CanisterWasm,
     Timestamped, UserId, Version,
 };
+use utils::canister::CanistersRequiringUpgrade;
 use utils::env::Environment;
 
 mod guards;
@@ -60,6 +61,7 @@ struct Data {
     pub users: HashMap<UserId, UserRecord>,
     pub blob_buckets: BlobBuckets,
     pub buckets: Buckets,
+    pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
     pub test_mode: bool,
 }
 
@@ -71,6 +73,7 @@ impl Data {
             users: HashMap::new(),
             blob_buckets: BlobBuckets::default(),
             buckets: Buckets::default(),
+            canisters_requiring_upgrade: CanistersRequiringUpgrade::default(),
             test_mode,
         }
     }
