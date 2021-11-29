@@ -54,7 +54,7 @@ mod ensure_sufficient_active_buckets {
         }
 
         CreateBucket(CreateBucketArgs {
-            canister_wasm: runtime_state.data.bucket_canister_wasm.clone(),
+            canister_wasm: runtime_state.data.bucket_canister_wasm.decompress(),
             cycles_to_use: cycles_required,
             init_canister_args: bucket_canister::init::Args {
                 wasm_version: runtime_state.data.bucket_canister_wasm.version,

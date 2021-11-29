@@ -23,5 +23,5 @@ index_canister = { path = "../api" }
 serde = "1.0.126"
 serializer = { path = "../../../libraries/serializer" }
 tracing = "0.1.29"
-types = { path = "../../../libraries/types" }
+types = { path = "../../../libraries/types", features = ["compression"] }
 utils = { path = "../../../libraries/utils" }

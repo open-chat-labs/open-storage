@@ -23,9 +23,9 @@ impl Default for CanisterWasm {
 
 impl CanisterWasm {
     #[cfg(feature = "lzma-rs")]
-    pub fn decompress(self) -> CanisterWasm {
+    pub fn decompress(&self) -> CanisterWasm {
         if !self.compressed {
-            self
+            self.clone()
         } else {
             let mut decompressed = Vec::new();
             lzma_rs::xz_decompress(&mut self.module.as_ref(), &mut decompressed).unwrap();
