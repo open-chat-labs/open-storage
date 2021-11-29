@@ -2,6 +2,7 @@ use crate::{calc_chunk_count, DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
+use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
 use types::{AccessorId, BlobId, BlobReferenceAdded, BlobReferenceRemoved, Hash, TimestampMillis, UserId};
@@ -78,8 +79,11 @@ impl Blobs {
             }
             Occupied(mut e) => {
                 let pending_blob = e.get_mut();
-                if !pending_blob.add_chunk(args.chunk_index, args.bytes) {
-                    return PutChunkResult::ChunkAlreadyExists;
+                match pending_blob.add_chunk(args.chunk_index, args.bytes) {
+                    AddChunkResult::Success => {}
+                    AddChunkResult::ChunkIndexTooHigh => return PutChunkResult::ChunkIndexTooHigh,
+                    AddChunkResult::ChunkAlreadyExists => return PutChunkResult::ChunkAlreadyExists,
+                    AddChunkResult::ChunkSizeMismatch(m) => return PutChunkResult::ChunkSizeMismatch(m),
                 }
                 if pending_blob.is_completed() {
                     Some(e.remove())
@@ -286,15 +290,28 @@ pub struct PendingBlob {
 }
 
 impl PendingBlob {
-    pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> bool {
+    pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> AddChunkResult {
         if self.remaining_chunks.remove(&chunk_index) {
-            let start_index = self.chunk_size * chunk_index;
-            for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index as usize, b)) {
+            let actual_chunk_size = bytes.len() as u32;
+            if let Some(expected_chunk_size) = self.expected_chunk_size(chunk_index) {
+                if expected_chunk_size != actual_chunk_size {
+                    return AddChunkResult::ChunkSizeMismatch(ChunkSizeMismatch {
+                        expected_size: expected_chunk_size,
+                        actual_size: actual_chunk_size,
+                    });
+                }
+            } else {
+                return AddChunkResult::ChunkIndexTooHigh;
+            }
+
+            // TODO: Improve performance by copying a block of memory in one go
+            let start_index = self.chunk_size as usize * chunk_index as usize;
+            for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index, b)) {
                 self.bytes[index] = byte;
             }
-            true
+            AddChunkResult::Success
         } else {
-            false
+            AddChunkResult::ChunkAlreadyExists
         }
     }
 
@@ -305,6 +322,22 @@ impl PendingBlob {
     pub fn is_completed(&self) -> bool {
         self.remaining_chunks.is_empty()
     }
+
+    fn expected_chunk_size(&self, chunk_index: u32) -> Option<u32> {
+        let last_index = self.chunk_count() - 1;
+        match chunk_index.cmp(&last_index) {
+            Ordering::Equal => Some(((self.total_size - 1) % self.chunk_size as u64) as u32 + 1),
+            Ordering::Less => Some(self.chunk_size),
+            Ordering::Greater => None,
+        }
+    }
+}
+
+pub enum AddChunkResult {
+    Success,
+    ChunkAlreadyExists,
+    ChunkIndexTooHigh,
+    ChunkSizeMismatch(ChunkSizeMismatch),
 }
 
 pub struct PutChunkArgs {
@@ -362,6 +395,8 @@ pub enum PutChunkResult {
     BlobAlreadyExists,
     BlobTooBig(u64),
     ChunkAlreadyExists,
+    ChunkIndexTooHigh,
+    ChunkSizeMismatch(ChunkSizeMismatch),
     HashMismatch(HashMismatch),
 }
 
@@ -380,4 +415,9 @@ pub struct HashMismatch {
     pub provided_hash: Hash,
     pub actual_hash: Hash,
     pub chunk_count: u32,
+}
+
+pub struct ChunkSizeMismatch {
+    pub expected_size: u32,
+    pub actual_size: u32,
 }

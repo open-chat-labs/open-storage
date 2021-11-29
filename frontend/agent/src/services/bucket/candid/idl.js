@@ -20,10 +20,12 @@ export const idlFactory = ({ IDL }) => {
   });
   const UploadChunkResponse = IDL.Variant({
     'ChunkAlreadyExists' : IDL.Null,
-    'BlobTooBig' : IDL.Nat64,
+    'BlobTooBig' : IDL.Null,
     'Full' : IDL.Null,
+    'ChunkSizeMismatch' : IDL.Null,
     'BlobAlreadyExists' : IDL.Null,
     'Success' : IDL.Null,
+    'ChunkIndexTooHigh' : IDL.Null,
     'HashMismatch' : IDL.Null,
     'AllowanceReached' : IDL.Null,
     'UserNotFound' : IDL.Null,

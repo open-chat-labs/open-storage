@@ -48,8 +48,10 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             Success
         }
         PutChunkResult::BlobAlreadyExists => BlobAlreadyExists,
-        PutChunkResult::BlobTooBig(max) => BlobTooBig(max),
+        PutChunkResult::BlobTooBig(_) => BlobTooBig,
         PutChunkResult::ChunkAlreadyExists => ChunkAlreadyExists,
+        PutChunkResult::ChunkIndexTooHigh => ChunkIndexTooHigh,
+        PutChunkResult::ChunkSizeMismatch(_) => ChunkSizeMismatch,
         PutChunkResult::HashMismatch(hm) => {
             // When there is a hash mismatch, the blob has already been removed from the list of
             // pending blobs, so we now need to update the status and tell the index canister to

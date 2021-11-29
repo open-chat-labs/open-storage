@@ -18,11 +18,13 @@ pub struct Args {
 #[derive(CandidType, Deserialize, Debug)]
 pub enum Response {
     Success,
-    BlobAlreadyExists,
-    BlobTooBig(u64),
-    ChunkAlreadyExists,
     AllowanceReached,
-    UserNotFound,
-    HashMismatch,
+    BlobAlreadyExists,
+    BlobTooBig,
+    ChunkAlreadyExists,
+    ChunkIndexTooHigh,
+    ChunkSizeMismatch,
     Full,
+    HashMismatch,
+    UserNotFound,
 }
