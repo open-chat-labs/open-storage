@@ -65,7 +65,8 @@ export class OpenStorageAgent {
                         onProgress?.(100 * chunksCompleted / chunkCount);
                         return;
                     }
-                } catch {
+                } catch(e) {
+                    console.log("Error uploading chunk " + chunkIndex, e);
                 }
             }
             throw new Error("Failed to upload chunk");
