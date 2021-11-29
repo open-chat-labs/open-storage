@@ -22,7 +22,7 @@ pub enum Response {
     BlobAlreadyExists,
     BlobTooBig,
     ChunkAlreadyExists,
-    ChunkIndexTooBig,
+    ChunkIndexTooHigh,
     ChunkSizeMismatch,
     Full,
     HashMismatch,

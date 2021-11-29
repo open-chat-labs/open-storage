@@ -81,7 +81,7 @@ impl Blobs {
                 let pending_blob = e.get_mut();
                 match pending_blob.add_chunk(args.chunk_index, args.bytes) {
                     AddChunkResult::Success => {}
-                    AddChunkResult::ChunkIndexTooBig => return PutChunkResult::ChunkIndexTooBig,
+                    AddChunkResult::ChunkIndexTooHigh => return PutChunkResult::ChunkIndexTooHigh,
                     AddChunkResult::ChunkAlreadyExists => return PutChunkResult::ChunkAlreadyExists,
                     AddChunkResult::ChunkSizeMismatch(m) => return PutChunkResult::ChunkSizeMismatch(m),
                 }
@@ -301,12 +301,12 @@ impl PendingBlob {
                     });
                 }
             } else {
-                return AddChunkResult::ChunkIndexTooBig;
+                return AddChunkResult::ChunkIndexTooHigh;
             }
 
             // TODO: Improve performance by copying a block of memory in one go
-            let start_index = self.chunk_size as u64 * chunk_index as u64;
-            for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index as usize, b)) {
+            let start_index = self.chunk_size as usize * chunk_index as usize;
+            for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index, b)) {
                 self.bytes[index] = byte;
             }
             AddChunkResult::Success
@@ -336,7 +336,7 @@ impl PendingBlob {
 pub enum AddChunkResult {
     Success,
     ChunkAlreadyExists,
-    ChunkIndexTooBig,
+    ChunkIndexTooHigh,
     ChunkSizeMismatch(ChunkSizeMismatch),
 }
 
@@ -395,7 +395,7 @@ pub enum PutChunkResult {
     BlobAlreadyExists,
     BlobTooBig(u64),
     ChunkAlreadyExists,
-    ChunkIndexTooBig,
+    ChunkIndexTooHigh,
     ChunkSizeMismatch(ChunkSizeMismatch),
     HashMismatch(HashMismatch),
 }

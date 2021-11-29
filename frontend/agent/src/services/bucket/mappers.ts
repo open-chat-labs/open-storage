@@ -21,7 +21,7 @@ export function uploadChunkResponse(
         return "chunk_size_mismatch";
     }
     if ("ChunkIndexTooBig" in candid) {
-        return "chunk_index_too_big";
+        return "chunk_index_too_high";
     }
     if ("AllowanceReached" in candid) {
         return "allowance_reached";
