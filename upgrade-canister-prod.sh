@@ -5,7 +5,7 @@ CANISTER_TO_UPGRADE=$2
 VERSION=$3
 
 # Pass in the dfx identity name
-# eg './upgrade-canister-prod.sh openstorage user_index 1.0.0'
+# eg './upgrade-canister-prod.sh openstorage index 1.0.0'
 ./generate-wasm.sh index_canister_impl
 ./generate-wasm.sh bucket_canister_impl
 
