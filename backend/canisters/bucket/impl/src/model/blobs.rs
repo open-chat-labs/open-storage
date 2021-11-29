@@ -350,7 +350,7 @@ impl From<PutChunkArgs> for PendingBlob {
             chunk_size: args.chunk_size,
             total_size: args.total_size,
             remaining_chunks: (0..chunk_count).into_iter().collect(),
-            bytes: ByteBuf::with_capacity(args.total_size as usize),
+            bytes: ByteBuf::from(vec![0; args.total_size as usize]),
         };
         pending_blob.add_chunk(args.chunk_index, args.bytes);
         pending_blob
