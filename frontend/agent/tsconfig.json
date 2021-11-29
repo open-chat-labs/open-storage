@@ -1,6 +1,8 @@
 {
     "compilerOptions": {
+        "allowJs": true,
         "baseUrl": "./",
+        "declaration": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "importsNotUsedAsValues": "error",
@@ -17,5 +19,5 @@
         "strict": true,
         "target": "es2017"
     },
-    "include": ["src/**/*.ts"]
+    "include": ["src/**/*"]
 }
