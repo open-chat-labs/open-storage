@@ -5,6 +5,7 @@ use ic_cdk_macros::heartbeat;
 use tracing::error;
 use types::{CanisterId, CanisterWasm, Cycles, Version};
 
+const MAX_CONCURRENT_CANISTER_UPGRADES: u32 = 1;
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
 const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 50_000_000_000_000; // 50T;
 
@@ -131,12 +132,23 @@ mod upgrade_canisters {
     type CanisterToUpgrade = utils::canister::CanisterToUpgrade<bucket_canister::post_upgrade::Args>;
 
     pub fn run() {
-        if let Some(canister_to_upgrade) = RUNTIME_STATE.with(|state| next(state.borrow_mut().as_mut().unwrap())) {
-            ic_cdk::block_on(perform_upgrade(canister_to_upgrade));
+        let canisters_to_upgrade = RUNTIME_STATE.with(|state| get_next_batch(state.borrow_mut().as_mut().unwrap()));
+        if !canisters_to_upgrade.is_empty() {
+            ic_cdk::block_on(perform_upgrades(canisters_to_upgrade));
         }
     }
 
-    fn next(runtime_state: &mut RuntimeState) -> Option<CanisterToUpgrade> {
+    fn get_next_batch(runtime_state: &mut RuntimeState) -> Vec<CanisterToUpgrade> {
+        let count_in_progress = runtime_state.data.canisters_requiring_upgrade.count_in_progress();
+        (0..(MAX_CONCURRENT_CANISTER_UPGRADES - count_in_progress))
+            // TODO replace this with 'map_while' once we have upgraded to Rust 1.57
+            .map(|_| try_get_next(runtime_state))
+            .take_while(|c| c.is_some())
+            .map(|c| c.unwrap())
+            .collect()
+    }
+
+    fn try_get_next(runtime_state: &mut RuntimeState) -> Option<CanisterToUpgrade> {
         let canister_id = runtime_state.data.canisters_requiring_upgrade.try_take_next()?;
         let bucket = runtime_state.data.buckets.get(&canister_id)?;
         let new_wasm = runtime_state.data.bucket_canister_wasm.decompress();
@@ -149,6 +161,12 @@ mod upgrade_canisters {
                 wasm_version: new_wasm.version,
             },
         })
+    }
+
+    async fn perform_upgrades(canisters_to_upgrade: Vec<CanisterToUpgrade>) {
+        let futures: Vec<_> = canisters_to_upgrade.into_iter().map(perform_upgrade).collect();
+
+        futures::future::join_all(futures).await;
     }
 
     async fn perform_upgrade(canister_to_upgrade: CanisterToUpgrade) {
@@ -171,7 +189,7 @@ mod upgrade_canisters {
         if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {
             bucket.wasm_version = to_version;
         }
-        runtime_state.data.canisters_requiring_upgrade.mark_success();
+        runtime_state.data.canisters_requiring_upgrade.mark_success(&canister_id);
     }
 
     fn on_failure(canister_id: CanisterId, from_version: Version, to_version: Version, runtime_state: &mut RuntimeState) {
