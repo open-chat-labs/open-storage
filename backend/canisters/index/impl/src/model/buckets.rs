@@ -5,10 +5,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use types::{CanisterId, Hash, Version};
 
+const TARGET_ACTIVE_BUCKETS: usize = 4;
+
 #[derive(Serialize, Deserialize, Default)]
 pub struct Buckets {
     active_buckets: Vec<BucketRecord>,
     full_buckets: HashMap<CanisterId, BucketRecord>,
+    creation_in_progress: bool,
 }
 
 impl Buckets {
@@ -27,8 +30,18 @@ impl Buckets {
         }
     }
 
-    pub fn active_count(&self) -> usize {
-        self.active_buckets.len()
+    pub fn try_to_acquire_creation_lock(&mut self) -> bool {
+        if self.creation_in_progress {
+            false
+        } else {
+            self.creation_in_progress = self.active_buckets.len() < TARGET_ACTIVE_BUCKETS;
+            self.creation_in_progress
+        }
+    }
+
+    pub fn add_bucket_and_release_creation_lock(&mut self, bucket: BucketRecord) {
+        self.active_buckets.push(bucket);
+        self.creation_in_progress = false;
     }
 
     pub fn allocate(&self, blob_hash: Hash) -> Option<CanisterId> {
@@ -46,10 +59,6 @@ impl Buckets {
         for bucket in self.iter_mut() {
             bucket.sync_state.enqueue(event.clone());
         }
-    }
-
-    pub fn add(&mut self, bucket: BucketRecord) {
-        self.active_buckets.push(bucket);
     }
 
     pub fn pop_args_for_next_sync(&mut self) -> Vec<(CanisterId, c2c_sync_index::Args)> {
