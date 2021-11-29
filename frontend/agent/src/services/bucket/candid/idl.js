@@ -25,7 +25,7 @@ export const idlFactory = ({ IDL }) => {
     'ChunkSizeMismatch' : IDL.Null,
     'BlobAlreadyExists' : IDL.Null,
     'Success' : IDL.Null,
-    'BlobSizeMismatch' : IDL.Null,
+    'ChunkIndexTooBig' : IDL.Null,
     'HashMismatch' : IDL.Null,
     'AllowanceReached' : IDL.Null,
     'UserNotFound' : IDL.Null,

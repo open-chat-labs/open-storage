@@ -48,7 +48,7 @@ async fn install_service_canisters_impl(
 
     install_wasm(
         management_canister,
-        &index_canister_id,
+        index_canister_id,
         &index_canister_wasm.module,
         index_init_args,
     )

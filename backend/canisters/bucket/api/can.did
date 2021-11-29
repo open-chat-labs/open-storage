@@ -17,9 +17,9 @@ type UploadChunkResponse =
         Success;
         AllowanceReached;
         BlobAlreadyExists;
-        BlobSizeMismatch;
         BlobTooBig;
         ChunkAlreadyExists;
+        ChunkIndexTooBig;
         ChunkSizeMismatch;
         Full;
         HashMismatch;
