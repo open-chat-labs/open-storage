@@ -23,7 +23,7 @@ mod ensure_sufficient_active_buckets {
 
     pub fn run() {
         match RUNTIME_STATE.with(|state| prepare(state.borrow_mut().as_mut().unwrap())) {
-            AlreadySufficientActiveBuckets => (),
+            DoNothing => (),
             CyclesBalanceTooLow => error!("Cycles balance too low to add a new bucket"),
             CreateBucket(args) => {
                 ic_cdk::block_on(create_bucket(args));
@@ -38,14 +38,14 @@ mod ensure_sufficient_active_buckets {
     }
 
     enum PrepareResponse {
-        AlreadySufficientActiveBuckets,
+        DoNothing,
         CyclesBalanceTooLow,
         CreateBucket(CreateBucketArgs),
     }
 
     fn prepare(runtime_state: &mut RuntimeState) -> PrepareResponse {
-        if !runtime_state.data.buckets.set_creation_in_progress_if_needed() {
-            return AlreadySufficientActiveBuckets;
+        if !runtime_state.data.buckets.try_to_acquire_creation_lock() {
+            return DoNothing;
         }
 
         let cycles_required = BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE;
@@ -78,7 +78,7 @@ mod ensure_sufficient_active_buckets {
         for user_id in runtime_state.data.users.keys() {
             bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
         }
-        runtime_state.data.buckets.add(bucket);
+        runtime_state.data.buckets.add_bucket_and_release_creation_lock(bucket);
     }
 }
 

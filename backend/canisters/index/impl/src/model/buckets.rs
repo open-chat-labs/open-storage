@@ -11,7 +11,7 @@ const TARGET_ACTIVE_BUCKETS: usize = 4;
 pub struct Buckets {
     active_buckets: Vec<BucketRecord>,
     full_buckets: HashMap<CanisterId, BucketRecord>,
-    creation_in_progress: u32,
+    creation_in_progress: bool,
 }
 
 impl Buckets {
@@ -30,19 +30,18 @@ impl Buckets {
         }
     }
 
-    pub fn set_creation_in_progress_if_needed(&mut self) -> bool {
-        let more_buckets_needed = (self.active_buckets.len() + self.creation_in_progress as usize) < TARGET_ACTIVE_BUCKETS;
-
-        if more_buckets_needed {
-            self.creation_in_progress += 1;
+    pub fn try_to_acquire_creation_lock(&mut self) -> bool {
+        if self.creation_in_progress {
+            false
+        } else {
+            self.creation_in_progress = self.active_buckets.len() < TARGET_ACTIVE_BUCKETS;
+            self.creation_in_progress
         }
-
-        more_buckets_needed
     }
 
-    pub fn add(&mut self, bucket: BucketRecord) {
+    pub fn add_bucket_and_release_creation_lock(&mut self, bucket: BucketRecord) {
         self.active_buckets.push(bucket);
-        self.creation_in_progress -= 1;
+        self.creation_in_progress = false;
     }
 
     pub fn allocate(&self, blob_hash: Hash) -> Option<CanisterId> {
