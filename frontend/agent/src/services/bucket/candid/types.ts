@@ -25,9 +25,9 @@ export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
   { 'BlobTooBig' : null } |
   { 'Full' : null } |
   { 'ChunkSizeMismatch' : null } |
+  { 'ChunkIndexTooHigh' : null } |
   { 'BlobAlreadyExists' : null } |
   { 'Success' : null } |
-  { 'ChunkIndexTooHigh' : null } |
   { 'HashMismatch' : null } |
   { 'AllowanceReached' : null } |
   { 'UserNotFound' : null };
