@@ -1,5 +1,6 @@
 use crate::model::bucket_sync_state::BucketSyncState;
 use crate::model::bucket_sync_state::EventToSync;
+use arrayref::array_ref;
 use bucket_canister::c2c_sync_index;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -49,9 +50,11 @@ impl Buckets {
         if bucket_count == 0 {
             None
         } else {
+            let usize_from_hash = u64::from_le_bytes(*array_ref!(blob_hash, 0, 8)) as usize;
+
             // Use a modified modulo of the hash to slightly favour the first bucket
             // so that they don't all run out of space at the same time
-            let index = ((blob_hash as usize) % ((bucket_count * 2) + 1)) % bucket_count;
+            let index = (usize_from_hash % ((bucket_count * 2) + 1)) % bucket_count;
             Some(self.active_buckets[index].canister_id)
         }
     }

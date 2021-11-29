@@ -7,7 +7,7 @@ export interface DeleteBlobArgs { 'blob_id' : BlobId }
 export type DeleteBlobResponse = { 'NotFound' : null } |
   { 'NotAuthorized' : null } |
   { 'Success' : null };
-export type Hash = bigint;
+export type Hash = Array<number>;
 export type Milliseconds = bigint;
 export type TimestampMillis = bigint;
 export type TimestampNanos = bigint;
@@ -25,9 +25,9 @@ export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
   { 'BlobTooBig' : null } |
   { 'Full' : null } |
   { 'ChunkSizeMismatch' : null } |
+  { 'ChunkIndexTooHigh' : null } |
   { 'BlobAlreadyExists' : null } |
   { 'Success' : null } |
-  { 'ChunkIndexTooHigh' : null } |
   { 'HashMismatch' : null } |
   { 'AllowanceReached' : null } |
   { 'UserNotFound' : null };

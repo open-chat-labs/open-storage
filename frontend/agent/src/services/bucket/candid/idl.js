@@ -7,7 +7,7 @@ export const idlFactory = ({ IDL }) => {
     'Success' : IDL.Null,
   });
   const AccessorId = IDL.Principal;
-  const Hash = IDL.Nat;
+  const Hash = IDL.Vec(IDL.Nat8);
   const UploadChunkArgs = IDL.Record({
     'accessors' : IDL.Vec(AccessorId),
     'chunk_index' : IDL.Nat32,
@@ -23,9 +23,9 @@ export const idlFactory = ({ IDL }) => {
     'BlobTooBig' : IDL.Null,
     'Full' : IDL.Null,
     'ChunkSizeMismatch' : IDL.Null,
+    'ChunkIndexTooHigh' : IDL.Null,
     'BlobAlreadyExists' : IDL.Null,
     'Success' : IDL.Null,
-    'ChunkIndexTooHigh' : IDL.Null,
     'HashMismatch' : IDL.Null,
     'AllowanceReached' : IDL.Null,
     'UserNotFound' : IDL.Null,
