@@ -17,6 +17,9 @@ export function uploadChunkResponse(
     if ("BlobTooBig" in candid) {
         return "blob_too_big";
     }
+    if ("ChunkAlreadyExists" in candid) {
+        return "chunk_already_exists";
+    }
     if ("ChunkSizeMismatch" in candid) {
         return "chunk_size_mismatch";
     }
