@@ -1,27 +1,19 @@
 import "../../../libraries/types/can.did";
 
-type AddUserArgs =
+type AddOrUpdateUsersArgs =
+    record {
+        users: vec UserConfig;
+    };
+
+type UserConfig =
     record {
         user_id: UserId;
         byte_limit: nat64;
     };
 
-type AddUserResponse = 
+type AddOrUpdateUsersResponse =
     variant {
         Success;
-        UserAlreadyExists;
-    };
-
-type UpdateUserArgs =
-    record {
-        user_id: UserId;
-        byte_limit: opt nat64;
-    };
-
-type UpdateUserResponse = 
-    variant {
-        Success;
-        UserNotFound;
     };
 
 type RemoveUserArgs =
@@ -81,8 +73,7 @@ type UserRecord =
     };
 
 service: {
-    add_user: (AddUserArgs) -> (AddUserResponse);
-    update_user: (UpdateUserArgs) -> (UpdateUserResponse);
+    add_or_update_users: (AddOrUpdateUsersArgs) -> (AddOrUpdateUsersResponse);
     remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
     remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
     allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
