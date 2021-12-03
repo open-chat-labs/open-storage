@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Args {
-    pub principal: Principal,
+    pub principals: Vec<Principal>,
 }
 
 #[derive(CandidType, Deserialize, Debug)]
