@@ -60,11 +60,11 @@ pub fn build_management_canister(agent: &Agent) -> Canister<ManagementCanister> 
         .unwrap()
 }
 
-const TEN_TRILLION: u64 = 10_000_000_000_000;
+const ONE_HUNDRED_TRILLION: u64 = 100_000_000_000_000;
 pub async fn create_empty_canister(management_canister: &Canister<'_, ManagementCanister>) -> CanisterId {
     let (canister_id,) = management_canister
         .create_canister()
-        .as_provisional_create_with_amount(Some(TEN_TRILLION))
+        .as_provisional_create_with_amount(Some(ONE_HUNDRED_TRILLION))
         .call_and_wait(delay())
         .await
         .expect("Failed to create canister");
