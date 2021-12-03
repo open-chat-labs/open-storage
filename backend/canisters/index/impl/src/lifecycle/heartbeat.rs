@@ -7,7 +7,7 @@ use types::{CanisterId, CanisterWasm, Cycles, Version};
 
 const MAX_CONCURRENT_CANISTER_UPGRADES: u32 = 1;
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
-const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 50_000_000_000_000; // 50T;
+const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 10_000_000_000_000; // 10T;
 
 #[heartbeat]
 fn heartbeat() {
