@@ -4,7 +4,7 @@ use crate::UserRecord;
 use crate::{RuntimeState, RUNTIME_STATE};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
-use index_canister::add_or_update_users::*;
+use index_canister::add_or_update_users::{Response::*, *};
 
 #[update(guard = "caller_is_service_principal")]
 #[trace]
@@ -32,5 +32,5 @@ fn add_or_update_users_impl(args: Args, runtime_state: &mut RuntimeState) -> Res
         }
     }
 
-    Response::Success
+    Success
 }

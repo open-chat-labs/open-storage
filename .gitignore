@@ -1,4 +1,5 @@
 .dfx/
+.idea/
 target/
 dist/
 node_modules/
