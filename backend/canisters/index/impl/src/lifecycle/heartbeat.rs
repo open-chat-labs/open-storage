@@ -174,7 +174,7 @@ mod upgrade_canisters {
         let from_version = canister_to_upgrade.current_wasm_version;
         let to_version = canister_to_upgrade.new_wasm.version;
 
-        match upgrade(canister_id, canister_to_upgrade.new_wasm.module, canister_to_upgrade.args).await {
+        match upgrade(canister_to_upgrade).await {
             Ok(_) => {
                 RUNTIME_STATE.with(|state| on_success(canister_id, to_version, state.borrow_mut().as_mut().unwrap()));
             }
