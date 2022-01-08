@@ -1,4 +1,4 @@
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{read_state, RuntimeState};
 use canister_api_macros::trace;
 use ic_cdk_macros::query;
 use index_canister::user::*;
@@ -6,7 +6,7 @@ use index_canister::user::*;
 #[query]
 #[trace]
 fn user(_args: Args) -> Response {
-    RUNTIME_STATE.with(|state| user_impl(state.borrow().as_ref().unwrap()))
+    read_state(user_impl)
 }
 
 fn user_impl(runtime_state: &RuntimeState) -> Response {

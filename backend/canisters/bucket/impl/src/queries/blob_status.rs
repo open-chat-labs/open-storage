@@ -1,6 +1,6 @@
 use crate::guards::caller_is_known_user;
 use crate::model::users::{BlobStatusInternal, IndexSyncComplete};
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{read_state, RuntimeState};
 use bucket_canister::blob_status::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -9,7 +9,7 @@ use types::{BlobStatus, BlobStatusCompleted, BlobStatusRejected, BlobStatusUploa
 #[update(guard = "caller_is_known_user")]
 #[trace]
 fn blob_status(args: Args) -> Response {
-    RUNTIME_STATE.with(|state| blob_status_impl(args, state.borrow().as_ref().unwrap()))
+    read_state(|state| blob_status_impl(args, state))
 }
 
 fn blob_status_impl(args: Args, runtime_state: &RuntimeState) -> Response {

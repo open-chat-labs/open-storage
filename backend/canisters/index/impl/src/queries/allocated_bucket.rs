@@ -1,5 +1,4 @@
-use crate::DEFAULT_CHUNK_SIZE_BYTES;
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{read_state, RuntimeState, DEFAULT_CHUNK_SIZE_BYTES};
 use canister_api_macros::trace;
 use ic_cdk_macros::query;
 use index_canister::allocated_bucket::*;
@@ -7,7 +6,7 @@ use index_canister::allocated_bucket::*;
 #[query]
 #[trace]
 fn allocated_bucket(args: Args) -> Response {
-    RUNTIME_STATE.with(|state| allocated_bucket_impl(args, state.borrow().as_ref().unwrap()))
+    read_state(|state| allocated_bucket_impl(args, state))
 }
 
 fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {

@@ -1,4 +1,4 @@
-use crate::{calc_chunk_count, RuntimeState, LOG_MESSAGES, RUNTIME_STATE};
+use crate::{calc_chunk_count, read_state, RuntimeState, LOG_MESSAGES};
 use candid::Func;
 use canister_logger::LogMessagesContainer;
 use http_request::{
@@ -26,17 +26,17 @@ fn http_request(request: HttpRequest) -> HttpResponse {
     // }
 
     match extract_route(&request.url) {
-        Route::Blob(blob_id) => RUNTIME_STATE.with(|state| start_streaming_blob(blob_id, state.borrow().as_ref().unwrap())),
+        Route::Blob(blob_id) => read_state(|state| start_streaming_blob(blob_id, state)),
         Route::Logs(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().logs)),
         Route::Traces(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().traces)),
-        // Route::Metrics => RUNTIME_STATE.with(|state| get_metrics_impl(state.borrow().as_ref().unwrap())),
+        // Route::Metrics => read_state(get_metrics_impl),
         _ => HttpResponse::not_found(),
     }
 }
 
 #[query]
 fn http_request_streaming_callback(token: Token) -> StreamingCallbackHttpResponse {
-    RUNTIME_STATE.with(|state| continue_streaming_blob(token, state.borrow().as_ref().unwrap()))
+    read_state(|state| continue_streaming_blob(token, state))
 }
 
 fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpResponse {

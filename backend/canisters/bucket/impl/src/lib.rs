@@ -3,6 +3,7 @@ use crate::model::index_sync_state::IndexSyncState;
 use crate::model::users::Users;
 use candid::CandidType;
 use canister_logger::LogMessagesWrapper;
+use canister_state_macros::state_operations;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use types::{CanisterId, TimestampMillis, Timestamped, Version};
@@ -29,6 +30,8 @@ thread_local! {
     static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
     static WASM_VERSION: RefCell<Timestamped<Version>> = RefCell::default();
 }
+
+state_operations!();
 
 struct RuntimeState {
     pub env: Box<dyn Environment>,

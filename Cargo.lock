@@ -204,6 +204,7 @@ dependencies = [
  "candid",
  "canister_api_macros",
  "canister_logger",
+ "canister_state_macros",
  "http_request",
  "ic-cdk",
  "ic-cdk-macros",
@@ -350,6 +351,10 @@ dependencies = [
  "tracing-subscriber",
  "types",
 ]
+
+[[package]]
+name = "canister_state_macros"
+version = "0.1.0"
 
 [[package]]
 name = "canister_upgrader"
@@ -1145,6 +1150,7 @@ dependencies = [
  "candid",
  "canister_api_macros",
  "canister_logger",
+ "canister_state_macros",
  "cycles_utils",
  "futures",
  "http_request",

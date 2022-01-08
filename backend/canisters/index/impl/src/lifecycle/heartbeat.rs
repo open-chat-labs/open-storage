@@ -1,5 +1,5 @@
 use crate::model::bucket_sync_state::EventToSync;
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{mutate_state, RuntimeState};
 use bucket_canister::c2c_sync_index::{Args, Response, SuccessResult};
 use ic_cdk_macros::heartbeat;
 use tracing::error;
@@ -24,7 +24,7 @@ mod ensure_sufficient_active_buckets {
     use PrepareResponse::*;
 
     pub fn run() {
-        match RUNTIME_STATE.with(|state| prepare(state.borrow_mut().as_mut().unwrap())) {
+        match mutate_state(prepare) {
             DoNothing => (),
             CyclesBalanceTooLow => error!("Cycles balance too low to add a new bucket"),
             CreateBucket(args) => {
@@ -72,7 +72,7 @@ mod ensure_sufficient_active_buckets {
 
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
-            RUNTIME_STATE.with(|state| commit(bucket, state.borrow_mut().as_mut().unwrap()))
+            mutate_state(|state| commit(bucket, state))
         }
     }
 
@@ -88,7 +88,7 @@ mod sync_users_with_buckets {
     use super::*;
 
     pub fn run() {
-        for (canister_id, args) in RUNTIME_STATE.with(|state| next_batch(state.borrow_mut().as_mut().unwrap())) {
+        for (canister_id, args) in mutate_state(next_batch) {
             ic_cdk::block_on(send_to_bucket(canister_id, args));
         }
     }
@@ -100,10 +100,10 @@ mod sync_users_with_buckets {
     async fn send_to_bucket(canister_id: CanisterId, args: Args) {
         match bucket_canister_c2c_client::c2c_sync_index(canister_id, &args).await {
             Ok(Response::Success(result)) => {
-                RUNTIME_STATE.with(|state| handle_success(canister_id, result, state.borrow_mut().as_mut().unwrap()));
+                mutate_state(|state| handle_success(canister_id, result, state));
             }
             Err(_) => {
-                RUNTIME_STATE.with(|state| handle_error(canister_id, args, state.borrow_mut().as_mut().unwrap()));
+                mutate_state(|state| handle_error(canister_id, args, state));
             }
         }
     }
@@ -132,13 +132,13 @@ mod upgrade_canisters {
     type CanisterToUpgrade = utils::canister::CanisterToUpgrade<bucket_canister::post_upgrade::Args>;
 
     pub fn run() {
-        let canisters_to_upgrade = RUNTIME_STATE.with(|state| get_next_batch(state.borrow_mut().as_mut().unwrap()));
+        let canisters_to_upgrade = mutate_state(next_batch);
         if !canisters_to_upgrade.is_empty() {
             ic_cdk::block_on(perform_upgrades(canisters_to_upgrade));
         }
     }
 
-    fn get_next_batch(runtime_state: &mut RuntimeState) -> Vec<CanisterToUpgrade> {
+    fn next_batch(runtime_state: &mut RuntimeState) -> Vec<CanisterToUpgrade> {
         let count_in_progress = runtime_state.data.canisters_requiring_upgrade.count_in_progress();
         (0..(MAX_CONCURRENT_CANISTER_UPGRADES - count_in_progress))
             // TODO replace this with 'map_while' once we have upgraded to Rust 1.57
@@ -176,11 +176,10 @@ mod upgrade_canisters {
 
         match upgrade(canister_id, canister_to_upgrade.new_wasm.module, canister_to_upgrade.args).await {
             Ok(_) => {
-                RUNTIME_STATE.with(|state| on_success(canister_id, to_version, state.borrow_mut().as_mut().unwrap()));
+                mutate_state(|state| on_success(canister_id, to_version, state));
             }
             Err(_) => {
-                RUNTIME_STATE
-                    .with(|state| on_failure(canister_id, from_version, to_version, state.borrow_mut().as_mut().unwrap()));
+                mutate_state(|state| on_failure(canister_id, from_version, to_version, state));
             }
         }
     }

@@ -1,7 +1,7 @@
 use crate::guards::caller_is_index_canister;
 use crate::model::blobs::RemoveBlobReferenceResult;
 use crate::model::index_sync_state::EventToSync;
-use crate::{RuntimeState, MAX_EVENTS_TO_SYNC_PER_BATCH, RUNTIME_STATE};
+use crate::{mutate_state, RuntimeState, MAX_EVENTS_TO_SYNC_PER_BATCH};
 use bucket_canister::c2c_sync_index::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -10,7 +10,7 @@ use types::BlobReferenceRemoved;
 #[update(guard = "caller_is_index_canister")]
 #[trace]
 fn c2c_sync_index(args: Args) -> Response {
-    RUNTIME_STATE.with(|state| c2c_sync_index_impl(args, state.borrow_mut().as_mut().unwrap()))
+    mutate_state(|state| c2c_sync_index_impl(args, state))
 }
 
 fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
