@@ -17,7 +17,7 @@ fn http_request(request: HttpRequest) -> HttpResponse {
     match extract_route(&request.url) {
         Route::Logs(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().logs)),
         Route::Traces(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().traces)),
-        // Route::Metrics => RUNTIME_STATE.with(|state| get_metrics_impl(state.borrow().as_ref().unwrap())),
+        // Route::Metrics => read_state(get_metrics_impl),
         _ => HttpResponse::not_found(),
     }
 }

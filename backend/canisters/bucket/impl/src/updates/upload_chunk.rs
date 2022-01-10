@@ -2,7 +2,7 @@ use crate::guards::caller_is_known_user;
 use crate::model::blobs::{PutChunkArgs, PutChunkResult};
 use crate::model::index_sync_state::EventToSync;
 use crate::model::users::{BlobStatusInternal, IndexSyncComplete};
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{mutate_state, RuntimeState};
 use bucket_canister::upload_chunk::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
@@ -11,7 +11,7 @@ use types::{BlobReferenceRemoved, RejectedReason, UserId};
 #[update(guard = "caller_is_known_user")]
 #[trace]
 fn upload_chunk(args: Args) -> Response {
-    RUNTIME_STATE.with(|state| upload_chunk_impl(args, state.borrow_mut().as_mut().unwrap()))
+    mutate_state(|state| upload_chunk_impl(args, state))
 }
 
 fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {

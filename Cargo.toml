@@ -14,6 +14,7 @@ members = [
     "backend/libraries/canister_client",
     "backend/libraries/canister_client_macros",
     "backend/libraries/canister_logger",
+    "backend/libraries/canister_state_macros",
     "backend/libraries/http_request",
     "backend/libraries/serializer",
     "backend/libraries/types",

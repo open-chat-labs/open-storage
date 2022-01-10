@@ -1,5 +1,5 @@
 use crate::guards::caller_is_bucket;
-use crate::{RuntimeState, RUNTIME_STATE};
+use crate::{mutate_state, RuntimeState};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
 use index_canister::c2c_sync_bucket::*;
@@ -7,7 +7,7 @@ use index_canister::c2c_sync_bucket::*;
 #[update(guard = "caller_is_bucket")]
 #[trace]
 fn c2c_sync_bucket(args: Args) -> Response {
-    RUNTIME_STATE.with(|state| c2c_sync_bucket_impl(args, state.borrow_mut().as_mut().unwrap()))
+    mutate_state(|state| c2c_sync_bucket_impl(args, state))
 }
 
 fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
