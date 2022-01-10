@@ -205,6 +205,7 @@ dependencies = [
  "canister_api_macros",
  "canister_logger",
  "canister_state_macros",
+ "cycles_utils",
  "http_request",
  "ic-cdk",
  "ic-cdk-macros",
