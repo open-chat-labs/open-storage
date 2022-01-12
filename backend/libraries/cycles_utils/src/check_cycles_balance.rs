@@ -1,5 +1,5 @@
 use canister_client_macros::generate_c2c_call;
-use std::cell::RefCell;
+use std::cell::Cell;
 use tracing::error;
 use types::{CanisterId, Cycles, Milliseconds, TimestampMillis};
 use utils::time::MINUTE_IN_MS;
@@ -7,7 +7,7 @@ use utils::time::MINUTE_IN_MS;
 const CYCLES_CHECK_INTERVAL: Milliseconds = 10 * MINUTE_IN_MS; // 10 minutes
 
 thread_local! {
-    static LAST_CHECKED: RefCell<TimestampMillis> = RefCell::default();
+    static LAST_CHECKED: Cell<TimestampMillis> = Cell::default();
 }
 
 pub fn check_cycles_balance(min_cycles_balance: Cycles, top_up_canister_id: CanisterId, now: TimestampMillis) {
@@ -24,8 +24,8 @@ fn should_notify(min_cycles_balance: Cycles) -> bool {
 
 fn is_cycles_check_due(now: TimestampMillis) -> bool {
     LAST_CHECKED.with(|t| {
-        if now > *t.borrow() + CYCLES_CHECK_INTERVAL {
-            *t.borrow_mut() = now;
+        if now > t.get() + CYCLES_CHECK_INTERVAL {
+            t.set(now);
             true
         } else {
             false
