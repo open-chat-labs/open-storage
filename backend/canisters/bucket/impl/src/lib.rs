@@ -6,7 +6,7 @@ use canister_logger::LogMessagesWrapper;
 use canister_state_macros::state_operations;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use types::{CanisterId, TimestampMillis, Timestamped, Version};
+use types::{CanisterId, Cycles, TimestampMillis, Timestamped, Version};
 use utils::env::Environment;
 
 mod guards;
@@ -18,6 +18,7 @@ mod updates;
 const DATA_LIMIT_BYTES: u64 = 1 << 30; // 1Gb
 const MAX_BLOB_SIZE_BYTES: u64 = 100 * (1 << 20); // 100Mb
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
+const MIN_CYCLES_BALANCE: Cycles = 2_000_000_000_000; // 2T
 const STATE_VERSION: StateVersion = StateVersion::V1;
 
 #[derive(CandidType, Serialize, Deserialize)]
