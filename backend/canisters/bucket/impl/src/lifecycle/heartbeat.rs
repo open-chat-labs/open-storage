@@ -1,5 +1,5 @@
 use crate::model::users::BlobStatusInternal;
-use crate::{mutate_state, RuntimeState};
+use crate::{mutate_state, RuntimeState, MIN_CYCLES_BALANCE};
 use ic_cdk_macros::heartbeat;
 use index_canister::c2c_sync_bucket::{Args, Response, SuccessResult};
 use types::CanisterId;
@@ -7,6 +7,7 @@ use types::CanisterId;
 #[heartbeat]
 fn heartbeat() {
     sync_index::run();
+    check_cycles_balance::run();
 }
 
 mod sync_index {
@@ -64,5 +65,16 @@ mod sync_index {
 
     fn handle_error(args: Args, runtime_state: &mut RuntimeState) {
         runtime_state.data.index_sync_state.mark_sync_failed(args);
+    }
+}
+
+mod check_cycles_balance {
+    use super::*;
+
+    pub fn run() {
+        mutate_state(|state| {
+            let index_canister_id = state.data.index_canister_id;
+            cycles_utils::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id);
+        })
     }
 }

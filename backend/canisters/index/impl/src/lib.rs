@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
     BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRejectedReason, BlobReferenceRemoved, CanisterId, CanisterWasm,
-    Timestamped, UserId, Version,
+    Cycles, Timestamped, UserId, Version,
 };
 use utils::canister::CanistersRequiringUpgrade;
 use utils::env::Environment;
@@ -22,6 +22,8 @@ mod updates;
 const DEFAULT_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 Mb
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
 const STATE_VERSION: StateVersion = StateVersion::V1;
+const MIN_CYCLES_BALANCE: Cycles = 10_000_000_000_000; // 10T
+const BUCKET_CANISTER_TOP_UP_AMOUNT: Cycles = 1_000_000_000_000; // 1T
 
 #[derive(CandidType, Serialize, Deserialize)]
 enum StateVersion {
@@ -65,6 +67,8 @@ struct Data {
     pub blob_buckets: BlobBuckets,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
+    #[serde(default)]
+    pub total_cycles_spent_on_canisters: Cycles,
     pub test_mode: bool,
 }
 
@@ -77,6 +81,7 @@ impl Data {
             blob_buckets: BlobBuckets::default(),
             buckets: Buckets::default(),
             canisters_requiring_upgrade: CanistersRequiringUpgrade::default(),
+            total_cycles_spent_on_canisters: 0,
             test_mode,
         }
     }

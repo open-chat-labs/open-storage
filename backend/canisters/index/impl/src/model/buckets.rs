@@ -4,7 +4,7 @@ use arrayref::array_ref;
 use bucket_canister::c2c_sync_index;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use types::{CanisterId, Hash, Version};
+use types::{CanisterId, CyclesTopUp, Hash, Version};
 
 const TARGET_ACTIVE_BUCKETS: usize = 4;
 
@@ -82,6 +82,15 @@ impl Buckets {
         }
     }
 
+    pub fn mark_cycles_top_up(&mut self, canister_id: &CanisterId, top_up: CyclesTopUp) -> bool {
+        if let Some(bucket) = self.get_mut(canister_id) {
+            bucket.cycle_top_ups.push(top_up);
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &BucketRecord> {
         self.active_buckets.iter().chain(self.full_buckets.values())
     }
@@ -97,6 +106,8 @@ pub struct BucketRecord {
     pub wasm_version: Version,
     pub bytes_used: u64,
     pub sync_state: BucketSyncState,
+    #[serde(default)]
+    pub cycle_top_ups: Vec<CyclesTopUp>,
 }
 
 impl BucketRecord {
@@ -106,6 +117,7 @@ impl BucketRecord {
             wasm_version,
             bytes_used: 0,
             sync_state: BucketSyncState::default(),
+            cycle_top_ups: Vec::new(),
         }
     }
 }
