@@ -1,9 +1,10 @@
 use candid::CandidType;
 use serde::Deserialize;
 use serde_bytes::ByteBuf;
+use std::fmt::{Debug, Formatter};
 use types::{AccessorId, BlobId, Hash};
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Deserialize)]
 pub struct Args {
     pub blob_id: BlobId,
     pub hash: Hash,
@@ -27,4 +28,19 @@ pub enum Response {
     Full,
     HashMismatch,
     UserNotFound,
+}
+
+impl Debug for Args {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Args")
+            .field("blob_id", &self.blob_id)
+            .field("hash", &self.hash)
+            .field("mime_type", &self.mime_type)
+            .field("accessors", &self.accessors)
+            .field("chunk_index", &self.chunk_index)
+            .field("chunk_size", &self.chunk_size)
+            .field("total_size", &self.total_size)
+            .field("byte_length", &self.bytes.len())
+            .finish()
+    }
 }
