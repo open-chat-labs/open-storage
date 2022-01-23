@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use types::{CanisterId, Cycles, TimestampMillis, Timestamped, Version};
 use utils::env::Environment;
+use utils::memory;
 
 mod guards;
 mod lifecycle;
@@ -52,6 +53,20 @@ impl RuntimeState {
         let caller = self.env.caller();
         self.data.users.exists(&caller)
     }
+
+    pub fn metrics(&self) -> Metrics {
+        let blob_metrics = self.data.blobs.metrics();
+
+        Metrics {
+            memory_used: memory::used(),
+            now: self.env.now(),
+            cycles_balance: self.env.cycles_balance(),
+            wasm_version: WASM_VERSION.with(|v| **v.borrow()),
+            blob_count: blob_metrics.blob_count,
+            hash_count: blob_metrics.hash_count,
+            index_sync_queue_length: self.data.index_sync_state.queue_len(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -75,6 +90,17 @@ impl Data {
             test_mode,
         }
     }
+}
+
+#[derive(CandidType, Serialize, Debug)]
+pub struct Metrics {
+    pub memory_used: u64,
+    pub now: TimestampMillis,
+    pub cycles_balance: Cycles,
+    pub wasm_version: Version,
+    pub blob_count: u32,
+    pub hash_count: u32,
+    pub index_sync_queue_length: u32,
 }
 
 pub fn calc_chunk_count(chunk_size: u32, total_size: u64) -> u32 {
