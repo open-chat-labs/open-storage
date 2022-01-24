@@ -14,7 +14,7 @@ pub async fn create_and_install_service_canisters(identity: BasicIdentity, url: 
 
     let index_canister_id = create_empty_canister(&management_canister).await;
 
-    println!("index canister id: {}", index_canister_id.to_string());
+    println!("index canister id: {index_canister_id}");
 
     install_service_canisters_impl(principal, &index_canister_id, &management_canister, test_mode).await;
 
