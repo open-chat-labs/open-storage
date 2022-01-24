@@ -1,6 +1,7 @@
 import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import { v1 as uuidv1 } from "uuid";
+import type { UploadBlobResponse, UserResponse } from "./domain/index";
 import { BucketClient } from "./services/bucket/bucket.client";
 import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
@@ -13,6 +14,10 @@ export class OpenStorageAgent {
     constructor(agent: HttpAgent, indexCanisterId: Principal) {
         this.agent = agent;
         this.indexClient = new IndexClient(agent, indexCanisterId);
+    }
+
+    user(): Promise<UserResponse> {
+        return this.indexClient.user();
     }
 
     async uploadBlob(
@@ -83,10 +88,4 @@ export class OpenStorageAgent {
     private static newBlobId(): bigint {
         return BigInt(parseInt(uuidv1().replace(/-/g, ""), 16));
     }
-}
-
-export interface UploadBlobResponse {
-    canisterId: Principal,
-    blobId: bigint,
-    pathPrefix: string,
 }

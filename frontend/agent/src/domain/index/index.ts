@@ -23,3 +23,16 @@ export type AllocatedBucketUserNotFound = {
 export type AllocatedBucketBucketUnavailable = {
     kind: "bucket_unavailable",
 }
+
+export interface UploadBlobResponse {
+    canisterId: Principal,
+    blobId: bigint,
+    pathPrefix: string,
+}
+
+export type UserResponse = UserRecord | "user_not_found";
+
+export type UserRecord = {
+    byteLimit: bigint,
+    bytesUsed: bigint,
+}
