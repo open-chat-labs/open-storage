@@ -44,9 +44,30 @@ impl Blobs {
     pub fn has_user_uploaded_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
         self.blobs.get(hash).map_or(false, |b| b.uploaded_by.contains_key(user_id))
     }
+
+    pub fn set_reference_counts(&mut self, reference_counts: Vec<(CanisterId, HashMap<Hash, Vec<UserId>>)>) {
+        for blob_record in self.blobs.values_mut() {
+            blob_record.uploaded_by.clear();
+        }
+
+        for (bucket, map) in reference_counts {
+            for (hash, user_ids) in map {
+                if let Some(blob_record) = self.blobs.get_mut(&hash) {
+                    for user_id in user_ids {
+                        blob_record.add_reference(user_id, bucket);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&Hash, &BlobRecord)> {
+        self.blobs.iter()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(from = "BlobRecordOld")]
 pub struct BlobRecord {
     pub uploaded_by: HashMap<UserId, Vec<ReferenceCount>>,
     pub size: u64,
@@ -86,6 +107,21 @@ impl BlobRecord {
 pub struct ReferenceCount {
     bucket: CanisterId,
     count: u32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BlobRecordOld {
+    pub buckets: Vec<CanisterId>,
+    pub size: u64,
+}
+
+impl From<BlobRecordOld> for BlobRecord {
+    fn from(br: BlobRecordOld) -> Self {
+        BlobRecord {
+            uploaded_by: HashMap::new(),
+            size: br.size,
+        }
+    }
 }
 
 impl ReferenceCount {
