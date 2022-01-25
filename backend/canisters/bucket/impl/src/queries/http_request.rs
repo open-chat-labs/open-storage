@@ -10,7 +10,7 @@ use num_traits::cast::ToPrimitive;
 use serde_bytes::ByteBuf;
 use std::borrow::Cow;
 use std::cmp::min;
-use types::{BlobId, TimestampMillis};
+use types::{FileId, TimestampMillis};
 
 const BLOB_RESPONSE_CHUNK_SIZE_BYTES: u32 = 1 << 19; // 1/2 MB
 const CACHE_HEADER_VALUE: &str = "public, max-age=100000000, immutable";
@@ -26,7 +26,7 @@ fn http_request(request: HttpRequest) -> HttpResponse {
     }
 
     match extract_route(&request.url) {
-        Route::Blob(blob_id) => read_state(|state| start_streaming_blob(blob_id, state)),
+        Route::File(file_id) => read_state(|state| start_streaming_file(file_id, state)),
         Route::Logs(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().logs)),
         Route::Traces(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().traces)),
         Route::Metrics => read_state(get_metrics_impl),
@@ -36,15 +36,15 @@ fn http_request(request: HttpRequest) -> HttpResponse {
 
 #[query]
 fn http_request_streaming_callback(token: Token) -> StreamingCallbackHttpResponse {
-    read_state(|state| continue_streaming_blob(token, state))
+    read_state(|state| continue_streaming_file(token, state))
 }
 
-fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpResponse {
-    if let Some(blob_reference) = runtime_state.data.blobs.blob_reference(&blob_id) {
-        if let Some(blob_bytes) = runtime_state.data.blobs.blob_bytes(&blob_reference.hash) {
+fn start_streaming_file(file_id: FileId, runtime_state: &RuntimeState) -> HttpResponse {
+    if let Some(file) = runtime_state.data.files.get(&file_id) {
+        if let Some(bytes) = runtime_state.data.files.blob_bytes(&file.hash) {
             let canister_id = runtime_state.env.canister_id();
 
-            let (chunk_bytes, stream_next_chunk) = chunk_bytes(blob_bytes, 0);
+            let (chunk_bytes, stream_next_chunk) = chunk_bytes(bytes, 0);
 
             let streaming_strategy = if stream_next_chunk {
                 Some(StreamingStrategy::Callback {
@@ -52,7 +52,7 @@ fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpRe
                         principal: canister_id,
                         method: "http_request_streaming_callback".to_string(),
                     },
-                    token: build_token(blob_id, 1),
+                    token: build_token(file_id, 1),
                 })
             } else {
                 None
@@ -61,7 +61,7 @@ fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpRe
             return HttpResponse {
                 status_code: 200,
                 headers: vec![
-                    HeaderField("Content-Type".to_string(), blob_reference.mime_type.clone()),
+                    HeaderField("Content-Type".to_string(), file.mime_type.clone()),
                     HeaderField("Cache-Control".to_string(), CACHE_HEADER_VALUE.to_string()),
                 ],
                 body: Cow::Owned(chunk_bytes),
@@ -73,15 +73,15 @@ fn start_streaming_blob(blob_id: BlobId, runtime_state: &RuntimeState) -> HttpRe
     HttpResponse::not_found()
 }
 
-fn continue_streaming_blob(token: Token, runtime_state: &RuntimeState) -> StreamingCallbackHttpResponse {
-    if let Route::Blob(blob_id) = extract_route(&token.key) {
+fn continue_streaming_file(token: Token, runtime_state: &RuntimeState) -> StreamingCallbackHttpResponse {
+    if let Route::File(file_id) = extract_route(&token.key) {
         let chunk_index = token.index.0.to_u32().unwrap();
-        let blobs = &runtime_state.data.blobs;
+        let files = &runtime_state.data.files;
 
-        if let Some(bytes) = blobs.blob_reference(&blob_id).map(|r| blobs.blob_bytes(&r.hash)).flatten() {
+        if let Some(bytes) = files.get(&file_id).map(|f| files.blob_bytes(&f.hash)).flatten() {
             let (chunk_bytes, stream_next_chunk) = chunk_bytes(bytes, chunk_index);
 
-            let token = if stream_next_chunk { Some(build_token(blob_id, chunk_index + 1)) } else { None };
+            let token = if stream_next_chunk { Some(build_token(file_id, chunk_index + 1)) } else { None };
             return StreamingCallbackHttpResponse {
                 body: chunk_bytes,
                 token,

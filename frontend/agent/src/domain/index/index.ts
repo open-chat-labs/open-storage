@@ -24,9 +24,9 @@ export type AllocatedBucketBucketUnavailable = {
     kind: "bucket_unavailable",
 }
 
-export interface UploadBlobResponse {
+export interface UploadFileResponse {
     canisterId: Principal,
-    blobId: bigint,
+    fileId: bigint,
     pathPrefix: string,
 }
 

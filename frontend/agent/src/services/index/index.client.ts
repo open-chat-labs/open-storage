@@ -18,9 +18,9 @@ export class IndexClient extends CandidService<IndexService> implements IIndexCl
         );
     }
 
-    allocatedBucket(blobHash: Array<number>, blobSize: bigint): Promise<AllocatedBucketResponse> {
+    allocatedBucket(fileHash: Array<number>, fileSize: bigint): Promise<AllocatedBucketResponse> {
         return this.handleResponse(
-            this.service.allocated_bucket({ blob_hash: blobHash, blob_size: blobSize }),
+            this.service.allocated_bucket_v2({ file_hash: fileHash, file_size: fileSize }),
             allocatedBucketResponse
         );
     }

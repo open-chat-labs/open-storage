@@ -13,21 +13,19 @@ fn c2c_sync_bucket(args: Args) -> Response {
 fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let bucket = runtime_state.env.caller();
 
-    let blob_references_rejected = args
-        .blob_references_added
+    let files_rejected = args
+        .files_added
         .into_iter()
-        .filter_map(|br_added| runtime_state.data.add_blob_reference(bucket, br_added).err())
+        .filter_map(|file| runtime_state.data.add_file_reference(bucket, file).err())
         .collect();
 
-    for br_removed in args.blob_references_removed {
-        runtime_state.data.remove_blob_reference(bucket, br_removed);
+    for file in args.files_removed {
+        runtime_state.data.remove_file_reference(bucket, file);
     }
 
     if args.bytes_remaining <= 0 {
         runtime_state.data.buckets.archive(bucket);
     }
 
-    Response::Success(SuccessResult {
-        blob_references_rejected,
-    })
+    Response::Success(SuccessResult { files_rejected })
 }

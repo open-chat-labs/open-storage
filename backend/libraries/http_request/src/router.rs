@@ -1,8 +1,8 @@
 use std::str::FromStr;
-use types::{BlobId, TimestampMillis};
+use types::{FileId, TimestampMillis};
 
 pub enum Route {
-    Blob(u128),
+    File(u128),
     Logs(Option<TimestampMillis>),
     Traces(Option<TimestampMillis>),
     Metrics,
@@ -18,9 +18,9 @@ pub fn extract_route(path: &str) -> Route {
     let parts: Vec<_> = path.split('/').collect();
 
     match parts[0] {
-        "blobs" if parts.len() > 1 => {
-            if let Ok(blob_id) = BlobId::from_str(parts[1]) {
-                Route::Blob(blob_id)
+        "blobs" | "files" if parts.len() > 1 => {
+            if let Ok(file_id) = FileId::from_str(parts[1]) {
+                Route::File(file_id)
             } else {
                 Route::Other
             }

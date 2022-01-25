@@ -2,7 +2,7 @@ import "../../../libraries/types/can.did";
 
 type UploadChunkArgs =
     record {
-        blob_id: BlobId;
+        file_id: FileId;
         hash: Hash;
         mime_type: text;
         accessors: vec AccessorId;
@@ -16,8 +16,8 @@ type UploadChunkResponse =
     variant {
         Success;
         AllowanceReached;
-        BlobAlreadyExists;
-        BlobTooBig;
+        FileAlreadyExists;
+        FileTooBig;
         ChunkAlreadyExists;
         ChunkIndexTooHigh;
         ChunkSizeMismatch;
@@ -26,12 +26,12 @@ type UploadChunkResponse =
         UserNotFound;
     };
 
-type DeleteBlobArgs =
+type DeleteFileArgs =
     record {
-        blob_id: BlobId;
+        file_id: FileId;
     };
 
-type DeleteBlobResponse =
+type DeleteFileResponse =
     variant {
         Success;
         NotAuthorized;
@@ -39,6 +39,6 @@ type DeleteBlobResponse =
     };
 
 service: {
-    upload_chunk: (UploadChunkArgs) -> (UploadChunkResponse);
-    delete_blob: (DeleteBlobArgs) -> (DeleteBlobResponse);
+    upload_chunk_v2: (UploadChunkArgs) -> (UploadChunkResponse);
+    delete_file: (DeleteFileArgs) -> (DeleteFileResponse);
 }

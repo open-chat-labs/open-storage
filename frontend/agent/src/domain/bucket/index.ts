@@ -1,7 +1,7 @@
 export type UploadChunkResponse =
     | "success"
-    | "blob_already_exists"
-    | "blob_too_big"
+    | "file_already_exists"
+    | "file_too_big"
     | "chunk_already_exists"
     | "chunk_index_too_high"
     | "chunk_size_mismatch"
@@ -10,7 +10,7 @@ export type UploadChunkResponse =
     | "hash_mismatch"
     | "full";
 
-export type DeleteBlobResponse =
+export type DeleteFileResponse =
     | "success"
     | "not_authorized"
     | "not_found";

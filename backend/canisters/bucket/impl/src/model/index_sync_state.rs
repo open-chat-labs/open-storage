@@ -2,7 +2,7 @@ use crate::MAX_EVENTS_TO_SYNC_PER_BATCH;
 use index_canister::c2c_sync_bucket::Args;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use types::{BlobReferenceAdded, BlobReferenceRemoved};
+use types::{FileAdded, FileRemoved};
 
 // We want to send events to the index in order, so while a sync is in progress we avoid sending
 // more events in case the first batch fails and the second succeeds. If a sync fails, the args that
@@ -30,15 +30,15 @@ impl IndexSyncState {
         } else {
             let mut args = Args {
                 bytes_remaining,
-                blob_references_added: Vec::new(),
-                blob_references_removed: Vec::new(),
+                files_added: Vec::new(),
+                files_removed: Vec::new(),
             };
 
             for _ in 0..MAX_EVENTS_TO_SYNC_PER_BATCH {
                 if let Some(event) = self.queue.pop_front() {
                     match event {
-                        EventToSync::BlobReferenceAdded(a) => args.blob_references_added.push(a),
-                        EventToSync::BlobReferenceRemoved(r) => args.blob_references_removed.push(r),
+                        EventToSync::FileAdded(a) => args.files_added.push(a),
+                        EventToSync::FileRemoved(r) => args.files_removed.push(r),
                     }
                 } else {
                     break;
@@ -65,6 +65,8 @@ impl IndexSyncState {
 
 #[derive(Serialize, Deserialize)]
 pub enum EventToSync {
-    BlobReferenceAdded(BlobReferenceAdded),
-    BlobReferenceRemoved(BlobReferenceRemoved),
+    #[serde(rename(deserialize = "BlobReferenceAdded"))]
+    FileAdded(FileAdded),
+    #[serde(rename(deserialize = "BlobReferenceRemoved"))]
+    FileRemoved(FileRemoved),
 }

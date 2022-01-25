@@ -1,12 +1,12 @@
 import type { Principal } from '@dfinity/principal';
 export type AccessorId = Principal;
-export type BlobId = bigint;
 export type CanisterId = Principal;
 export type Cycles = bigint;
-export interface DeleteBlobArgs { 'blob_id' : BlobId }
-export type DeleteBlobResponse = { 'NotFound' : null } |
+export interface DeleteFileArgs { 'file_id' : FileId }
+export type DeleteFileResponse = { 'NotFound' : null } |
   { 'NotAuthorized' : null } |
   { 'Success' : null };
+export type FileId = bigint;
 export type Hash = Array<number>;
 export type Milliseconds = bigint;
 export type TimestampMillis = bigint;
@@ -14,21 +14,21 @@ export type TimestampNanos = bigint;
 export interface UploadChunkArgs {
   'accessors' : Array<AccessorId>,
   'chunk_index' : number,
-  'blob_id' : BlobId,
   'hash' : Hash,
   'mime_type' : string,
   'total_size' : bigint,
   'bytes' : Array<number>,
   'chunk_size' : number,
+  'file_id' : FileId,
 }
 export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
-  { 'BlobTooBig' : null } |
   { 'Full' : null } |
   { 'ChunkSizeMismatch' : null } |
+  { 'FileTooBig' : null } |
   { 'ChunkIndexTooHigh' : null } |
-  { 'BlobAlreadyExists' : null } |
   { 'Success' : null } |
   { 'HashMismatch' : null } |
+  { 'FileAlreadyExists' : null } |
   { 'AllowanceReached' : null } |
   { 'UserNotFound' : null };
 export type UserId = Principal;
@@ -38,6 +38,6 @@ export interface Version {
   'patch' : number,
 }
 export interface _SERVICE {
-  'delete_blob' : (arg_0: DeleteBlobArgs) => Promise<DeleteBlobResponse>,
-  'upload_chunk' : (arg_0: UploadChunkArgs) => Promise<UploadChunkResponse>,
+  'delete_file' : (arg_0: DeleteFileArgs) => Promise<DeleteFileResponse>,
+  'upload_chunk_v2' : (arg_0: UploadChunkArgs) => Promise<UploadChunkResponse>,
 }

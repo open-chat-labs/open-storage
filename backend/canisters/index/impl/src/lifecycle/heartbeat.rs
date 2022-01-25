@@ -109,8 +109,8 @@ mod sync_users_with_buckets {
     }
 
     fn handle_success(canister_id: CanisterId, result: SuccessResult, runtime_state: &mut RuntimeState) {
-        for br_removed in result.blob_references_removed {
-            runtime_state.data.remove_blob_reference(canister_id, br_removed);
+        for file in result.files_removed {
+            runtime_state.data.remove_file_reference(canister_id, file);
         }
 
         if let Some(bucket) = runtime_state.data.buckets.get_mut(&canister_id) {

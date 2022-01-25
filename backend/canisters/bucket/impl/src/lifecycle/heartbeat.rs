@@ -1,4 +1,4 @@
-use crate::model::users::BlobStatusInternal;
+use crate::model::users::FileStatusInternal;
 use crate::{mutate_state, RuntimeState, MIN_CYCLES_BALANCE};
 use ic_cdk_macros::heartbeat;
 use index_canister::c2c_sync_bucket::{Args, Response, SuccessResult};
@@ -20,7 +20,7 @@ mod sync_index {
     }
 
     fn next_batch(runtime_state: &mut RuntimeState) -> Option<(CanisterId, Args)> {
-        let bytes_remaining = runtime_state.data.blobs.bytes_remaining();
+        let bytes_remaining = runtime_state.data.files.bytes_remaining();
         runtime_state
             .data
             .index_sync_state
@@ -40,21 +40,21 @@ mod sync_index {
     }
 
     fn handle_success(result: SuccessResult, runtime_state: &mut RuntimeState) {
-        // For each blob that is rejected by the index canister we want to do 2 things -
+        // For each file that is rejected by the index canister we want to do 2 things -
         // 1. Record the reason against the user so that they can determine what happened
-        // 2. Delete any additional data we have held for that blob
-        for blob_reference_rejected in result.blob_references_rejected {
-            let blob_id = blob_reference_rejected.blob_id;
-            let reason = blob_reference_rejected.reason.into();
+        // 2. Delete any additional data we have held for that file
+        for file in result.files_rejected {
+            let file_id = file.file_id;
+            let reason = file.reason.into();
 
-            if let Some(user_id) = runtime_state.data.blobs.uploaded_by(&blob_id) {
+            if let Some(user_id) = runtime_state.data.files.uploaded_by(&file.file_id) {
                 if let Some(user) = runtime_state.data.users.get_mut(&user_id) {
-                    let old_status = user.set_blob_status(blob_id, BlobStatusInternal::Rejected(reason));
+                    let old_status = user.set_file_status(file_id, FileStatusInternal::Rejected(reason));
 
-                    if let Some(BlobStatusInternal::Uploading(_)) = old_status {
-                        runtime_state.data.blobs.remove_pending_blob(&blob_id);
+                    if let Some(FileStatusInternal::Uploading(_)) = old_status {
+                        runtime_state.data.files.remove_pending_file(&file_id);
                     } else {
-                        runtime_state.data.blobs.remove_blob_reference(user_id, blob_id);
+                        runtime_state.data.files.remove(user_id, file_id);
                     }
                 }
             }

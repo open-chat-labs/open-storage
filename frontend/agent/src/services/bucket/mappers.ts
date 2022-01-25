@@ -1,21 +1,21 @@
 import type {
-    ApiUploadChunkResponse,
-    ApiDeleteBlobResponse,
+    CandidUploadChunkResponse,
+    CandidDeleteFileResponse,
 } from "./candid/idl";
-import type { UploadChunkResponse, DeleteBlobResponse } from "../../domain/bucket";
+import type { UploadChunkResponse, DeleteFileResponse } from "../../domain/bucket";
 import { UnsupportedValueError } from "../../utils/error";
 
 export function uploadChunkResponse(
-    candid: ApiUploadChunkResponse
+    candid: CandidUploadChunkResponse
 ): UploadChunkResponse {
     if ("Success" in candid) {
         return "success";
     }
-    if ("BlobAlreadyExists" in candid) {
-        return "blob_already_exists";
+    if ("FileAlreadyExists" in candid) {
+        return "file_already_exists";
     }
-    if ("BlobTooBig" in candid) {
-        return "blob_too_big";
+    if ("FileTooBig" in candid) {
+        return "file_too_big";
     }
     if ("ChunkAlreadyExists" in candid) {
         return "chunk_already_exists";
@@ -44,9 +44,9 @@ export function uploadChunkResponse(
     );
 }
 
-export function deleteBlobResponse(
-    candid: ApiDeleteBlobResponse
-): DeleteBlobResponse {
+export function deleteFileResponse(
+    candid: CandidDeleteFileResponse
+): DeleteFileResponse {
     if ("Success" in candid) {
         return "success";
     }
@@ -57,7 +57,7 @@ export function deleteBlobResponse(
         return "not_found";
     }
     throw new UnsupportedValueError(
-        "Unknown Bucket.ApiDeleteBlobResponse type received",
+        "Unknown Bucket.ApiDeleteFileResponse type received",
         candid
     );
 }

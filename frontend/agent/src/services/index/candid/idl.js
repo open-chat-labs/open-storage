@@ -1,17 +1,15 @@
 export const idlFactory = ({ IDL }) => {
   const UserId = IDL.Principal;
-  const AddUserArgs = IDL.Record({
+  const UserConfig = IDL.Record({
     'byte_limit' : IDL.Nat64,
     'user_id' : UserId,
   });
-  const AddUserResponse = IDL.Variant({
-    'UserAlreadyExists' : IDL.Null,
-    'Success' : IDL.Null,
-  });
+  const AddOrUpdateUsersArgs = IDL.Record({ 'users' : IDL.Vec(UserConfig) });
+  const AddOrUpdateUsersResponse = IDL.Variant({ 'Success' : IDL.Null });
   const Hash = IDL.Vec(IDL.Nat8);
   const AllocatedBucketArgs = IDL.Record({
-    'blob_hash' : Hash,
-    'blob_size' : IDL.Nat64,
+    'file_hash' : Hash,
+    'file_size' : IDL.Nat64,
   });
   const CanisterId = IDL.Principal;
   const AllocatedBucketResult = IDL.Record({
@@ -29,14 +27,6 @@ export const idlFactory = ({ IDL }) => {
   const RemoveAccessorResponse = IDL.Variant({ 'Success' : IDL.Null });
   const RemoveUserArgs = IDL.Record({ 'user_id' : UserId });
   const RemoveUserResponse = IDL.Variant({ 'Success' : IDL.Null });
-  const UpdateUserArgs = IDL.Record({
-    'byte_limit' : IDL.Opt(IDL.Nat64),
-    'user_id' : UserId,
-  });
-  const UpdateUserResponse = IDL.Variant({
-    'Success' : IDL.Null,
-    'UserNotFound' : IDL.Null,
-  });
   const UserArgs = IDL.Record({});
   const UserRecord = IDL.Record({
     'byte_limit' : IDL.Nat64,
@@ -47,8 +37,12 @@ export const idlFactory = ({ IDL }) => {
     'UserNotFound' : IDL.Null,
   });
   return IDL.Service({
-    'add_user' : IDL.Func([AddUserArgs], [AddUserResponse], []),
-    'allocated_bucket' : IDL.Func(
+    'add_or_update_users' : IDL.Func(
+        [AddOrUpdateUsersArgs],
+        [AddOrUpdateUsersResponse],
+        [],
+      ),
+    'allocated_bucket_v2' : IDL.Func(
         [AllocatedBucketArgs],
         [AllocatedBucketResponse],
         ['query'],
@@ -59,7 +53,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'remove_user' : IDL.Func([RemoveUserArgs], [RemoveUserResponse], []),
-    'update_user' : IDL.Func([UpdateUserArgs], [UpdateUserResponse], []),
     'user' : IDL.Func([UserArgs], [UserResponse], ['query']),
   });
 };
