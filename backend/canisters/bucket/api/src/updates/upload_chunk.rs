@@ -51,7 +51,7 @@ impl From<v2::Response> for Response {
     fn from(response: v2::Response) -> Self {
         match response {
             v2::Response::Success => Self::Success,
-            v2::Response::AllowanceReached => Self::AllowanceReached,
+            v2::Response::AllowanceExceeded => Self::AllowanceReached,
             v2::Response::FileAlreadyExists => Self::BlobAlreadyExists,
             v2::Response::FileTooBig => Self::BlobTooBig,
             v2::Response::ChunkAlreadyExists => Self::ChunkAlreadyExists,

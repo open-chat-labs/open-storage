@@ -1,4 +1,4 @@
-use crate::model::blob_buckets::BlobBuckets;
+use crate::model::blobs::Blobs;
 use crate::model::buckets::Buckets;
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
@@ -62,7 +62,7 @@ struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecord>,
-    pub blob_buckets: BlobBuckets,
+    pub blobs: Blobs,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
     pub total_cycles_spent_on_canisters: Cycles,
@@ -75,7 +75,7 @@ impl Data {
             service_principals: service_principals.into_iter().collect(),
             bucket_canister_wasm,
             users: HashMap::new(),
-            blob_buckets: BlobBuckets::default(),
+            blobs: Blobs::default(),
             buckets: Buckets::default(),
             canisters_requiring_upgrade: CanistersRequiringUpgrade::default(),
             total_cycles_spent_on_canisters: 0,
@@ -84,42 +84,53 @@ impl Data {
     }
 
     pub fn add_file_reference(&mut self, bucket: CanisterId, file: FileAdded) -> Result<(), FileRejected> {
-        if let Some(user) = self.users.get_mut(&file.uploaded_by) {
-            if user.bytes_used + file.size > user.byte_limit {
-                return Err(FileRejected {
-                    file_id: file.file_id,
-                    reason: FileRejectedReason::AllowanceReached,
-                });
-            } else {
-                user.bytes_used += file.size;
+        let FileAdded {
+            file_id,
+            uploaded_by,
+            hash,
+            size,
+        } = file;
+
+        if let Some(user) = self.users.get_mut(&uploaded_by) {
+            if !self.blobs.has_user_uploaded_blob(&uploaded_by, &hash) {
+                let bytes_used_after_upload = user
+                    .bytes_used
+                    .checked_add(size)
+                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {}", uploaded_by));
+
+                if bytes_used_after_upload > user.byte_limit {
+                    return Err(FileRejected {
+                        file_id,
+                        reason: FileRejectedReason::AllowanceExceeded,
+                    });
+                } else {
+                    user.bytes_used = bytes_used_after_upload;
+                }
             }
         } else {
             return Err(FileRejected {
-                file_id: file.file_id,
+                file_id,
                 reason: FileRejectedReason::UserNotFound,
             });
         }
 
-        self.blob_buckets.add(file.hash, file.size, bucket);
+        self.blobs.add(hash, size, uploaded_by, bucket);
+
         Ok(())
     }
 
     pub fn remove_file_reference(&mut self, bucket: CanisterId, file: FileRemoved) {
-        let blob_size = if file.blob_deleted {
-            self.blob_buckets.remove(file.hash, bucket)
-        } else {
-            self.blob_buckets.get(&file.hash).map(|r| r.size)
-        };
+        let FileRemoved { uploaded_by, hash, .. } = file;
 
-        if let Some(blob_size) = blob_size {
-            if let Some(user) = self.users.get_mut(&file.uploaded_by) {
-                user.bytes_used -= blob_size;
+        if let Some(bytes_removed) = self.blobs.remove(hash, uploaded_by, bucket) {
+            if let Some(user) = self.users.get_mut(&uploaded_by) {
+                user.bytes_used = user.bytes_used.saturating_sub(bytes_removed);
             }
         }
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UserRecord {
     pub byte_limit: u64,
     pub bytes_used: u64,

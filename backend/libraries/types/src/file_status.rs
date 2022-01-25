@@ -12,7 +12,7 @@ pub enum FileStatus {
 #[derive(CandidType, Serialize, Deserialize, Copy, Clone, Debug)]
 pub enum RejectedReason {
     UserNotFound,
-    AllowanceReached,
+    AllowanceExceeded,
     HashMismatch,
 }
 
@@ -42,7 +42,7 @@ pub struct FileStatusRejected {
 impl From<FileRejectedReason> for RejectedReason {
     fn from(reason: FileRejectedReason) -> Self {
         match reason {
-            FileRejectedReason::AllowanceReached => RejectedReason::AllowanceReached,
+            FileRejectedReason::AllowanceExceeded => RejectedReason::AllowanceExceeded,
             FileRejectedReason::UserNotFound => RejectedReason::UserNotFound,
         }
     }
