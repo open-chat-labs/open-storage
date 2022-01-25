@@ -188,6 +188,13 @@ impl Blobs {
         (DATA_LIMIT_BYTES as i64) - (self.bytes_used as i64)
     }
 
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            blob_count: self.blob_references.len() as u32,
+            hash_count: self.data.len() as u32,
+        }
+    }
+
     fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
         for accessor_id in completed_blob.accessors.iter() {
             self.accessors_map.link(*accessor_id, blob_id);
@@ -420,4 +427,9 @@ pub struct HashMismatch {
 pub struct ChunkSizeMismatch {
     pub expected_size: u32,
     pub actual_size: u32,
+}
+
+pub struct Metrics {
+    pub blob_count: u32,
+    pub hash_count: u32,
 }

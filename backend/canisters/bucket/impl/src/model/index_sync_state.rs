@@ -57,6 +57,10 @@ impl IndexSyncState {
         self.in_progress = false;
         self.args_to_retry = Some(args);
     }
+
+    pub fn queue_len(&self) -> u32 {
+        self.queue.len() as u32
+    }
 }
 
 #[derive(Serialize, Deserialize)]

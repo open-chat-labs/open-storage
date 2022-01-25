@@ -2,7 +2,7 @@ use crate::{calc_chunk_count, read_state, RuntimeState, LOG_MESSAGES};
 use candid::Func;
 use canister_logger::LogMessagesContainer;
 use http_request::{
-    encode_logs, extract_route, HeaderField, HttpRequest, HttpResponse, Route, StreamingCallbackHttpResponse,
+    encode_logs, extract_route, get_metrics, HeaderField, HttpRequest, HttpResponse, Route, StreamingCallbackHttpResponse,
     StreamingStrategy, Token,
 };
 use ic_cdk_macros::query;
@@ -21,15 +21,15 @@ fn http_request(request: HttpRequest) -> HttpResponse {
         encode_logs(messages_container.get(since.unwrap_or(0)))
     }
 
-    // fn get_metrics_impl(runtime_state: &RuntimeState) -> HttpResponse {
-    //     get_metrics(&runtime_state.metrics())
-    // }
+    fn get_metrics_impl(runtime_state: &RuntimeState) -> HttpResponse {
+        get_metrics(&runtime_state.metrics())
+    }
 
     match extract_route(&request.url) {
         Route::Blob(blob_id) => read_state(|state| start_streaming_blob(blob_id, state)),
         Route::Logs(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().logs)),
         Route::Traces(since) => LOG_MESSAGES.with(|l| get_logs_impl(since, &l.borrow().traces)),
-        // Route::Metrics => read_state(get_metrics_impl),
+        Route::Metrics => read_state(get_metrics_impl),
         _ => HttpResponse::not_found(),
     }
 }
