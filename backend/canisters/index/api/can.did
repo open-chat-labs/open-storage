@@ -44,16 +44,26 @@ type AllocatedBucketArgs =
 
 type AllocatedBucketResponse = 
     variant {
-        Success: AllocatedBucketResult;
-        AllowanceReached;
+        Success: AllocatedBucketSuccessResult;
+        AllowanceExceeded: AllocatedBucketAllowanceExceededResult;
         UserNotFound;
         BucketUnavailable;
     };
 
-type AllocatedBucketResult =
+type AllocatedBucketSuccessResult =
     record {
         canister_id: CanisterId;
         chunk_size: nat32;
+        byte_limit: nat64;
+        bytes_used: nat64;
+        bytes_used_after_upload: nat64;
+    };
+
+type AllocatedBucketAllowanceExceededResult =
+    record {
+        byte_limit: nat64;
+        bytes_used: nat64;
+        bytes_used_after_upload: nat64;
     };
 
 type UserArgs =

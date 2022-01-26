@@ -32,3 +32,17 @@ impl From<Args> for v2::Args {
         }
     }
 }
+
+impl From<v2::Response> for Response {
+    fn from(response: v2::Response) -> Self {
+        match response {
+            v2::Response::Success(r) => Response::Success(Result {
+                canister_id: r.canister_id,
+                chunk_size: r.chunk_size,
+            }),
+            v2::Response::AllowanceExceeded(_) => Response::AllowanceReached,
+            v2::Response::UserNotFound => Response::UserNotFound,
+            v2::Response::BucketUnavailable => Response::BucketUnavailable,
+        }
+    }
+}

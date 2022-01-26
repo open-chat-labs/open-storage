@@ -12,13 +12,21 @@ export const idlFactory = ({ IDL }) => {
     'file_size' : IDL.Nat64,
   });
   const CanisterId = IDL.Principal;
-  const AllocatedBucketResult = IDL.Record({
+  const AllocatedBucketSuccessResult = IDL.Record({
+    'byte_limit' : IDL.Nat64,
     'canister_id' : CanisterId,
+    'bytes_used_after_upload' : IDL.Nat64,
+    'bytes_used' : IDL.Nat64,
     'chunk_size' : IDL.Nat32,
   });
+  const AllocatedBucketAllowanceExceededResult = IDL.Record({
+    'byte_limit' : IDL.Nat64,
+    'bytes_used_after_upload' : IDL.Nat64,
+    'bytes_used' : IDL.Nat64,
+  });
   const AllocatedBucketResponse = IDL.Variant({
-    'Success' : AllocatedBucketResult,
-    'AllowanceReached' : IDL.Null,
+    'Success' : AllocatedBucketSuccessResult,
+    'AllowanceExceeded' : AllocatedBucketAllowanceExceededResult,
     'UserNotFound' : IDL.Null,
     'BucketUnavailable' : IDL.Null,
   });
