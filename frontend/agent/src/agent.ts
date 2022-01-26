@@ -1,7 +1,7 @@
 import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import { v1 as uuidv1 } from "uuid";
-import type { UploadBlobResponse, UserResponse } from "./domain/index";
+import type { UploadFileResponse, UserResponse } from "./domain/index";
 import { BucketClient } from "./services/bucket/bucket.client";
 import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
@@ -20,26 +20,26 @@ export class OpenStorageAgent {
         return this.indexClient.user();
     }
 
-    async uploadBlob(
+    async uploadFile(
         mimeType: string,
         accessors: Array<Principal>,
         bytes: ArrayBuffer,
-        onProgress?: (percentComplete: number) => void): Promise<UploadBlobResponse> {
+        onProgress?: (percentComplete: number) => void): Promise<UploadFileResponse> {
 
         const hash = Array.from(new Uint8Array(hashBytes(bytes)));
-        const blobSize = bytes.byteLength;
+        const fileSize = bytes.byteLength;
 
-        const allocatedBucketResponse = await this.indexClient.allocatedBucket(hash, BigInt(blobSize));
+        const allocatedBucketResponse = await this.indexClient.allocatedBucket(hash, BigInt(fileSize));
 
         if (allocatedBucketResponse.kind !== "success") {
             // TODO make this better!
             throw new Error(allocatedBucketResponse.kind);
         }
 
-        const blobId = OpenStorageAgent.newBlobId();
+        const fileId = OpenStorageAgent.newFileId();
         const bucketCanisterId = allocatedBucketResponse.canisterId;
         const chunkSize = allocatedBucketResponse.chunkSize;
-        const chunkCount = Math.ceil(blobSize / chunkSize);
+        const chunkCount = Math.ceil(fileSize / chunkSize);
         const chunkIndexes = [...Array(chunkCount).keys()];
         const bucketClient = new BucketClient(this.agent, bucketCanisterId);
 
@@ -47,7 +47,7 @@ export class OpenStorageAgent {
 
         const promises = chunkIndexes.map(async (chunkIndex) => {
             const start = chunkIndex * chunkSize;
-            const end = Math.min(start + chunkSize, blobSize);
+            const end = Math.min(start + chunkSize, fileSize);
             const chunkBytes = Array.from(new Uint8Array(bytes.slice(start, end)));
 
             let attempt = 0;
@@ -55,11 +55,11 @@ export class OpenStorageAgent {
             while (attempt++ < 5) {
                 try {
                     const chunkResponse = await bucketClient.uploadChunk(
-                        blobId,
+                        fileId,
                         hash,
                         mimeType,
                         accessors,
-                        BigInt(blobSize),
+                        BigInt(fileSize),
                         chunkSize,
                         chunkIndex,
                         chunkBytes);
@@ -80,12 +80,12 @@ export class OpenStorageAgent {
 
         return {
             canisterId: bucketCanisterId,
-            blobId,
-            pathPrefix: "/blobs/",
+            fileId,
+            pathPrefix: "/files/",
         }
     }
 
-    private static newBlobId(): bigint {
+    private static newFileId(): bigint {
         return BigInt(parseInt(uuidv1().replace(/-/g, ""), 16));
     }
 }

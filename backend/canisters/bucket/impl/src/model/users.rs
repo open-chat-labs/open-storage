@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use types::{BlobId, RejectedReason, UserId};
+use types::{FileId, RejectedReason, UserId};
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Users {
@@ -31,25 +31,26 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    blobs_uploaded: HashMap<BlobId, BlobStatusInternal>,
+    #[serde(rename(deserialize = "blobs_uploaded"))]
+    files_uploaded: HashMap<FileId, FileStatusInternal>,
 }
 
 impl UserRecord {
-    pub fn blobs_uploaded(&self) -> Vec<BlobId> {
-        self.blobs_uploaded.keys().copied().collect()
+    pub fn files_uploaded(&self) -> Vec<FileId> {
+        self.files_uploaded.keys().copied().collect()
     }
 
-    pub fn blob_status(&self, blob_id: &BlobId) -> Option<&BlobStatusInternal> {
-        self.blobs_uploaded.get(blob_id)
+    pub fn file_status(&self, file_id: &FileId) -> Option<&FileStatusInternal> {
+        self.files_uploaded.get(file_id)
     }
 
-    pub fn set_blob_status(&mut self, blob_id: BlobId, status: BlobStatusInternal) -> Option<BlobStatusInternal> {
-        self.blobs_uploaded.insert(blob_id, status)
+    pub fn set_file_status(&mut self, file_id: FileId, status: FileStatusInternal) -> Option<FileStatusInternal> {
+        self.files_uploaded.insert(file_id, status)
     }
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum BlobStatusInternal {
+pub enum FileStatusInternal {
     Complete(IndexSyncComplete),
     Uploading(IndexSyncComplete),
     Rejected(RejectedReason),

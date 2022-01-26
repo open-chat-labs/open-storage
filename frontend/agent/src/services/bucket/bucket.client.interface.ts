@@ -1,9 +1,9 @@
 import type { Principal } from "@dfinity/principal";
-import type { DeleteBlobResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { DeleteFileResponse, UploadChunkResponse } from "../../domain/bucket";
 
 export interface IBucketClient {
     uploadChunk(
-        blobId: bigint,
+        fileId: bigint,
         hash: Array<number>,
         mimeType: string,
         accessors: Array<Principal>,
@@ -11,5 +11,5 @@ export interface IBucketClient {
         chunkSize: number,
         chunkIndex: number,
         bytes: Array<number>): Promise<UploadChunkResponse>;
-    deleteBlob(blobId: bigint) : Promise<DeleteBlobResponse>;
+    deleteFile(fileId: bigint) : Promise<DeleteFileResponse>;
 }

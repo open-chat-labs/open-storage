@@ -1,2 +1,2 @@
-mod blob_status;
+mod file_status;
 mod http_request;

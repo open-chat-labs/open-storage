@@ -1,12 +1,12 @@
-use crate::{BlobReferenceRejectedReason, TimestampMillis};
+use crate::{FileRejectedReason, TimestampMillis};
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum BlobStatus {
-    Completed(BlobStatusCompleted),
-    Uploading(BlobStatusUploading),
-    Rejected(BlobStatusRejected),
+pub enum FileStatus {
+    Completed(FileStatusCompleted),
+    Uploading(FileStatusUploading),
+    Rejected(FileStatusRejected),
 }
 
 #[derive(CandidType, Serialize, Deserialize, Copy, Clone, Debug)]
@@ -17,7 +17,7 @@ pub enum RejectedReason {
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct BlobStatusCompleted {
+pub struct FileStatusCompleted {
     pub created: TimestampMillis,
     pub index_sync_complete: bool,
     pub mime_type: String,
@@ -25,7 +25,7 @@ pub struct BlobStatusCompleted {
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct BlobStatusUploading {
+pub struct FileStatusUploading {
     pub created: TimestampMillis,
     pub index_sync_complete: bool,
     pub mime_type: String,
@@ -35,15 +35,15 @@ pub struct BlobStatusUploading {
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct BlobStatusRejected {
+pub struct FileStatusRejected {
     pub reason: RejectedReason,
 }
 
-impl From<BlobReferenceRejectedReason> for RejectedReason {
-    fn from(reason: BlobReferenceRejectedReason) -> Self {
+impl From<FileRejectedReason> for RejectedReason {
+    fn from(reason: FileRejectedReason) -> Self {
         match reason {
-            BlobReferenceRejectedReason::AllowanceReached => RejectedReason::AllowanceReached,
-            BlobReferenceRejectedReason::UserNotFound => RejectedReason::UserNotFound,
+            FileRejectedReason::AllowanceReached => RejectedReason::AllowanceReached,
+            FileRejectedReason::UserNotFound => RejectedReason::UserNotFound,
         }
     }
 }

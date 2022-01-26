@@ -2,9 +2,9 @@ import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import type { IBucketClient } from "./bucket.client.interface";
 import { idlFactory, BucketService } from "./candid/idl";
-import { deleteBlobResponse, uploadChunkResponse } from "./mappers";
+import { deleteFileResponse, uploadChunkResponse } from "./mappers";
 import { CandidService } from "../candidService";
-import type { DeleteBlobResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { DeleteFileResponse, UploadChunkResponse } from "../../domain/bucket";
 
 export class BucketClient extends CandidService<BucketService> implements IBucketClient {
     constructor(agent: HttpAgent, canisterId: Principal) {
@@ -12,7 +12,7 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
     }
 
     uploadChunk(
-        blobId: bigint,
+        fileId: bigint,
         hash: Array<number>,
         mimeType: string,
         accessors: Array<Principal>,
@@ -21,10 +21,10 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
         chunkIndex: number,
         bytes: Array<number>): Promise<UploadChunkResponse> {
         return this.handleResponse(
-            this.service.upload_chunk({
+            this.service.upload_chunk_v2({
                 accessors,
                 chunk_index: chunkIndex,
-                blob_id: blobId,
+                file_id: fileId,
                 hash,
                 mime_type: mimeType,
                 total_size: totalSize,
@@ -35,10 +35,10 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
         );
     }
 
-    deleteBlob(blobId: bigint): Promise<DeleteBlobResponse> {
+    deleteFile(fileId: bigint): Promise<DeleteFileResponse> {
         return this.handleResponse(
-            this.service.delete_blob({ blob_id: blobId }),
-            deleteBlobResponse
+            this.service.delete_file({ file_id: fileId }),
+            deleteFileResponse
         );
     }
 }

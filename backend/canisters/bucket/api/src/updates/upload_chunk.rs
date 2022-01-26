@@ -2,11 +2,11 @@ use candid::CandidType;
 use serde::Deserialize;
 use serde_bytes::ByteBuf;
 use std::fmt::{Debug, Formatter};
-use types::{AccessorId, BlobId, Hash};
+use types::{AccessorId, FileId, Hash};
 
 #[derive(CandidType, Deserialize)]
 pub struct Args {
-    pub blob_id: BlobId,
+    pub blob_id: FileId,
     pub hash: Hash,
     pub mime_type: String,
     pub accessors: Vec<AccessorId>,
@@ -28,6 +28,40 @@ pub enum Response {
     Full,
     HashMismatch,
     UserNotFound,
+}
+
+use crate::upload_chunk_v2 as v2;
+
+impl From<Args> for v2::Args {
+    fn from(args: Args) -> Self {
+        Self {
+            file_id: args.blob_id,
+            hash: args.hash,
+            mime_type: args.mime_type,
+            accessors: args.accessors,
+            chunk_index: args.chunk_index,
+            chunk_size: args.chunk_size,
+            total_size: args.total_size,
+            bytes: args.bytes,
+        }
+    }
+}
+
+impl From<v2::Response> for Response {
+    fn from(response: v2::Response) -> Self {
+        match response {
+            v2::Response::Success => Self::Success,
+            v2::Response::AllowanceReached => Self::AllowanceReached,
+            v2::Response::FileAlreadyExists => Self::BlobAlreadyExists,
+            v2::Response::FileTooBig => Self::BlobTooBig,
+            v2::Response::ChunkAlreadyExists => Self::ChunkAlreadyExists,
+            v2::Response::ChunkIndexTooHigh => Self::ChunkIndexTooHigh,
+            v2::Response::ChunkSizeMismatch => Self::ChunkSizeMismatch,
+            v2::Response::Full => Self::Full,
+            v2::Response::HashMismatch => Self::HashMismatch,
+            v2::Response::UserNotFound => Self::UserNotFound,
+        }
+    }
 }
 
 impl Debug for Args {

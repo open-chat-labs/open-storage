@@ -7,8 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
-    BlobReferenceAdded, BlobReferenceRejected, BlobReferenceRejectedReason, BlobReferenceRemoved, CanisterId, CanisterWasm,
-    Cycles, Timestamped, UserId, Version,
+    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Timestamped, UserId, Version,
 };
 use utils::canister::CanistersRequiringUpgrade;
 use utils::env::Environment;
@@ -85,40 +84,36 @@ impl Data {
         }
     }
 
-    pub fn add_blob_reference(
-        &mut self,
-        bucket: CanisterId,
-        br_added: BlobReferenceAdded,
-    ) -> Result<(), BlobReferenceRejected> {
-        if let Some(user) = self.users.get_mut(&br_added.uploaded_by) {
-            if user.bytes_used + br_added.blob_size > user.byte_limit {
-                return Err(BlobReferenceRejected {
-                    blob_id: br_added.blob_id,
-                    reason: BlobReferenceRejectedReason::AllowanceReached,
+    pub fn add_file_reference(&mut self, bucket: CanisterId, file: FileAdded) -> Result<(), FileRejected> {
+        if let Some(user) = self.users.get_mut(&file.uploaded_by) {
+            if user.bytes_used + file.size > user.byte_limit {
+                return Err(FileRejected {
+                    file_id: file.file_id,
+                    reason: FileRejectedReason::AllowanceReached,
                 });
             } else {
-                user.bytes_used += br_added.blob_size;
+                user.bytes_used += file.size;
             }
         } else {
-            return Err(BlobReferenceRejected {
-                blob_id: br_added.blob_id,
-                reason: BlobReferenceRejectedReason::UserNotFound,
+            return Err(FileRejected {
+                file_id: file.file_id,
+                reason: FileRejectedReason::UserNotFound,
             });
         }
 
-        self.blob_buckets.add(br_added.blob_hash, br_added.blob_size, bucket);
+        self.blob_buckets.add(file.hash, file.size, bucket);
         Ok(())
     }
 
-    pub fn remove_blob_reference(&mut self, bucket: CanisterId, br_removed: BlobReferenceRemoved) {
-        let blob_size = if br_removed.blob_deleted {
-            self.blob_buckets.remove(br_removed.blob_hash, bucket)
+    pub fn remove_file_reference(&mut self, bucket: CanisterId, file: FileRemoved) {
+        let blob_size = if file.blob_deleted {
+            self.blob_buckets.remove(file.hash, bucket)
         } else {
-            self.blob_buckets.get(&br_removed.blob_hash).map(|r| r.size)
+            self.blob_buckets.get(&file.hash).map(|r| r.size)
         };
 
         if let Some(blob_size) = blob_size {
-            if let Some(user) = self.users.get_mut(&br_removed.uploaded_by) {
+            if let Some(user) = self.users.get_mut(&file.uploaded_by) {
                 user.bytes_used -= blob_size;
             }
         }

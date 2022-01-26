@@ -1,4 +1,4 @@
-use crate::model::blobs::Blobs;
+use crate::model::files::Files;
 use crate::model::index_sync_state::IndexSyncState;
 use crate::model::users::Users;
 use candid::CandidType;
@@ -55,15 +55,15 @@ impl RuntimeState {
     }
 
     pub fn metrics(&self) -> Metrics {
-        let blob_metrics = self.data.blobs.metrics();
+        let file_metrics = self.data.files.metrics();
 
         Metrics {
             memory_used: memory::used(),
             now: self.env.now(),
             cycles_balance: self.env.cycles_balance(),
             wasm_version: WASM_VERSION.with(|v| **v.borrow()),
-            blob_count: blob_metrics.blob_count,
-            hash_count: blob_metrics.hash_count,
+            file_count: file_metrics.file_count,
+            blob_count: file_metrics.blob_count,
             index_sync_queue_length: self.data.index_sync_state.queue_len(),
         }
     }
@@ -73,7 +73,8 @@ impl RuntimeState {
 struct Data {
     index_canister_id: CanisterId,
     users: Users,
-    blobs: Blobs,
+    #[serde(rename(deserialize = "blobs"))]
+    files: Files,
     index_sync_state: IndexSyncState,
     created: TimestampMillis,
     test_mode: bool,
@@ -84,7 +85,7 @@ impl Data {
         Data {
             index_canister_id,
             users: Users::default(),
-            blobs: Blobs::default(),
+            files: Files::default(),
             index_sync_state: IndexSyncState::default(),
             created: now,
             test_mode,
@@ -98,8 +99,8 @@ pub struct Metrics {
     pub now: TimestampMillis,
     pub cycles_balance: Cycles,
     pub wasm_version: Version,
+    pub file_count: u32,
     pub blob_count: u32,
-    pub hash_count: u32,
     pub index_sync_queue_length: u32,
 }
 

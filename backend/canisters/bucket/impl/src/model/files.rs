@@ -1,26 +1,29 @@
 use crate::{calc_chunk_count, DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
-use bucket_canister::upload_chunk::Args as UploadChunkArgs;
+use bucket_canister::upload_chunk_v2::Args as UploadChunkArgs;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
-use types::{AccessorId, BlobId, BlobReferenceAdded, BlobReferenceRemoved, Hash, TimestampMillis, UserId};
+use types::{AccessorId, FileAdded, FileId, FileRemoved, Hash, TimestampMillis, UserId};
 use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct Blobs {
-    blob_references: HashMap<BlobId, BlobReference>,
-    pending_blobs: HashMap<BlobId, PendingBlob>,
+pub struct Files {
+    #[serde(rename(deserialize = "blob_references"))]
+    files: HashMap<FileId, File>,
+    #[serde(rename(deserialize = "pending_blobs"))]
+    pending_files: HashMap<FileId, PendingFile>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
     // TODO move this to stable memory
-    data: HashMap<Hash, ByteBuf>,
+    #[serde(rename(deserialize = "data"))]
+    blobs: HashMap<Hash, ByteBuf>,
     bytes_used: u64,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct BlobReference {
+pub struct File {
     pub uploaded_by: UserId,
     pub created: TimestampMillis,
     pub accessors: HashSet<AccessorId>,
@@ -28,64 +31,64 @@ pub struct BlobReference {
     pub mime_type: String,
 }
 
-impl Blobs {
-    pub fn blob_reference(&self, blob_id: &BlobId) -> Option<&BlobReference> {
-        self.blob_references.get(blob_id)
+impl Files {
+    pub fn get(&self, file_id: &FileId) -> Option<&File> {
+        self.files.get(file_id)
     }
 
-    pub fn pending_blob(&self, blob_id: &BlobId) -> Option<&PendingBlob> {
-        self.pending_blobs.get(blob_id)
+    pub fn pending_file(&self, file_id: &FileId) -> Option<&PendingFile> {
+        self.pending_files.get(file_id)
     }
 
     pub fn blob_bytes(&self, hash: &Hash) -> Option<&ByteBuf> {
-        self.data.get(hash)
+        self.blobs.get(hash)
     }
 
-    pub fn uploaded_by(&self, blob_id: &BlobId) -> Option<UserId> {
-        self.blob_references
-            .get(blob_id)
-            .map(|b| b.uploaded_by)
-            .or_else(|| self.pending_blobs.get(blob_id).map(|b| b.uploaded_by))
+    pub fn uploaded_by(&self, file_id: &FileId) -> Option<UserId> {
+        self.files
+            .get(file_id)
+            .map(|f| f.uploaded_by)
+            .or_else(|| self.pending_files.get(file_id).map(|f| f.uploaded_by))
     }
 
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
         if args.total_size > MAX_BLOB_SIZE_BYTES {
-            return PutChunkResult::BlobTooBig(MAX_BLOB_SIZE_BYTES);
+            return PutChunkResult::FileTooBig(MAX_BLOB_SIZE_BYTES);
         }
 
-        if self.blob_references.contains_key(&args.blob_id) {
-            return PutChunkResult::BlobAlreadyExists;
+        if self.files.contains_key(&args.file_id) {
+            return PutChunkResult::FileAlreadyExists;
         }
 
-        let blob_id = args.blob_id;
+        let file_id = args.file_id;
         let now = args.now;
-        let mut blob_reference_added = None;
+        let mut file_added = None;
 
-        let completed_blob: Option<PendingBlob> = match self.pending_blobs.entry(blob_id) {
+        let completed_file: Option<PendingFile> = match self.pending_files.entry(file_id) {
             Vacant(e) => {
-                blob_reference_added = Some(BlobReferenceAdded {
+                file_added = Some(FileAdded {
                     uploaded_by: args.uploaded_by,
-                    blob_id,
-                    blob_hash: args.hash,
-                    blob_size: args.total_size,
+                    file_id,
+                    hash: args.hash,
+                    size: args.total_size,
                 });
-                let pending_blob: PendingBlob = args.into();
-                if pending_blob.is_completed() {
-                    Some(pending_blob)
+                let pending_file: PendingFile = args.into();
+                if pending_file.is_completed() {
+                    Some(pending_file)
                 } else {
-                    e.insert(pending_blob);
+                    e.insert(pending_file);
                     None
                 }
             }
             Occupied(mut e) => {
-                let pending_blob = e.get_mut();
-                match pending_blob.add_chunk(args.chunk_index, args.bytes) {
+                let pending_file = e.get_mut();
+                match pending_file.add_chunk(args.chunk_index, args.bytes) {
                     AddChunkResult::Success => {}
                     AddChunkResult::ChunkIndexTooHigh => return PutChunkResult::ChunkIndexTooHigh,
                     AddChunkResult::ChunkAlreadyExists => return PutChunkResult::ChunkAlreadyExists,
                     AddChunkResult::ChunkSizeMismatch(m) => return PutChunkResult::ChunkSizeMismatch(m),
                 }
-                if pending_blob.is_completed() {
+                if pending_file.is_completed() {
                     Some(e.remove())
                 } else {
                     None
@@ -93,95 +96,97 @@ impl Blobs {
             }
         };
 
-        let mut blob_completed = false;
-        if let Some(completed_blob) = completed_blob {
-            let hash = hash_bytes(&completed_blob.bytes);
-            if hash != completed_blob.hash {
+        let mut file_completed = false;
+        if let Some(completed_file) = completed_file {
+            let hash = hash_bytes(&completed_file.bytes);
+            if hash != completed_file.hash {
                 return PutChunkResult::HashMismatch(HashMismatch {
-                    provided_hash: completed_blob.hash,
+                    provided_hash: completed_file.hash,
                     actual_hash: hash,
-                    chunk_count: completed_blob.chunk_count(),
+                    chunk_count: completed_file.chunk_count(),
                 });
             }
-            self.insert_completed_blob(blob_id, completed_blob, now);
-            blob_completed = true;
+            self.insert_completed_file(file_id, completed_file, now);
+            file_completed = true;
         }
 
         PutChunkResult::Success(PutChunkResultSuccess {
-            blob_completed,
-            blob_reference_added,
+            file_completed,
+            file_added,
         })
     }
 
-    pub fn remove_blob_reference(&mut self, uploaded_by: UserId, blob_id: BlobId) -> RemoveBlobReferenceResult {
-        if let Occupied(e) = self.blob_references.entry(blob_id) {
+    pub fn remove(&mut self, uploaded_by: UserId, file_id: FileId) -> RemoveFileResult {
+        if let Occupied(e) = self.files.entry(file_id) {
             if e.get().uploaded_by != uploaded_by {
-                RemoveBlobReferenceResult::NotAuthorized
+                RemoveFileResult::NotAuthorized
             } else {
-                let blob_reference = e.remove();
-                for accessor_id in blob_reference.accessors.iter() {
-                    self.accessors_map.unlink(*accessor_id, &blob_id);
+                let file = e.remove();
+                for accessor_id in file.accessors.iter() {
+                    self.accessors_map.unlink(*accessor_id, &file_id);
                 }
 
                 let mut blob_deleted = false;
-                if self.reference_counts.decr(blob_reference.hash) == 0 {
-                    self.remove_blob_data(&blob_reference.hash);
+                if self.reference_counts.decr(file.hash) == 0 {
+                    self.remove_blob(&file.hash);
                     blob_deleted = true;
                 }
 
-                RemoveBlobReferenceResult::Success(BlobReferenceRemoved {
+                RemoveFileResult::Success(FileRemoved {
+                    file_id,
                     uploaded_by,
-                    blob_hash: blob_reference.hash,
+                    hash: file.hash,
                     blob_deleted,
                 })
             }
         } else {
-            RemoveBlobReferenceResult::NotFound
+            RemoveFileResult::NotFound
         }
     }
 
-    pub fn remove_pending_blob(&mut self, blob_id: &BlobId) -> bool {
-        self.pending_blobs.remove(blob_id).is_some()
+    pub fn remove_pending_file(&mut self, file_id: &FileId) -> bool {
+        self.pending_files.remove(file_id).is_some()
     }
 
-    pub fn remove_accessor(&mut self, accessor_id: &AccessorId) -> Vec<BlobReferenceRemoved> {
-        let mut blob_references_removed = Vec::new();
+    pub fn remove_accessor(&mut self, accessor_id: &AccessorId) -> Vec<FileRemoved> {
+        let mut files_removed = Vec::new();
 
-        if let Some(blob_ids) = self.accessors_map.remove(accessor_id) {
-            for blob_id in blob_ids {
+        if let Some(file_ids) = self.accessors_map.remove(accessor_id) {
+            for file_id in file_ids {
                 let mut blob_to_delete = None;
-                if let Occupied(mut e) = self.blob_references.entry(blob_id) {
-                    let blob_reference = e.get_mut();
-                    blob_reference.accessors.remove(accessor_id);
-                    if blob_reference.accessors.is_empty() {
-                        let delete_blob = self.reference_counts.decr(blob_reference.hash) == 0;
+                if let Occupied(mut e) = self.files.entry(file_id) {
+                    let file = e.get_mut();
+                    file.accessors.remove(accessor_id);
+                    if file.accessors.is_empty() {
+                        let delete_blob = self.reference_counts.decr(file.hash) == 0;
                         if delete_blob {
-                            blob_to_delete = Some(blob_reference.hash);
+                            blob_to_delete = Some(file.hash);
                         }
-                        let blob_reference = e.remove();
-                        blob_references_removed.push(BlobReferenceRemoved {
-                            uploaded_by: blob_reference.uploaded_by,
-                            blob_hash: blob_reference.hash,
+                        let file = e.remove();
+                        files_removed.push(FileRemoved {
+                            file_id,
+                            uploaded_by: file.uploaded_by,
+                            hash: file.hash,
                             blob_deleted: delete_blob,
                         });
                     }
                 }
 
                 if let Some(blob_to_delete) = blob_to_delete {
-                    self.remove_blob_data(&blob_to_delete);
+                    self.remove_blob(&blob_to_delete);
                 }
             }
         }
 
-        blob_references_removed
+        files_removed
     }
 
     pub fn contains_hash(&self, hash: &Hash) -> bool {
-        self.data.contains_key(hash)
+        self.blobs.contains_key(hash)
     }
 
     pub fn data_size(&self, hash: &Hash) -> Option<u64> {
-        self.data.get(hash).map(|b| b.len() as u64)
+        self.blobs.get(hash).map(|b| b.len() as u64)
     }
 
     pub fn bytes_remaining(&self) -> i64 {
@@ -190,40 +195,47 @@ impl Blobs {
 
     pub fn metrics(&self) -> Metrics {
         Metrics {
-            blob_count: self.blob_references.len() as u32,
-            hash_count: self.data.len() as u32,
+            file_count: self.files.len() as u32,
+            blob_count: self.blobs.len() as u32,
         }
     }
 
-    fn insert_completed_blob(&mut self, blob_id: BlobId, completed_blob: PendingBlob, now: TimestampMillis) {
-        for accessor_id in completed_blob.accessors.iter() {
-            self.accessors_map.link(*accessor_id, blob_id);
+    fn insert_completed_file(&mut self, file_id: FileId, completed_file: PendingFile, now: TimestampMillis) {
+        for accessor_id in completed_file.accessors.iter() {
+            self.accessors_map.link(*accessor_id, file_id);
         }
 
-        self.blob_references.insert(
-            blob_id,
-            BlobReference {
-                uploaded_by: completed_blob.uploaded_by,
+        self.files.insert(
+            file_id,
+            File {
+                uploaded_by: completed_file.uploaded_by,
                 created: now,
-                accessors: completed_blob.accessors,
-                hash: completed_blob.hash,
-                mime_type: completed_blob.mime_type,
+                accessors: completed_file.accessors,
+                hash: completed_file.hash,
+                mime_type: completed_file.mime_type,
             },
         );
-        self.reference_counts.incr(completed_blob.hash);
-        self.add_blob_data_if_not_exists(completed_blob.hash, completed_blob.bytes);
+        self.reference_counts.incr(completed_file.hash);
+        self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes);
     }
 
-    fn add_blob_data_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
-        if let Vacant(e) = self.data.entry(hash) {
-            self.bytes_used += bytes.len() as u64;
+    fn add_blob_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
+        if let Vacant(e) = self.blobs.entry(hash) {
+            self.bytes_used = self
+                .bytes_used
+                .checked_add(bytes.len() as u64)
+                .expect("'bytes_used' overflowed");
+
             e.insert(bytes);
         }
     }
 
-    fn remove_blob_data(&mut self, hash: &Hash) {
-        if let Some(bytes) = self.data.remove(hash) {
-            self.bytes_used -= bytes.len() as u64;
+    fn remove_blob(&mut self, hash: &Hash) {
+        if let Some(bytes) = self.blobs.remove(hash) {
+            self.bytes_used = self
+                .bytes_used
+                .checked_sub(bytes.len() as u64)
+                .expect("'bytes used' underflowed");
         }
     }
 }
@@ -260,31 +272,31 @@ impl ReferenceCounts {
 
 #[derive(Serialize, Deserialize, Default)]
 struct AccessorsMap {
-    map: HashMap<AccessorId, HashSet<BlobId>>,
+    map: HashMap<AccessorId, HashSet<FileId>>,
 }
 
 impl AccessorsMap {
-    pub fn link(&mut self, accessor_id: AccessorId, blob_id: BlobId) {
-        self.map.entry(accessor_id).or_default().insert(blob_id);
+    pub fn link(&mut self, accessor_id: AccessorId, file_id: FileId) {
+        self.map.entry(accessor_id).or_default().insert(file_id);
     }
 
-    pub fn unlink(&mut self, accessor_id: AccessorId, blob_id: &BlobId) {
+    pub fn unlink(&mut self, accessor_id: AccessorId, file_id: &FileId) {
         if let Occupied(mut e) = self.map.entry(accessor_id) {
             let entry = e.get_mut();
-            entry.remove(blob_id);
+            entry.remove(file_id);
             if entry.is_empty() {
                 e.remove();
             }
         }
     }
 
-    pub fn remove(&mut self, accessor_id: &AccessorId) -> Option<HashSet<BlobId>> {
+    pub fn remove(&mut self, accessor_id: &AccessorId) -> Option<HashSet<FileId>> {
         self.map.remove(accessor_id)
     }
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct PendingBlob {
+pub struct PendingFile {
     pub uploaded_by: UserId,
     pub created: TimestampMillis,
     pub hash: Hash,
@@ -296,7 +308,7 @@ pub struct PendingBlob {
     pub bytes: ByteBuf,
 }
 
-impl PendingBlob {
+impl PendingFile {
     pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> AddChunkResult {
         if self.remaining_chunks.remove(&chunk_index) {
             let actual_chunk_size = bytes.len() as u32;
@@ -349,7 +361,7 @@ pub enum AddChunkResult {
 
 pub struct PutChunkArgs {
     uploaded_by: UserId,
-    blob_id: BlobId,
+    file_id: FileId,
     hash: Hash,
     mime_type: String,
     accessors: Vec<AccessorId>,
@@ -364,7 +376,7 @@ impl PutChunkArgs {
     pub fn new(uploaded_by: UserId, upload_chunk_args: UploadChunkArgs, now: TimestampMillis) -> Self {
         Self {
             uploaded_by,
-            blob_id: upload_chunk_args.blob_id,
+            file_id: upload_chunk_args.file_id,
             hash: upload_chunk_args.hash,
             mime_type: upload_chunk_args.mime_type,
             accessors: upload_chunk_args.accessors,
@@ -377,11 +389,11 @@ impl PutChunkArgs {
     }
 }
 
-impl From<PutChunkArgs> for PendingBlob {
+impl From<PutChunkArgs> for PendingFile {
     fn from(args: PutChunkArgs) -> Self {
         let chunk_count = calc_chunk_count(args.chunk_size, args.total_size);
 
-        let mut pending_blob = Self {
+        let mut pending_file = Self {
             uploaded_by: args.uploaded_by,
             created: args.now,
             hash: args.hash,
@@ -392,15 +404,15 @@ impl From<PutChunkArgs> for PendingBlob {
             remaining_chunks: (0..chunk_count).into_iter().collect(),
             bytes: ByteBuf::from(vec![0; args.total_size as usize]),
         };
-        pending_blob.add_chunk(args.chunk_index, args.bytes);
-        pending_blob
+        pending_file.add_chunk(args.chunk_index, args.bytes);
+        pending_file
     }
 }
 
 pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
-    BlobAlreadyExists,
-    BlobTooBig(u64),
+    FileAlreadyExists,
+    FileTooBig(u64),
     ChunkAlreadyExists,
     ChunkIndexTooHigh,
     ChunkSizeMismatch(ChunkSizeMismatch),
@@ -408,12 +420,12 @@ pub enum PutChunkResult {
 }
 
 pub struct PutChunkResultSuccess {
-    pub blob_completed: bool,
-    pub blob_reference_added: Option<BlobReferenceAdded>,
+    pub file_completed: bool,
+    pub file_added: Option<FileAdded>,
 }
 
-pub enum RemoveBlobReferenceResult {
-    Success(BlobReferenceRemoved),
+pub enum RemoveFileResult {
+    Success(FileRemoved),
     NotAuthorized,
     NotFound,
 }
@@ -430,6 +442,6 @@ pub struct ChunkSizeMismatch {
 }
 
 pub struct Metrics {
+    pub file_count: u32,
     pub blob_count: u32,
-    pub hash_count: u32,
 }
