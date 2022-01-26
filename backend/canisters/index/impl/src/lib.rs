@@ -65,7 +65,6 @@ struct Data {
     pub blob_buckets: BlobBuckets,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
-    #[serde(default)]
     pub total_cycles_spent_on_canisters: Cycles,
     pub test_mode: bool,
 }

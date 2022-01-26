@@ -65,8 +65,6 @@ impl IndexSyncState {
 
 #[derive(Serialize, Deserialize)]
 pub enum EventToSync {
-    #[serde(rename(deserialize = "BlobReferenceAdded"))]
     FileAdded(FileAdded),
-    #[serde(rename(deserialize = "BlobReferenceRemoved"))]
     FileRemoved(FileRemoved),
 }

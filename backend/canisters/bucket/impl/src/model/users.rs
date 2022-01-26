@@ -31,7 +31,6 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    #[serde(rename(deserialize = "blobs_uploaded"))]
     files_uploaded: HashMap<FileId, FileStatusInternal>,
 }
 

@@ -73,7 +73,6 @@ impl RuntimeState {
 struct Data {
     index_canister_id: CanisterId,
     users: Users,
-    #[serde(rename(deserialize = "blobs"))]
     files: Files,
     index_sync_state: IndexSyncState,
     created: TimestampMillis,

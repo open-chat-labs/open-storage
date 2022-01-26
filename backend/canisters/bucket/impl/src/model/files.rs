@@ -10,14 +10,11 @@ use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Files {
-    #[serde(rename(deserialize = "blob_references"))]
     files: HashMap<FileId, File>,
-    #[serde(rename(deserialize = "pending_blobs"))]
     pending_files: HashMap<FileId, PendingFile>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
     // TODO move this to stable memory
-    #[serde(rename(deserialize = "data"))]
     blobs: HashMap<Hash, ByteBuf>,
     bytes_used: u64,
 }
