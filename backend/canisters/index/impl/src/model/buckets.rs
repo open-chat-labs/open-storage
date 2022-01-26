@@ -106,7 +106,6 @@ pub struct BucketRecord {
     pub wasm_version: Version,
     pub bytes_used: u64,
     pub sync_state: BucketSyncState,
-    #[serde(default)]
     pub cycle_top_ups: Vec<CyclesTopUp>,
 }
 
