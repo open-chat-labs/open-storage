@@ -19,7 +19,7 @@ pub struct Args {
 #[derive(CandidType, Deserialize, Debug)]
 pub enum Response {
     Success,
-    AllowanceReached,
+    AllowanceExceeded,
     FileAlreadyExists,
     FileTooBig,
     ChunkAlreadyExists,

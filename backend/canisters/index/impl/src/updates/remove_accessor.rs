@@ -16,5 +16,6 @@ fn remove_accessor_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
         .data
         .buckets
         .sync_event(EventToSync::AccessorRemoved(args.accessor_id));
+
     Response::Success
 }

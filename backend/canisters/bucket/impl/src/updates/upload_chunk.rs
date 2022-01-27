@@ -33,7 +33,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             FileStatusInternal::Complete(_) | FileStatusInternal::Rejected(RejectedReason::HashMismatch) => {
                 return FileAlreadyExists
             }
-            FileStatusInternal::Rejected(RejectedReason::AllowanceReached) => return AllowanceReached,
+            FileStatusInternal::Rejected(RejectedReason::AllowanceExceeded) => return AllowanceExceeded,
             FileStatusInternal::Rejected(RejectedReason::UserNotFound) => return UserNotFound,
             FileStatusInternal::Uploading(c) => index_sync_complete = *c,
         }

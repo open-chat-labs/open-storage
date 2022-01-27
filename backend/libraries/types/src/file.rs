@@ -26,6 +26,6 @@ pub struct FileRejected {
 
 #[derive(CandidType, Deserialize, Debug)]
 pub enum FileRejectedReason {
-    AllowanceReached,
+    AllowanceExceeded,
     UserNotFound,
 }
