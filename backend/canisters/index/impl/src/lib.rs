@@ -62,6 +62,7 @@ struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecord>,
+    #[serde(rename(deserialize = "blob_buckets"))]
     pub blobs: Blobs,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
