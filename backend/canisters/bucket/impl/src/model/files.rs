@@ -190,16 +190,6 @@ impl Files {
         (DATA_LIMIT_BYTES as i64) - (self.bytes_used as i64)
     }
 
-    pub fn reference_counts(&self) -> HashMap<Hash, Vec<UserId>> {
-        let mut reference_counts: HashMap<Hash, Vec<UserId>> = HashMap::new();
-
-        for file in self.files.values() {
-            reference_counts.entry(file.hash).or_default().push(file.uploaded_by);
-        }
-
-        reference_counts
-    }
-
     pub fn metrics(&self) -> Metrics {
         Metrics {
             file_count: self.files.len() as u32,
