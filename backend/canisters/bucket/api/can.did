@@ -15,7 +15,7 @@ type UploadChunkArgs =
 type UploadChunkResponse =
     variant {
         Success;
-        AllowanceReached;
+        AllowanceExceeded;
         FileAlreadyExists;
         FileTooBig;
         ChunkAlreadyExists;

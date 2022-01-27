@@ -5,7 +5,7 @@ export type UploadChunkResponse =
     | "chunk_already_exists"
     | "chunk_index_too_high"
     | "chunk_size_mismatch"
-    | "allowance_reached"
+    | "allowance_exceeded"
     | "user_not_found"
     | "hash_mismatch"
     | "full";

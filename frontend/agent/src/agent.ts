@@ -7,6 +7,8 @@ import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
 import { hashBytes } from "./utils/hash";
 
+export type { UploadFileResponse, UserResponse };
+
 export class OpenStorageAgent {
     private readonly agent: HttpAgent;
     private readonly indexClient: IIndexClient;
@@ -82,6 +84,8 @@ export class OpenStorageAgent {
             canisterId: bucketCanisterId,
             fileId,
             pathPrefix: "/files/",
+            byteLimit: allocatedBucketResponse.byteLimit,
+            bytesUsed: allocatedBucketResponse.bytesUsedAfterUpload
         }
     }
 

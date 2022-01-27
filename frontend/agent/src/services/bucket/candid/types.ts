@@ -29,7 +29,7 @@ export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
   { 'Success' : null } |
   { 'HashMismatch' : null } |
   { 'FileAlreadyExists' : null } |
-  { 'AllowanceReached' : null } |
+  { 'AllowanceExceeded' : null } |
   { 'UserNotFound' : null };
 export type UserId = Principal;
 export interface Version {

@@ -34,6 +34,8 @@ export interface UploadFileResponse {
     canisterId: Principal,
     fileId: bigint,
     pathPrefix: string,
+    byteLimit: bigint,
+    bytesUsed: bigint,
 }
 
 export type UserResponse = UserRecord | "user_not_found";
