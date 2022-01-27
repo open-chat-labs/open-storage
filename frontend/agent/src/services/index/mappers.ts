@@ -13,11 +13,17 @@ export function allocatedBucketResponse(
             kind: "success",
             canisterId: candid.Success.canister_id,
             chunkSize: candid.Success.chunk_size,
+            byteLimit: candid.Success.byte_limit,
+            bytesUsed: candid.Success.bytes_used,
+            bytesUsedAfterUpload: candid.Success.bytes_used_after_upload,
         };
     }
-    if ("AllowanceReached" in candid) {
+    if ("AllowanceExceeded" in candid) {
         return {
-            kind: "allowance_reached",
+            kind: "allowance_exceeded",
+            byteLimit: candid.AllowanceExceeded.byte_limit,
+            bytesUsed: candid.AllowanceExceeded.bytes_used,
+            bytesUsedAfterUpload: candid.AllowanceExceeded.bytes_used_after_upload,
         };
     }
     if ("UserNotFound" in candid) {

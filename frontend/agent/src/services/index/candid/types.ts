@@ -2,16 +2,26 @@ import type { Principal } from '@dfinity/principal';
 export type AccessorId = Principal;
 export interface AddOrUpdateUsersArgs { 'users' : Array<UserConfig> }
 export type AddOrUpdateUsersResponse = { 'Success' : null };
+export interface AllocatedBucketAllowanceExceededResult {
+  'byte_limit' : bigint,
+  'bytes_used_after_upload' : bigint,
+  'bytes_used' : bigint,
+}
 export interface AllocatedBucketArgs {
   'file_hash' : Hash,
   'file_size' : bigint,
 }
-export type AllocatedBucketResponse = { 'Success' : AllocatedBucketResult } |
-  { 'AllowanceReached' : null } |
+export type AllocatedBucketResponse = {
+    'Success' : AllocatedBucketSuccessResult
+  } |
+  { 'AllowanceExceeded' : AllocatedBucketAllowanceExceededResult } |
   { 'UserNotFound' : null } |
   { 'BucketUnavailable' : null };
-export interface AllocatedBucketResult {
+export interface AllocatedBucketSuccessResult {
+  'byte_limit' : bigint,
   'canister_id' : CanisterId,
+  'bytes_used_after_upload' : bigint,
+  'bytes_used' : bigint,
   'chunk_size' : number,
 }
 export type CanisterId = Principal;

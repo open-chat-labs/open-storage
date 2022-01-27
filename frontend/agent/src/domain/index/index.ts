@@ -2,7 +2,7 @@ import type { Principal } from "@dfinity/principal";
 
 export type AllocatedBucketResponse =
     | AllocatedBucketSuccess
-    | AllocatedBucketAllowanceReached
+    | AllocatedBucketAllowanceExceeded
     | AllocatedBucketUserNotFound
     | AllocatedBucketBucketUnavailable;
 
@@ -10,10 +10,16 @@ export type AllocatedBucketSuccess = {
     kind: "success",
     canisterId: Principal,
     chunkSize: number,
+    byteLimit: bigint;
+    bytesUsed: bigint;
+    bytesUsedAfterUpload: bigint;
 }
 
-export type AllocatedBucketAllowanceReached = {
-    kind: "allowance_reached",
+export type AllocatedBucketAllowanceExceeded = {
+    kind: "allowance_exceeded",
+    byteLimit: bigint;
+    bytesUsed: bigint;
+    bytesUsedAfterUpload: bigint;
 }
 
 export type AllocatedBucketUserNotFound = {

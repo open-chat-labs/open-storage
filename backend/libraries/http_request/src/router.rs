@@ -43,8 +43,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn blob() {
-        assert!(matches!(extract_route("/blobs/78278371289379212398"), Route::Blob(_)));
+    fn file() {
+        assert!(matches!(extract_route("/files/78278371289379212398"), Route::File(_)));
     }
 
     #[test]
