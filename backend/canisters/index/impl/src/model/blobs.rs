@@ -37,7 +37,7 @@ impl Blobs {
     pub fn bucket(&self, hash: &Hash) -> Option<CanisterId> {
         self.blobs
             .get(hash)
-            .map(|b| b.uploaded_by.values().flatten().map(|rc| rc.canister_id).next())
+            .map(|b| b.uploaded_by.values().flatten().map(|rc| rc.bucket).next())
             .flatten()
     }
 
@@ -55,7 +55,7 @@ pub struct BlobRecord {
 impl BlobRecord {
     pub fn add_reference(&mut self, user_id: UserId, bucket: CanisterId) {
         let reference_counts = self.uploaded_by.entry(user_id).or_default();
-        if let Some(reference_count) = reference_counts.iter_mut().find(|rc| rc.canister_id == bucket) {
+        if let Some(reference_count) = reference_counts.iter_mut().find(|rc| rc.bucket == bucket) {
             reference_count.incr();
         } else {
             reference_counts.push(ReferenceCount::new(bucket, 1));
@@ -67,10 +67,7 @@ impl BlobRecord {
         let mut removed_from_user = false;
         if let Occupied(mut e) = self.uploaded_by.entry(user_id) {
             let reference_counts = e.get_mut();
-            if let Some((index, reference_count)) = reference_counts
-                .iter_mut()
-                .enumerate()
-                .find(|(_, rc)| rc.canister_id == bucket)
+            if let Some((index, reference_count)) = reference_counts.iter_mut().enumerate().find(|(_, rc)| rc.bucket == bucket)
             {
                 if reference_count.decr() == 0 {
                     reference_counts.remove(index);
@@ -87,13 +84,13 @@ impl BlobRecord {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReferenceCount {
-    canister_id: CanisterId,
+    bucket: CanisterId,
     count: u32,
 }
 
 impl ReferenceCount {
-    fn new(canister_id: CanisterId, count: u32) -> ReferenceCount {
-        ReferenceCount { canister_id, count }
+    fn new(bucket: CanisterId, count: u32) -> ReferenceCount {
+        ReferenceCount { bucket, count }
     }
 
     fn incr(&mut self) -> u32 {
@@ -129,16 +126,16 @@ mod tests {
             blobs.add(hash, size, user_id, bucket2);
         }
 
-        assert_eq!(blobs.hashes.keys().copied().collect::<Vec<_>>(), vec![hash]);
-        assert_eq!(blobs.hashes.get(&hash).unwrap().uploaded_by.len(), 10);
+        assert_eq!(blobs.blobs.keys().copied().collect::<Vec<_>>(), vec![hash]);
+        assert_eq!(blobs.blobs.get(&hash).unwrap().uploaded_by.len(), 10);
 
         for i in 0..10 {
             let user_id = Principal::from_slice(&[i]);
 
-            assert_eq!(hashes.remove(hash, user_id, bucket1), None);
-            assert_eq!(hashes.remove(hash, user_id, bucket2), Some(size));
+            assert_eq!(blobs.remove(hash, user_id, bucket1), None);
+            assert_eq!(blobs.remove(hash, user_id, bucket2), Some(size));
         }
 
-        assert!(hashes.hashes.is_empty());
+        assert!(blobs.blobs.is_empty());
     }
 }
