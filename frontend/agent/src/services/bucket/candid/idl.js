@@ -27,7 +27,7 @@ export const idlFactory = ({ IDL }) => {
     'Success' : IDL.Null,
     'HashMismatch' : IDL.Null,
     'FileAlreadyExists' : IDL.Null,
-    'AllowanceReached' : IDL.Null,
+    'AllowanceExceeded' : IDL.Null,
     'UserNotFound' : IDL.Null,
   });
   return IDL.Service({

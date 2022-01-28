@@ -26,8 +26,8 @@ export function uploadChunkResponse(
     if ("ChunkIndexTooHigh" in candid) {
         return "chunk_index_too_high";
     }
-    if ("AllowanceReached" in candid) {
-        return "allowance_reached";
+    if ("AllowanceExceeded" in candid) {
+        return "allowance_exceeded";
     }
     if ("UserNotFound" in candid) {
         return "user_not_found";
