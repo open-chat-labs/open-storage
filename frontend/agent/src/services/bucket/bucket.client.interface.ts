@@ -10,6 +10,7 @@ export interface IBucketClient {
         totalSize: bigint,
         chunkSize: number,
         chunkIndex: number,
-        bytes: Array<number>): Promise<UploadChunkResponse>;
-    deleteFile(fileId: bigint) : Promise<DeleteFileResponse>;
+        bytes: Array<number>
+    ): Promise<UploadChunkResponse>;
+    deleteFile(fileId: bigint): Promise<DeleteFileResponse>;
 }
