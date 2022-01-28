@@ -26,12 +26,15 @@ export class OpenStorageAgent {
         mimeType: string,
         accessors: Array<Principal>,
         bytes: ArrayBuffer,
-        onProgress?: (percentComplete: number) => void): Promise<UploadFileResponse> {
-
+        onProgress?: (percentComplete: number) => void
+    ): Promise<UploadFileResponse> {
         const hash = Array.from(new Uint8Array(hashBytes(bytes)));
         const fileSize = bytes.byteLength;
 
-        const allocatedBucketResponse = await this.indexClient.allocatedBucket(hash, BigInt(fileSize));
+        const allocatedBucketResponse = await this.indexClient.allocatedBucket(
+            hash,
+            BigInt(fileSize)
+        );
 
         if (allocatedBucketResponse.kind !== "success") {
             // TODO make this better!
@@ -64,11 +67,12 @@ export class OpenStorageAgent {
                         BigInt(fileSize),
                         chunkSize,
                         chunkIndex,
-                        chunkBytes);
+                        chunkBytes
+                    );
 
                     if (chunkResponse === "success") {
                         chunksCompleted++;
-                        onProgress?.(100 * chunksCompleted / chunkCount);
+                        onProgress?.((100 * chunksCompleted) / chunkCount);
                         return;
                     }
                 } catch (e) {
@@ -85,8 +89,8 @@ export class OpenStorageAgent {
             fileId,
             pathPrefix: "/files/",
             byteLimit: allocatedBucketResponse.byteLimit,
-            bytesUsed: allocatedBucketResponse.bytesUsedAfterUpload
-        }
+            bytesUsed: allocatedBucketResponse.bytesUsedAfterUpload,
+        };
     }
 
     private static newFileId(): bigint {

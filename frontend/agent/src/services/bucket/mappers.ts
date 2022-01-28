@@ -1,13 +1,8 @@
-import type {
-    CandidUploadChunkResponse,
-    CandidDeleteFileResponse,
-} from "./candid/idl";
+import type { CandidUploadChunkResponse, CandidDeleteFileResponse } from "./candid/idl";
 import type { UploadChunkResponse, DeleteFileResponse } from "../../domain/bucket";
 import { UnsupportedValueError } from "../../utils/error";
 
-export function uploadChunkResponse(
-    candid: CandidUploadChunkResponse
-): UploadChunkResponse {
+export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadChunkResponse {
     if ("Success" in candid) {
         return "success";
     }
@@ -38,15 +33,10 @@ export function uploadChunkResponse(
     if ("Full" in candid) {
         return "full";
     }
-    throw new UnsupportedValueError(
-        "Unknown Bucket.ApiUploadChunkResponse type received",
-        candid
-    );
+    throw new UnsupportedValueError("Unknown Bucket.ApiUploadChunkResponse type received", candid);
 }
 
-export function deleteFileResponse(
-    candid: CandidDeleteFileResponse
-): DeleteFileResponse {
+export function deleteFileResponse(candid: CandidDeleteFileResponse): DeleteFileResponse {
     if ("Success" in candid) {
         return "success";
     }
@@ -56,8 +46,5 @@ export function deleteFileResponse(
     if ("NotFound" in candid) {
         return "not_found";
     }
-    throw new UnsupportedValueError(
-        "Unknown Bucket.ApiDeleteFileResponse type received",
-        candid
-    );
+    throw new UnsupportedValueError("Unknown Bucket.ApiDeleteFileResponse type received", candid);
 }

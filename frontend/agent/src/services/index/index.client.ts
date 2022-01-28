@@ -12,10 +12,7 @@ export class IndexClient extends CandidService<IndexService> implements IIndexCl
     }
 
     user(): Promise<UserResponse> {
-        return this.handleResponse(
-            this.service.user({}),
-            userResponse
-        );
+        return this.handleResponse(this.service.user({}), userResponse);
     }
 
     allocatedBucket(fileHash: Array<number>, fileSize: bigint): Promise<AllocatedBucketResponse> {

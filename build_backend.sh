@@ -12,7 +12,7 @@ echo "4. cargo test"
 cargo test --lib
 
 echo "5. validate candid syntax"
-source validate-candid-syntax.sh
+./validate-candid-syntax.sh
 
 echo "6. validate candid matches rust"
-source validate-candid-matches-rust.sh
+./validate-candid-matches-rust.sh

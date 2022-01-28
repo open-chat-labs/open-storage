@@ -1,7 +1,4 @@
-import type {
-    CandidAllocatedBucketResponse,
-    CandidUserResponse,
-} from "./candid/idl";
+import type { CandidAllocatedBucketResponse, CandidUserResponse } from "./candid/idl";
 import type { AllocatedBucketResponse, UserResponse } from "../../domain/index";
 import { UnsupportedValueError } from "../../utils/error";
 
@@ -52,8 +49,5 @@ export function userResponse(candid: CandidUserResponse): UserResponse {
     if ("UserNotFound" in candid) {
         return "user_not_found";
     }
-    throw new UnsupportedValueError(
-        "Unknown Index.UserResponse type received",
-        candid
-    );
+    throw new UnsupportedValueError("Unknown Index.UserResponse type received", candid);
 }

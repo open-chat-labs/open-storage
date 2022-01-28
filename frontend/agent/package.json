@@ -4,7 +4,9 @@
     "description": "",
     "main": "lib/agent.js",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "lint": "eslint ./src --fix",
+        "format": "prettier './src/**/*.ts' --write"
     },
     "dependencies": {
         "@dfinity/agent": "^0.10.1",
@@ -17,6 +19,12 @@
         "uuid": "^3.4.0"
     },
     "devDependencies": {
-        "@types/async": "^3.2.10"
+        "@types/async": "^3.2.10",
+        "@typescript-eslint/eslint-plugin": "^5.10.1",
+        "@typescript-eslint/parser": "^5.10.1",
+        "eslint": "^8.7.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.5.1"
     }
 }
