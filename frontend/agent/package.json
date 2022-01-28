@@ -1,6 +1,6 @@
 {
     "name": "@open-ic/open-storage-agent",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "",
     "main": "lib/agent.js",
     "scripts": {
@@ -19,7 +19,6 @@
         "uuid": "^3.4.0"
     },
     "devDependencies": {
-        "@types/async": "^3.2.10",
         "@typescript-eslint/eslint-plugin": "^5.10.1",
         "@typescript-eslint/parser": "^5.10.1",
         "eslint": "^8.7.0",
