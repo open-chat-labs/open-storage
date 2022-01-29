@@ -3,7 +3,7 @@ on:
     branches:
       - main
 
-name: Frontend linting, type check & unit tests
+name: Frontend linting and formatting
 
 jobs:
   install-and-test:
@@ -24,8 +24,7 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: ci
-      - name: run lint, format and unit tests
+      - name: run lint and format
         run: |
           npm run lint
           npm run format
-          npm test
