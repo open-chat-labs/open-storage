@@ -1,0 +1,31 @@
+on:
+  pull_request:
+    branches:
+      - master
+
+name: Frontend linting, type check & unit tests
+
+jobs:
+  install-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/agent
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.x"
+      - name: Installing NPM dependencies
+        run: npm ci
+        env:
+          NODE_ENV: ci
+      - name: building frontend
+        run: npm run build
+        env:
+          NODE_ENV: ci
+      - name: run lint, format and unit tests
+        run: |
+          npm run lint
+          npm run format
+          npm test
