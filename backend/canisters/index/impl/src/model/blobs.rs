@@ -11,7 +11,7 @@ pub struct Blobs {
 impl Blobs {
     pub fn add(&mut self, hash: Hash, size: u64, user_id: UserId, bucket: CanisterId) {
         let blob_record = self.blobs.entry(hash).or_insert(BlobRecord {
-            uploaded_by: HashMap::new(),
+            owners: HashMap::new(),
             size,
         });
         blob_record.add_reference(user_id, bucket);
@@ -25,7 +25,7 @@ impl Blobs {
 
             if blob_record.remove_reference(user_id, bucket) {
                 let size = blob_record.size;
-                if blob_record.uploaded_by.is_empty() {
+                if blob_record.owners.is_empty() {
                     e.remove();
                 }
                 return Some(size);
@@ -37,24 +37,25 @@ impl Blobs {
     pub fn bucket(&self, hash: &Hash) -> Option<CanisterId> {
         self.blobs
             .get(hash)
-            .map(|b| b.uploaded_by.values().flatten().map(|rc| rc.bucket).next())
+            .map(|b| b.owners.values().flatten().map(|rc| rc.bucket).next())
             .flatten()
     }
 
-    pub fn has_user_uploaded_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
-        self.blobs.get(hash).map_or(false, |b| b.uploaded_by.contains_key(user_id))
+    pub fn user_owns_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
+        self.blobs.get(hash).map_or(false, |b| b.owners.contains_key(user_id))
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlobRecord {
-    pub uploaded_by: HashMap<UserId, Vec<ReferenceCount>>,
+    #[serde(rename(deserialize = "uploaded_by"))]
+    pub owners: HashMap<UserId, Vec<ReferenceCount>>,
     pub size: u64,
 }
 
 impl BlobRecord {
     pub fn add_reference(&mut self, user_id: UserId, bucket: CanisterId) {
-        let reference_counts = self.uploaded_by.entry(user_id).or_default();
+        let reference_counts = self.owners.entry(user_id).or_default();
         if let Some(reference_count) = reference_counts.iter_mut().find(|rc| rc.bucket == bucket) {
             reference_count.incr();
         } else {
@@ -65,7 +66,7 @@ impl BlobRecord {
     // Returns true if the user no longer owns a copy of the object, else false
     pub fn remove_reference(&mut self, user_id: UserId, bucket: CanisterId) -> bool {
         let mut removed_from_user = false;
-        if let Occupied(mut e) = self.uploaded_by.entry(user_id) {
+        if let Occupied(mut e) = self.owners.entry(user_id) {
             let reference_counts = e.get_mut();
             if let Some((index, reference_count)) = reference_counts.iter_mut().enumerate().find(|(_, rc)| rc.bucket == bucket)
             {
@@ -127,7 +128,7 @@ mod tests {
         }
 
         assert_eq!(blobs.blobs.keys().copied().collect::<Vec<_>>(), vec![hash]);
-        assert_eq!(blobs.blobs.get(&hash).unwrap().uploaded_by.len(), 10);
+        assert_eq!(blobs.blobs.get(&hash).unwrap().owners.len(), 10);
 
         for i in 0..10 {
             let user_id = Principal::from_slice(&[i]);

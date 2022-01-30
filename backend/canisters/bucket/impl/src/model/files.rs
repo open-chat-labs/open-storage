@@ -21,7 +21,8 @@ pub struct Files {
 
 #[derive(Serialize, Deserialize)]
 pub struct File {
-    pub uploaded_by: UserId,
+    #[serde(rename(deserialize = "uploaded_by"))]
+    pub owner: UserId,
     pub created: TimestampMillis,
     pub accessors: HashSet<AccessorId>,
     pub hash: Hash,
@@ -41,11 +42,11 @@ impl Files {
         self.blobs.get(hash)
     }
 
-    pub fn uploaded_by(&self, file_id: &FileId) -> Option<UserId> {
+    pub fn owner(&self, file_id: &FileId) -> Option<UserId> {
         self.files
             .get(file_id)
-            .map(|f| f.uploaded_by)
-            .or_else(|| self.pending_files.get(file_id).map(|f| f.uploaded_by))
+            .map(|f| f.owner)
+            .or_else(|| self.pending_files.get(file_id).map(|f| f.owner))
     }
 
     pub fn put_chunk(&mut self, args: PutChunkArgs) -> PutChunkResult {
@@ -64,7 +65,7 @@ impl Files {
         let completed_file: Option<PendingFile> = match self.pending_files.entry(file_id) {
             Vacant(e) => {
                 file_added = Some(FileAdded {
-                    uploaded_by: args.uploaded_by,
+                    owner: args.owner,
                     file_id,
                     hash: args.hash,
                     size: args.total_size,
@@ -113,9 +114,9 @@ impl Files {
         })
     }
 
-    pub fn remove(&mut self, uploaded_by: UserId, file_id: FileId) -> RemoveFileResult {
+    pub fn remove(&mut self, owner: UserId, file_id: FileId) -> RemoveFileResult {
         if let Occupied(e) = self.files.entry(file_id) {
-            if e.get().uploaded_by != uploaded_by {
+            if e.get().owner != owner {
                 RemoveFileResult::NotAuthorized
             } else {
                 let file = e.remove();
@@ -131,7 +132,7 @@ impl Files {
 
                 RemoveFileResult::Success(FileRemoved {
                     file_id,
-                    uploaded_by,
+                    owner,
                     hash: file.hash,
                     blob_deleted,
                 })
@@ -162,7 +163,7 @@ impl Files {
                         let file = e.remove();
                         files_removed.push(FileRemoved {
                             file_id,
-                            uploaded_by: file.uploaded_by,
+                            owner: file.owner,
                             hash: file.hash,
                             blob_deleted: delete_blob,
                         });
@@ -205,7 +206,7 @@ impl Files {
         self.files.insert(
             file_id,
             File {
-                uploaded_by: completed_file.uploaded_by,
+                owner: completed_file.owner,
                 created: now,
                 accessors: completed_file.accessors,
                 hash: completed_file.hash,
@@ -294,7 +295,8 @@ impl AccessorsMap {
 
 #[derive(Serialize, Deserialize)]
 pub struct PendingFile {
-    pub uploaded_by: UserId,
+    #[serde(rename(deserialize = "uploaded_by"))]
+    pub owner: UserId,
     pub created: TimestampMillis,
     pub hash: Hash,
     pub mime_type: String,
@@ -357,7 +359,7 @@ pub enum AddChunkResult {
 }
 
 pub struct PutChunkArgs {
-    uploaded_by: UserId,
+    owner: UserId,
     file_id: FileId,
     hash: Hash,
     mime_type: String,
@@ -370,9 +372,9 @@ pub struct PutChunkArgs {
 }
 
 impl PutChunkArgs {
-    pub fn new(uploaded_by: UserId, upload_chunk_args: UploadChunkArgs, now: TimestampMillis) -> Self {
+    pub fn new(owner: UserId, upload_chunk_args: UploadChunkArgs, now: TimestampMillis) -> Self {
         Self {
-            uploaded_by,
+            owner,
             file_id: upload_chunk_args.file_id,
             hash: upload_chunk_args.hash,
             mime_type: upload_chunk_args.mime_type,
@@ -391,7 +393,7 @@ impl From<PutChunkArgs> for PendingFile {
         let chunk_count = calc_chunk_count(args.chunk_size, args.total_size);
 
         let mut pending_file = Self {
-            uploaded_by: args.uploaded_by,
+            owner: args.owner,
             created: args.now,
             hash: args.hash,
             mime_type: args.mime_type,

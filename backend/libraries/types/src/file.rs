@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct FileAdded {
     pub file_id: FileId,
-    pub uploaded_by: UserId,
+    #[serde(rename(deserialize = "uploaded_by"))]
+    pub owner: UserId,
     pub hash: Hash,
     pub size: u64,
 }
@@ -13,7 +14,8 @@ pub struct FileAdded {
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct FileRemoved {
     pub file_id: FileId,
-    pub uploaded_by: UserId,
+    #[serde(rename(deserialize = "uploaded_by"))]
+    pub owner: UserId,
     pub hash: Hash,
     pub blob_deleted: bool,
 }

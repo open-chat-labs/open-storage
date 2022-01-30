@@ -21,7 +21,7 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
     if let Some(user) = runtime_state.data.users.get(&user_id) {
         let byte_limit = user.byte_limit;
         let bytes_used = user.bytes_used;
-        let bytes_used_after_upload = if runtime_state.data.blobs.has_user_uploaded_blob(&user_id, &args.file_hash) {
+        let bytes_used_after_upload = if runtime_state.data.blobs.user_owns_blob(&user_id, &args.file_hash) {
             bytes_used
         } else {
             bytes_used

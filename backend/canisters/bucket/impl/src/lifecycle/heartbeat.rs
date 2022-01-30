@@ -47,7 +47,7 @@ mod sync_index {
             let file_id = file.file_id;
             let reason = file.reason.into();
 
-            if let Some(user_id) = runtime_state.data.files.uploaded_by(&file.file_id) {
+            if let Some(user_id) = runtime_state.data.files.owner(&file.file_id) {
                 if let Some(user) = runtime_state.data.users.get_mut(&user_id) {
                     let old_status = user.set_file_status(file_id, FileStatusInternal::Rejected(reason));
 
