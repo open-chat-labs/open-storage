@@ -1,6 +1,7 @@
-import type { AllocatedBucketResponse, UserResponse } from "../../domain/index";
+import type { AllocatedBucketResponse, ReferenceCountsResponse, UserResponse } from "../../domain/index";
 
 export interface IIndexClient {
     user(): Promise<UserResponse>;
-    allocatedBucket(blobHash: Array<number>, blobSize: bigint): Promise<AllocatedBucketResponse>;
+    allocatedBucket(fileHash: Array<number>, fileSize: bigint): Promise<AllocatedBucketResponse>;
+    referenceCounts(fileHash: Array<number>): Promise<ReferenceCountsResponse>;
 }

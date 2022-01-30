@@ -3,8 +3,8 @@ import type { Principal } from "@dfinity/principal";
 export type AllocatedBucketResponse =
     | AllocatedBucketSuccess
     | AllocatedBucketAllowanceExceeded
-    | AllocatedBucketUserNotFound
-    | AllocatedBucketBucketUnavailable;
+    | AllocatedBucketBucketUnavailable
+    | UserNotFound;
 
 export type AllocatedBucketSuccess = {
     kind: "success";
@@ -22,20 +22,30 @@ export type AllocatedBucketAllowanceExceeded = {
     bytesUsedAfterUpload: bigint;
 };
 
-export type AllocatedBucketUserNotFound = {
-    kind: "user_not_found";
-};
-
 export type AllocatedBucketBucketUnavailable = {
     kind: "bucket_unavailable";
 };
 
-export interface UploadFileResponse {
+export type UploadFileResponse = {
     canisterId: Principal;
     fileId: bigint;
     pathPrefix: string;
     byteLimit: bigint;
     bytesUsed: bigint;
+}
+
+export type ReferenceCountsResponse = ReferenceCountsSuccess | UserNotFound;
+
+export type ReferenceCountsSuccess = {
+    kind: "success";
+    referenceCounts: Array<ReferenceCount>;
+    byteLimit: bigint;
+    bytesUsed: bigint;
+};
+
+export type ReferenceCount = {
+    bucket: Principal;
+    count: number;
 }
 
 export type UserResponse = UserRecord | UserNotFound;

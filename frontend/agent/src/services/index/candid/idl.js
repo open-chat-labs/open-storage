@@ -30,6 +30,20 @@ export const idlFactory = ({ IDL }) => {
     'UserNotFound' : IDL.Null,
     'BucketUnavailable' : IDL.Null,
   });
+  const ReferenceCountsArgs = IDL.Record({ 'file_hash' : Hash });
+  const ReferenceCount = IDL.Record({
+    'count' : IDL.Nat32,
+    'bucket' : CanisterId,
+  });
+  const ReferenceCountsSuccessResult = IDL.Record({
+    'byte_limit' : IDL.Nat64,
+    'bytes_used' : IDL.Nat64,
+    'reference_counts' : IDL.Vec(ReferenceCount),
+  });
+  const ReferenceCountsResponse = IDL.Variant({
+    'Success' : ReferenceCountsSuccessResult,
+    'UserNotFound' : IDL.Null,
+  });
   const AccessorId = IDL.Principal;
   const RemoveAccessorArgs = IDL.Record({ 'accessor_id' : AccessorId });
   const RemoveAccessorResponse = IDL.Variant({ 'Success' : IDL.Null });
@@ -53,6 +67,11 @@ export const idlFactory = ({ IDL }) => {
     'allocated_bucket_v2' : IDL.Func(
         [AllocatedBucketArgs],
         [AllocatedBucketResponse],
+        ['query'],
+      ),
+    'reference_counts' : IDL.Func(
+        [ReferenceCountsArgs],
+        [ReferenceCountsResponse],
         ['query'],
       ),
     'remove_accessor' : IDL.Func(

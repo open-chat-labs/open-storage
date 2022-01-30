@@ -66,6 +66,30 @@ type AllocatedBucketAllowanceExceededResult =
         bytes_used_after_upload: nat64;
     };
 
+type ReferenceCountsArgs =
+    record {
+        file_hash: Hash;
+    };
+
+type ReferenceCountsResponse =
+    variant {
+        Success: ReferenceCountsSuccessResult;
+        UserNotFound;
+    };
+
+type ReferenceCountsSuccessResult =
+    record {
+        reference_counts: vec ReferenceCount;
+        byte_limit: nat64;
+        bytes_used: nat64;
+    };
+
+type ReferenceCount =
+    record {
+        bucket: CanisterId;
+        count: nat32;
+    };
+
 type UserArgs =
     record {
     };
@@ -86,6 +110,8 @@ service: {
     add_or_update_users: (AddOrUpdateUsersArgs) -> (AddOrUpdateUsersResponse);
     remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
     remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
+
     allocated_bucket_v2: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
+    reference_counts: (ReferenceCountsArgs) -> (ReferenceCountsResponse) query;
     user: (UserArgs) -> (UserResponse) query;
 }

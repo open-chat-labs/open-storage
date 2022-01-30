@@ -44,6 +44,15 @@ impl Blobs {
     pub fn user_owns_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
         self.blobs.get(hash).map_or(false, |b| b.owners.contains_key(user_id))
     }
+
+    pub fn reference_counts(&self, user_id: &UserId, hash: &Hash) -> Vec<ReferenceCount> {
+        self.blobs
+            .get(hash)
+            .map(|b| b.owners.get(user_id))
+            .flatten()
+            .cloned()
+            .unwrap_or_default()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -82,7 +91,7 @@ impl BlobRecord {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ReferenceCount {
     bucket: CanisterId,
     count: u32,
@@ -101,6 +110,15 @@ impl ReferenceCount {
     fn decr(&mut self) -> u32 {
         self.count = self.count.saturating_sub(1);
         self.count
+    }
+}
+
+impl From<ReferenceCount> for index_canister::reference_counts::ReferenceCount {
+    fn from(rc: ReferenceCount) -> Self {
+        Self {
+            bucket: rc.bucket,
+            count: rc.count,
+        }
     }
 }
 
