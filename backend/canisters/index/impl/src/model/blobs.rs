@@ -48,7 +48,6 @@ impl Blobs {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlobRecord {
-    #[serde(rename(deserialize = "uploaded_by"))]
     pub owners: HashMap<UserId, Vec<ReferenceCount>>,
     pub size: u64,
 }

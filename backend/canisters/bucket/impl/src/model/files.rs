@@ -21,7 +21,6 @@ pub struct Files {
 
 #[derive(Serialize, Deserialize)]
 pub struct File {
-    #[serde(rename(deserialize = "uploaded_by"))]
     pub owner: UserId,
     pub created: TimestampMillis,
     pub accessors: HashSet<AccessorId>,
@@ -295,7 +294,6 @@ impl AccessorsMap {
 
 #[derive(Serialize, Deserialize)]
 pub struct PendingFile {
-    #[serde(rename(deserialize = "uploaded_by"))]
     pub owner: UserId,
     pub created: TimestampMillis,
     pub hash: Hash,
