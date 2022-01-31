@@ -308,8 +308,8 @@ pub struct PendingFile {
 impl PendingFile {
     pub fn add_chunk(&mut self, chunk_index: u32, bytes: ByteBuf) -> AddChunkResult {
         if self.remaining_chunks.remove(&chunk_index) {
-            let actual_chunk_size = bytes.len() as u32;
             if let Some(expected_chunk_size) = self.expected_chunk_size(chunk_index) {
+                let actual_chunk_size = bytes.len() as u32;
                 if expected_chunk_size != actual_chunk_size {
                     return AddChunkResult::ChunkSizeMismatch(ChunkSizeMismatch {
                         expected_size: expected_chunk_size,
@@ -320,11 +320,10 @@ impl PendingFile {
                 return AddChunkResult::ChunkIndexTooHigh;
             }
 
-            // TODO: Improve performance by copying a block of memory in one go
             let start_index = self.chunk_size as usize * chunk_index as usize;
-            for (index, byte) in bytes.into_iter().enumerate().map(|(i, b)| (i + start_index, b)) {
-                self.bytes[index] = byte;
-            }
+            let end_index = start_index + bytes.len();
+            self.bytes[start_index..end_index].copy_from_slice(&bytes);
+
             AddChunkResult::Success
         } else {
             AddChunkResult::ChunkAlreadyExists
