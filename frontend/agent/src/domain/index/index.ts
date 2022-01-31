@@ -38,9 +38,14 @@ export interface UploadFileResponse {
     bytesUsed: bigint;
 }
 
-export type UserResponse = UserRecord | "user_not_found";
+export type UserResponse = UserRecord | UserNotFound;
 
 export type UserRecord = {
+    kind: "user";
     byteLimit: bigint;
     bytesUsed: bigint;
+};
+
+export type UserNotFound = {
+    kind: "user_not_found";
 };

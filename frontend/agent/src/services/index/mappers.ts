@@ -42,12 +42,13 @@ export function allocatedBucketResponse(
 export function userResponse(candid: CandidUserResponse): UserResponse {
     if ("Success" in candid) {
         return {
+            kind: "user",
             byteLimit: candid.Success.byte_limit,
             bytesUsed: candid.Success.bytes_used,
         };
     }
     if ("UserNotFound" in candid) {
-        return "user_not_found";
+        return { kind: "user_not_found" };
     }
     throw new UnsupportedValueError("Unknown Index.UserResponse type received", candid);
 }
