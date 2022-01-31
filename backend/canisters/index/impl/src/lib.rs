@@ -86,17 +86,17 @@ impl Data {
     pub fn add_file_reference(&mut self, bucket: CanisterId, file: FileAdded) -> Result<(), FileRejected> {
         let FileAdded {
             file_id,
-            uploaded_by,
+            owner,
             hash,
             size,
         } = file;
 
-        if let Some(user) = self.users.get_mut(&uploaded_by) {
-            if !self.blobs.has_user_uploaded_blob(&uploaded_by, &hash) {
+        if let Some(user) = self.users.get_mut(&owner) {
+            if !self.blobs.user_owns_blob(&owner, &hash) {
                 let bytes_used_after_upload = user
                     .bytes_used
                     .checked_add(size)
-                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {}", uploaded_by));
+                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {}", owner));
 
                 if bytes_used_after_upload > user.byte_limit {
                     return Err(FileRejected {
@@ -114,16 +114,16 @@ impl Data {
             });
         }
 
-        self.blobs.add(hash, size, uploaded_by, bucket);
+        self.blobs.add(hash, size, owner, bucket);
 
         Ok(())
     }
 
     pub fn remove_file_reference(&mut self, bucket: CanisterId, file: FileRemoved) {
-        let FileRemoved { uploaded_by, hash, .. } = file;
+        let FileRemoved { owner, hash, .. } = file;
 
-        if let Some(bytes_removed) = self.blobs.remove(hash, uploaded_by, bucket) {
-            if let Some(user) = self.users.get_mut(&uploaded_by) {
+        if let Some(bytes_removed) = self.blobs.remove(hash, owner, bucket) {
+            if let Some(user) = self.users.get_mut(&owner) {
                 user.bytes_used = user.bytes_used.saturating_sub(bytes_removed);
             }
         }
