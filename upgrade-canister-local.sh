@@ -11,7 +11,7 @@ VERSION=$3
 
 ./compress-wasm.sh bucket_canister_impl
 
-INDEX_CANISTER_ID=$(dfx canister --no-wallet id index)
+INDEX_CANISTER_ID=$(dfx canister id index)
 
 cargo run \
   --manifest-path backend/canister_upgrader/Cargo.toml \
