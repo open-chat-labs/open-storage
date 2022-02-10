@@ -9,7 +9,7 @@ IDENTITY=$1
 
 ./compress-wasm.sh bucket_canister_impl
 
-INDEX_CANISTER_ID=$(dfx canister --network ic_test --no-wallet id index)
+INDEX_CANISTER_ID=$(dfx canister --network ic_test id index)
 
 cargo run \
   --manifest-path backend/canister_installer/Cargo.toml \
