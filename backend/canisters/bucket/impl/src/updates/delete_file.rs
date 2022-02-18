@@ -1,4 +1,3 @@
-use crate::guards::caller_is_known_user;
 use crate::model::files::RemoveFileResult;
 use crate::model::index_sync_state::EventToSync;
 use crate::{mutate_state, RuntimeState};
@@ -6,7 +5,7 @@ use bucket_canister::delete_file::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
 
-#[update(guard = "caller_is_known_user")]
+#[update]
 #[trace]
 fn delete_file(args: Args) -> Response {
     mutate_state(|state| delete_file_impl(args, state))
