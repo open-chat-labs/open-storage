@@ -1,5 +1,6 @@
 use crate::{calc_chunk_count, DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk_v2::Args as UploadChunkArgs;
+use candid::Principal;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
@@ -26,6 +27,13 @@ pub struct File {
     pub accessors: HashSet<AccessorId>,
     pub hash: Hash,
     pub mime_type: String,
+}
+
+impl File {
+    pub fn can_be_removed_by(&self, principal: Principal) -> bool {
+        // TODO accessors should have roles rather than always being allowed to remove files
+        self.owner == principal || self.accessors.contains(&principal)
+    }
 }
 
 impl Files {
@@ -113,11 +121,9 @@ impl Files {
         })
     }
 
-    pub fn remove(&mut self, owner: UserId, file_id: FileId) -> RemoveFileResult {
+    pub fn remove(&mut self, caller: Principal, file_id: FileId) -> RemoveFileResult {
         if let Occupied(e) = self.files.entry(file_id) {
-            if e.get().owner != owner {
-                RemoveFileResult::NotAuthorized
-            } else {
+            if e.get().can_be_removed_by(caller) {
                 let file = e.remove();
                 for accessor_id in file.accessors.iter() {
                     self.accessors_map.unlink(*accessor_id, &file_id);
@@ -131,10 +137,12 @@ impl Files {
 
                 RemoveFileResult::Success(FileRemoved {
                     file_id,
-                    owner,
+                    owner: file.owner,
                     hash: file.hash,
                     blob_deleted,
                 })
+            } else {
+                RemoveFileResult::NotAuthorized
             }
         } else {
             RemoveFileResult::NotFound
