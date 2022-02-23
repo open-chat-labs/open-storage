@@ -1,5 +1,5 @@
 use crate::model::blobs::Blobs;
-use crate::model::buckets::Buckets;
+use crate::model::buckets::{BucketRecord, Buckets};
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
@@ -7,10 +7,12 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
-    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Timestamped, UserId, Version,
+    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, TimestampMillis, Timestamped,
+    UserId, Version,
 };
 use utils::canister::CanistersRequiringUpgrade;
 use utils::env::Environment;
+use utils::memory;
 
 mod guards;
 mod lifecycle;
@@ -54,6 +56,23 @@ impl RuntimeState {
     pub fn is_caller_bucket(&self) -> bool {
         let caller = self.env.caller();
         self.data.buckets.get(&caller).is_some()
+    }
+
+    pub fn metrics(&self) -> Metrics {
+        let blob_metrics = self.data.blobs.metrics();
+
+        Metrics {
+            memory_used: memory::used(),
+            now: self.env.now(),
+            cycles_balance: self.env.cycles_balance(),
+            wasm_version: WASM_VERSION.with(|v| **v.borrow()),
+            blob_count: blob_metrics.blob_count,
+            total_blob_bytes: blob_metrics.total_blob_bytes,
+            file_count: blob_metrics.file_count,
+            total_file_bytes: blob_metrics.total_file_bytes,
+            active_buckets: self.data.buckets.iter_active_buckets().map(|b| b.into()).collect(),
+            full_buckets: self.data.buckets.iter_full_buckets().map(|b| b.into()).collect(),
+        }
     }
 }
 
@@ -134,4 +153,35 @@ impl Data {
 pub struct UserRecord {
     pub byte_limit: u64,
     pub bytes_used: u64,
+}
+
+#[derive(CandidType, Serialize, Debug)]
+pub struct Metrics {
+    pub memory_used: u64,
+    pub now: TimestampMillis,
+    pub cycles_balance: Cycles,
+    pub wasm_version: Version,
+    pub blob_count: u64,
+    pub total_blob_bytes: u64,
+    pub file_count: u64,
+    pub total_file_bytes: u64,
+    pub active_buckets: Vec<BucketMetrics>,
+    pub full_buckets: Vec<BucketMetrics>,
+}
+
+#[derive(CandidType, Serialize, Debug)]
+pub struct BucketMetrics {
+    pub canister_id: CanisterId,
+    pub wasm_version: Version,
+    pub bytes_used: u64,
+}
+
+impl From<&BucketRecord> for BucketMetrics {
+    fn from(bucket: &BucketRecord) -> Self {
+        BucketMetrics {
+            canister_id: bucket.canister_id,
+            wasm_version: bucket.wasm_version,
+            bytes_used: bucket.bytes_used,
+        }
+    }
 }

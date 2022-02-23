@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry::Occupied;
 use std::collections::HashMap;
-use types::{CanisterId, Hash, UserId};
+use types::{CanisterId, Hash, Milliseconds, TimestampMillis, UserId};
+
+const RECALCULATE_METRICS_INTERVAL: Milliseconds = 10 * 60 * 1000; // 10 minutes
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Blobs {
     blobs: HashMap<Hash, BlobRecord>,
+    #[serde(default)]
+    cached_metrics: Metrics,
 }
 
 impl Blobs {
@@ -43,6 +47,34 @@ impl Blobs {
 
     pub fn user_owns_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
         self.blobs.get(hash).map_or(false, |b| b.owners.contains_key(user_id))
+    }
+
+    pub fn metrics(&self) -> &Metrics {
+        &self.cached_metrics
+    }
+
+    pub fn recalculate_metrics_if_due(&mut self, now: TimestampMillis) {
+        if now > self.cached_metrics.timestamp + RECALCULATE_METRICS_INTERVAL {
+            let mut total_blob_bytes = 0;
+            let mut file_count = 0;
+            let mut total_file_bytes = 0;
+
+            for blob in self.blobs.values() {
+                total_blob_bytes += blob.size;
+
+                let reference_count: u64 = blob.owners.values().map(|r| r.len() as u64).sum();
+                file_count += reference_count;
+                total_file_bytes += blob.size * reference_count;
+            }
+
+            self.cached_metrics = Metrics {
+                timestamp: now,
+                blob_count: self.blobs.len() as u64,
+                total_blob_bytes,
+                file_count,
+                total_file_bytes,
+            };
+        }
     }
 }
 
@@ -102,6 +134,15 @@ impl ReferenceCount {
         self.count = self.count.saturating_sub(1);
         self.count
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct Metrics {
+    pub timestamp: TimestampMillis,
+    pub blob_count: u64,
+    pub total_blob_bytes: u64,
+    pub file_count: u64,
+    pub total_file_bytes: u64,
 }
 
 #[cfg(test)]

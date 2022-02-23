@@ -14,6 +14,7 @@ fn heartbeat() {
     ensure_sufficient_active_buckets::run();
     sync_users_with_buckets::run();
     upgrade_canisters::run();
+    recalculate_blob_metrics::run();
 }
 
 mod ensure_sufficient_active_buckets {
@@ -210,5 +211,16 @@ mod upgrade_canisters {
             from_version,
             to_version,
         });
+    }
+}
+
+mod recalculate_blob_metrics {
+    use super::*;
+
+    pub fn run() {
+        mutate_state(|state| {
+            let now = state.env.now();
+            state.data.blobs.recalculate_metrics_if_due(now);
+        })
     }
 }
