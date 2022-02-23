@@ -40,9 +40,15 @@ impl Buckets {
         }
     }
 
-    pub fn add_bucket_and_release_creation_lock(&mut self, bucket: BucketRecord) {
-        self.active_buckets.push(bucket);
+    pub fn release_creation_lock(&mut self) {
         self.creation_in_progress = false;
+    }
+
+    pub fn add_bucket(&mut self, bucket: BucketRecord, release_creation_lock: bool) {
+        self.active_buckets.push(bucket);
+        if release_creation_lock {
+            self.release_creation_lock();
+        }
     }
 
     pub fn allocate(&self, blob_hash: Hash) -> Option<CanisterId> {
