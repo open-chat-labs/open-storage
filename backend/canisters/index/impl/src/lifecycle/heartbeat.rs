@@ -8,7 +8,6 @@ use types::{CanisterId, CanisterWasm, Cycles, Version};
 const MAX_CONCURRENT_CANISTER_UPGRADES: u32 = 1;
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
 const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 10_000_000_000_000; // 10T;
-const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE_TEST_MODE: Cycles = 1_000_000_000_000; // 1T;
 
 #[heartbeat]
 fn heartbeat() {
@@ -51,12 +50,18 @@ mod ensure_sufficient_active_buckets {
             return DoNothing;
         }
 
-        let cycles_required = if runtime_state.data.test_mode {
-            BUCKET_CANISTER_INITIAL_CYCLES_BALANCE_TEST_MODE + CREATE_CANISTER_CYCLES_FEE
+        let (cycles_required, min_cycles_balance) = if runtime_state.data.test_mode {
+            (
+                (BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE) / 4,
+                MIN_CYCLES_BALANCE / 10,
+            )
         } else {
-            BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE
+            (
+                BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE,
+                MIN_CYCLES_BALANCE,
+            )
         };
-        if !cycles_utils::can_spend_cycles(cycles_required, MIN_CYCLES_BALANCE) {
+        if !cycles_utils::can_spend_cycles(cycles_required, min_cycles_balance) {
             return CyclesBalanceTooLow;
         }
 
