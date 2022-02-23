@@ -62,7 +62,7 @@ impl Blobs {
             for blob in self.blobs.values() {
                 total_blob_bytes += blob.size;
 
-                let reference_count: u64 = blob.owners.values().map(|r| r.len() as u64).sum();
+                let reference_count: u64 = blob.owners.values().flatten().map(|r| r.count as u64).sum();
                 file_count += reference_count;
                 total_file_bytes += blob.size * reference_count;
             }
