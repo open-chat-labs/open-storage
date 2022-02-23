@@ -62,6 +62,7 @@ mod ensure_sufficient_active_buckets {
             )
         };
         if !cycles_utils::can_spend_cycles(cycles_required, min_cycles_balance) {
+            runtime_state.data.buckets.release_creation_lock();
             return CyclesBalanceTooLow;
         }
 
@@ -83,6 +84,8 @@ mod ensure_sufficient_active_buckets {
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
             mutate_state(|state| commit(bucket, state))
+        } else {
+            mutate_state(|state| state.data.buckets.release_creation_lock());
         }
     }
 
@@ -90,7 +93,7 @@ mod ensure_sufficient_active_buckets {
         for user_id in runtime_state.data.users.keys() {
             bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
         }
-        runtime_state.data.buckets.add_bucket_and_release_creation_lock(bucket);
+        runtime_state.data.buckets.add_bucket(bucket, true);
     }
 }
 
