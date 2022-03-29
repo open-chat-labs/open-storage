@@ -63,6 +63,7 @@ fn start_streaming_file(file_id: FileId, runtime_state: &RuntimeState) -> HttpRe
                 headers: vec![
                     HeaderField("Content-Type".to_string(), file.mime_type.clone()),
                     HeaderField("Cache-Control".to_string(), CACHE_HEADER_VALUE.to_string()),
+                    HeaderField("Access-Control-Allow-Origin".to_string(), "*".to_string()),
                 ],
                 body: Cow::Owned(chunk_bytes),
                 streaming_strategy,
