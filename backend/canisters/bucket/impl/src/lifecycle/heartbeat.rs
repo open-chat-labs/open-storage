@@ -15,7 +15,7 @@ mod sync_index {
 
     pub fn run() {
         if let Some((index_canister_id, args)) = mutate_state(next_batch) {
-            ic_cdk::block_on(send_to_index(index_canister_id, args));
+            ic_cdk::spawn(send_to_index(index_canister_id, args));
         }
     }
 
