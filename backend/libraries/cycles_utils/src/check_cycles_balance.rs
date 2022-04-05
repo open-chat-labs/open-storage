@@ -12,7 +12,7 @@ thread_local! {
 
 pub fn check_cycles_balance(min_cycles_balance: Cycles, top_up_canister_id: CanisterId, now: TimestampMillis) {
     if is_cycles_check_due(now) && should_notify(min_cycles_balance) {
-        ic_cdk::block_on(send_notification(top_up_canister_id));
+        ic_cdk::spawn(send_notification(top_up_canister_id));
     }
 }
 

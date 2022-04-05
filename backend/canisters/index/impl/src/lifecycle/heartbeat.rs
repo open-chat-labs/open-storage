@@ -29,7 +29,7 @@ mod ensure_sufficient_active_buckets {
             DoNothing => (),
             CyclesBalanceTooLow => error!("Cycles balance too low to add a new bucket"),
             CreateBucket(args) => {
-                ic_cdk::block_on(create_bucket(args));
+                ic_cdk::spawn(create_bucket(args));
             }
         }
     }
@@ -103,7 +103,7 @@ mod sync_users_with_buckets {
 
     pub fn run() {
         for (canister_id, args) in mutate_state(next_batch) {
-            ic_cdk::block_on(send_to_bucket(canister_id, args));
+            ic_cdk::spawn(send_to_bucket(canister_id, args));
         }
     }
 
@@ -148,7 +148,7 @@ mod upgrade_canisters {
     pub fn run() {
         let canisters_to_upgrade = mutate_state(next_batch);
         if !canisters_to_upgrade.is_empty() {
-            ic_cdk::block_on(perform_upgrades(canisters_to_upgrade));
+            ic_cdk::spawn(perform_upgrades(canisters_to_upgrade));
         }
     }
 
