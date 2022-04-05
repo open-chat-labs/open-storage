@@ -25,11 +25,6 @@ const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 10000;
 const MIN_CYCLES_BALANCE: Cycles = 10_000_000_000_000; // 10T
 const BUCKET_CANISTER_TOP_UP_AMOUNT: Cycles = 1_000_000_000_000; // 1T
 
-#[derive(CandidType, Serialize, Deserialize)]
-enum StateVersion {
-    V1,
-}
-
 thread_local! {
     static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
     static WASM_VERSION: RefCell<Timestamped<Version>> = RefCell::default();
