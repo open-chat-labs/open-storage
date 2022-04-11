@@ -1,10 +1,9 @@
+use crate::lifecycle::BUFFER_SIZE;
 use crate::{take_state, LOG_MESSAGES};
 use canister_api_macros::trace;
 use ic_cdk::api::stable::BufferedStableWriter;
 use ic_cdk_macros::pre_upgrade;
 use tracing::info;
-
-const BUFFER_SIZE: usize = 16 * 1024 * 1024; // 16MB
 
 #[pre_upgrade]
 #[trace]

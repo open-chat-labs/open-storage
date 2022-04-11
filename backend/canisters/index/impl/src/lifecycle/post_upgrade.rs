@@ -1,7 +1,8 @@
-use crate::lifecycle::{init_logger, init_state};
+use crate::lifecycle::{init_logger, init_state, BUFFER_SIZE};
 use crate::{Data, LOG_MESSAGES};
 use canister_api_macros::trace;
 use canister_logger::{set_panic_hook, LogMessage, LogMessagesWrapper};
+use ic_cdk::api::stable::BufferedStableReader;
 use ic_cdk_macros::post_upgrade;
 use index_canister::post_upgrade::Args;
 use tracing::info;
@@ -13,10 +14,10 @@ fn post_upgrade(args: Args) {
     set_panic_hook();
 
     let env = Box::new(CanisterEnv::new());
-    let bytes = ic_cdk::api::stable::stable_bytes();
+    let reader = BufferedStableReader::new(BUFFER_SIZE);
 
     let (data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
-        serializer::deserialize(bytes.as_slice()).unwrap();
+        serializer::deserialize(reader).unwrap();
 
     init_logger(data.test_mode);
     init_state(env, data, args.wasm_version);
