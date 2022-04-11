@@ -16,7 +16,7 @@ fn post_upgrade(args: Args) {
     let bytes = ic_cdk::api::stable::stable_bytes();
 
     let (data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
-        serializer::deserialize(&bytes).unwrap();
+        serializer::deserialize(bytes.as_slice()).unwrap();
 
     init_logger(data.test_mode);
     init_state(env, data, args.wasm_version);

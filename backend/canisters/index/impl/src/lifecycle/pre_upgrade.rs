@@ -1,8 +1,10 @@
 use crate::{take_state, LOG_MESSAGES};
 use canister_api_macros::trace;
+use ic_cdk::api::stable::BufferedStableWriter;
 use ic_cdk_macros::pre_upgrade;
 use tracing::info;
-use utils::canister::write_to_stable_memory;
+
+const BUFFER_SIZE: usize = 16 * 1024 * 1024; // 16MB
 
 #[pre_upgrade]
 #[trace]
@@ -16,7 +18,6 @@ fn pre_upgrade() {
     let trace_messages = messages_container.traces.drain_messages();
 
     let stable_state = (state.data, log_messages, trace_messages);
-    let bytes = serializer::serialize(&stable_state).unwrap();
-
-    write_to_stable_memory(0, &bytes);
+    let writer = BufferedStableWriter::new(BUFFER_SIZE);
+    serializer::serialize(&stable_state, writer).unwrap();
 }
