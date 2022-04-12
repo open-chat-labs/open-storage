@@ -1,8 +1,8 @@
+use crate::time::MINUTE_IN_MS;
 use canister_client_macros::generate_c2c_call;
 use std::cell::Cell;
 use tracing::error;
 use types::{CanisterId, Cycles, Milliseconds, TimestampMillis};
-use utils::time::MINUTE_IN_MS;
 
 const CYCLES_CHECK_INTERVAL: Milliseconds = 10 * MINUTE_IN_MS; // 10 minutes
 

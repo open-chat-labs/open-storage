@@ -62,7 +62,7 @@ mod ensure_sufficient_active_buckets {
                 MIN_CYCLES_BALANCE,
             )
         };
-        if !cycles_utils::can_spend_cycles(cycles_required, min_cycles_balance) {
+        if !utils::cycles::can_spend_cycles(cycles_required, min_cycles_balance) {
             runtime_state.data.buckets.release_creation_lock();
             return CyclesBalanceTooLow;
         }
