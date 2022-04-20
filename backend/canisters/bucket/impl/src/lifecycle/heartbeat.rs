@@ -75,7 +75,7 @@ mod check_cycles_balance {
         mutate_state(|state| {
             let index_canister_id = state.data.index_canister_id;
             let now = state.env.now();
-            cycles_utils::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id, now);
+            utils::cycles::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id, now);
         })
     }
 }
