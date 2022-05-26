@@ -26,11 +26,11 @@ pub fn extract_route(path: &str) -> Route {
             }
         }
         "logs" => {
-            let since = parts.get(1).map(|p| TimestampMillis::from_str(p).ok()).flatten();
+            let since = parts.get(1).and_then(|p| TimestampMillis::from_str(p).ok());
             Route::Logs(since)
         }
         "trace" => {
-            let since = parts.get(1).map(|p| TimestampMillis::from_str(p).ok()).flatten();
+            let since = parts.get(1).and_then(|p| TimestampMillis::from_str(p).ok());
             Route::Traces(since)
         }
         "metrics" => Route::Metrics,

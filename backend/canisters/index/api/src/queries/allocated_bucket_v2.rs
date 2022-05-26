@@ -1,3 +1,4 @@
+use crate::ProjectedAllowance;
 use candid::CandidType;
 use serde::Deserialize;
 use types::{CanisterId, Hash};
@@ -11,7 +12,7 @@ pub struct Args {
 #[derive(CandidType, Deserialize, Debug)]
 pub enum Response {
     Success(SuccessResult),
-    AllowanceExceeded(AllowanceExceededResult),
+    AllowanceExceeded(ProjectedAllowance),
     UserNotFound,
     BucketUnavailable,
 }
@@ -23,11 +24,5 @@ pub struct SuccessResult {
     pub byte_limit: u64,
     pub bytes_used: u64,
     pub bytes_used_after_upload: u64,
-}
-
-#[derive(CandidType, Deserialize, Debug)]
-pub struct AllowanceExceededResult {
-    pub byte_limit: u64,
-    pub bytes_used: u64,
-    pub bytes_used_after_upload: u64,
+    pub projected_allowance: ProjectedAllowance,
 }

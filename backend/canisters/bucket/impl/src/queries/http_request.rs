@@ -79,7 +79,7 @@ fn continue_streaming_file(token: Token, runtime_state: &RuntimeState) -> Stream
         let chunk_index = token.index.0.to_u32().unwrap();
         let files = &runtime_state.data.files;
 
-        if let Some(bytes) = files.get(&file_id).map(|f| files.blob_bytes(&f.hash)).flatten() {
+        if let Some(bytes) = files.get(&file_id).and_then(|f| files.blob_bytes(&f.hash)) {
             let (chunk_bytes, stream_next_chunk) = chunk_bytes(bytes, chunk_index);
 
             let token = if stream_next_chunk { Some(build_token(file_id, chunk_index + 1)) } else { None };
