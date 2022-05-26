@@ -14,11 +14,10 @@ bucket_canister = { path = "../api" }
 candid = "0.7.7"
 canister_api_macros = { path = "../../../libraries/canister_api_macros" }
 canister_logger = { path = "../../../libraries/canister_logger" }
-canister_state_macros = { path = "../../../libraries/canister_state_macros" }
-cycles_utils = { path = "../../../libraries/cycles_utils" }
+canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "b06d3b984e39fa3a23828521934ef0370b720b18" }
 http_request = { path = "../../../libraries/http_request" }
-ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
-ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "827d553181aaac61cf6209aa0654baf19b1dbef4" }
+ic-cdk = "0.5.0"
+ic-cdk-macros = "0.5.0"
 index_canister = { path = "../../index/api" }
 index_canister_c2c_client = { path = "../../index/c2c_client" }
 num-traits = "0.2.14"

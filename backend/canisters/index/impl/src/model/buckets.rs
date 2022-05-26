@@ -40,9 +40,15 @@ impl Buckets {
         }
     }
 
-    pub fn add_bucket_and_release_creation_lock(&mut self, bucket: BucketRecord) {
-        self.active_buckets.push(bucket);
+    pub fn release_creation_lock(&mut self) {
         self.creation_in_progress = false;
+    }
+
+    pub fn add_bucket(&mut self, bucket: BucketRecord, release_creation_lock: bool) {
+        self.active_buckets.push(bucket);
+        if release_creation_lock {
+            self.release_creation_lock();
+        }
     }
 
     pub fn allocate(&self, blob_hash: Hash) -> Option<CanisterId> {
@@ -92,7 +98,15 @@ impl Buckets {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &BucketRecord> {
-        self.active_buckets.iter().chain(self.full_buckets.values())
+        self.iter_active_buckets().chain(self.iter_full_buckets())
+    }
+
+    pub fn iter_active_buckets(&self) -> impl Iterator<Item = &BucketRecord> {
+        self.active_buckets.iter()
+    }
+
+    pub fn iter_full_buckets(&self) -> impl Iterator<Item = &BucketRecord> {
+        self.full_buckets.values()
     }
 
     fn iter_mut(&mut self) -> impl Iterator<Item = &mut BucketRecord> {

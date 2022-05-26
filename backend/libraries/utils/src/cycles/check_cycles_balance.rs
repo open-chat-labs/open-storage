@@ -1,8 +1,8 @@
+use crate::time::MINUTE_IN_MS;
 use canister_client_macros::generate_c2c_call;
 use std::cell::Cell;
 use tracing::error;
 use types::{CanisterId, Cycles, Milliseconds, TimestampMillis};
-use utils::time::MINUTE_IN_MS;
 
 const CYCLES_CHECK_INTERVAL: Milliseconds = 10 * MINUTE_IN_MS; // 10 minutes
 
@@ -12,7 +12,7 @@ thread_local! {
 
 pub fn check_cycles_balance(min_cycles_balance: Cycles, top_up_canister_id: CanisterId, now: TimestampMillis) {
     if is_cycles_check_due(now) && should_notify(min_cycles_balance) {
-        ic_cdk::block_on(send_notification(top_up_canister_id));
+        ic_cdk::spawn(send_notification(top_up_canister_id));
     }
 }
 

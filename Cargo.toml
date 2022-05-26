@@ -14,7 +14,6 @@ members = [
     "backend/libraries/canister_client",
     "backend/libraries/canister_client_macros",
     "backend/libraries/canister_logger",
-    "backend/libraries/canister_state_macros",
     "backend/libraries/http_request",
     "backend/libraries/serializer",
     "backend/libraries/types",
@@ -25,3 +24,7 @@ members = [
 lto = true
 opt-level = "z"
 codegen-units = 1
+
+[patch.crates-io]
+ic-cdk = { git = "https://github.com/dfinity/cdk-rs", rev = "cfcf72001a9ff8b0ab756ae765341f13a24285a8" }
+ic-cdk-macros = { git = "https://github.com/dfinity/cdk-rs", rev = "cfcf72001a9ff8b0ab756ae765341f13a24285a8" }

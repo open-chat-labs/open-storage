@@ -1,22 +1,19 @@
 #!/bin/sh
 
 IDENTITY=$1
-TEST_MODE=true
 
 # Pass in the dfx identity name
-# eg './deploy-local openstorage'
+# eg './deploy-prod-test openstorage'
 ./generate-wasm.sh index_canister_impl
 ./generate-wasm.sh bucket_canister_impl
 
 ./compress-wasm.sh bucket_canister_impl
 
-dfx --identity $IDENTITY canister create index
-
-INDEX_CANISTER_ID=$(dfx canister id index)
+INDEX_CANISTER_ID=$(dfx canister --network ic_test id index)
 
 cargo run \
   --manifest-path backend/canister_installer/Cargo.toml \
-  'http://127.0.0.1:8000/' \
-  $TEST_MODE \
+  'https://ic0.app/' \
+  true \
   $IDENTITY \
   $INDEX_CANISTER_ID \

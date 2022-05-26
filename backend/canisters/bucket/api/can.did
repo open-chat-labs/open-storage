@@ -38,7 +38,31 @@ type DeleteFileResponse =
         NotFound;
     };
 
+type DeleteFilesArgs =
+    record {
+        file_ids: vec FileId;
+    };
+
+type DeleteFilesResponse =
+    record {
+        success: vec FileId;
+        failures: vec DeleteFileFailure;
+    };
+
+type DeleteFileFailure =
+    record {
+        file_id: FileId;
+        reason: DeleteFileFailureReason;
+    };
+
+type DeleteFileFailureReason =
+    variant {
+        NotAuthorized;
+        NotFound;
+    };
+
 service: {
     upload_chunk_v2: (UploadChunkArgs) -> (UploadChunkResponse);
     delete_file: (DeleteFileArgs) -> (DeleteFileResponse);
+    delete_files: (DeleteFilesArgs) -> (DeleteFilesResponse);
 }

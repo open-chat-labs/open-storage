@@ -15,7 +15,7 @@ mod sync_index {
 
     pub fn run() {
         if let Some((index_canister_id, args)) = mutate_state(next_batch) {
-            ic_cdk::block_on(send_to_index(index_canister_id, args));
+            ic_cdk::spawn(send_to_index(index_canister_id, args));
         }
     }
 
@@ -75,7 +75,7 @@ mod check_cycles_balance {
         mutate_state(|state| {
             let index_canister_id = state.data.index_canister_id;
             let now = state.env.now();
-            cycles_utils::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id, now);
+            utils::cycles::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id, now);
         })
     }
 }

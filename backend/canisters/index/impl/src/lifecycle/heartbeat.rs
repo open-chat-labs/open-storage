@@ -14,6 +14,7 @@ fn heartbeat() {
     ensure_sufficient_active_buckets::run();
     sync_users_with_buckets::run();
     upgrade_canisters::run();
+    recalculate_blob_metrics::run();
 }
 
 mod ensure_sufficient_active_buckets {
@@ -28,7 +29,7 @@ mod ensure_sufficient_active_buckets {
             DoNothing => (),
             CyclesBalanceTooLow => error!("Cycles balance too low to add a new bucket"),
             CreateBucket(args) => {
-                ic_cdk::block_on(create_bucket(args));
+                ic_cdk::spawn(create_bucket(args));
             }
         }
     }
@@ -50,8 +51,19 @@ mod ensure_sufficient_active_buckets {
             return DoNothing;
         }
 
-        let cycles_required = BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE;
-        if !cycles_utils::can_spend_cycles(cycles_required, MIN_CYCLES_BALANCE) {
+        let (cycles_required, min_cycles_balance) = if runtime_state.data.test_mode {
+            (
+                (BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE) / 4,
+                MIN_CYCLES_BALANCE / 10,
+            )
+        } else {
+            (
+                BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE,
+                MIN_CYCLES_BALANCE,
+            )
+        };
+        if !utils::cycles::can_spend_cycles(cycles_required, min_cycles_balance) {
+            runtime_state.data.buckets.release_creation_lock();
             return CyclesBalanceTooLow;
         }
 
@@ -73,6 +85,8 @@ mod ensure_sufficient_active_buckets {
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
             mutate_state(|state| commit(bucket, state))
+        } else {
+            mutate_state(|state| state.data.buckets.release_creation_lock());
         }
     }
 
@@ -80,7 +94,7 @@ mod ensure_sufficient_active_buckets {
         for user_id in runtime_state.data.users.keys() {
             bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
         }
-        runtime_state.data.buckets.add_bucket_and_release_creation_lock(bucket);
+        runtime_state.data.buckets.add_bucket(bucket, true);
     }
 }
 
@@ -89,7 +103,7 @@ mod sync_users_with_buckets {
 
     pub fn run() {
         for (canister_id, args) in mutate_state(next_batch) {
-            ic_cdk::block_on(send_to_bucket(canister_id, args));
+            ic_cdk::spawn(send_to_bucket(canister_id, args));
         }
     }
 
@@ -134,7 +148,7 @@ mod upgrade_canisters {
     pub fn run() {
         let canisters_to_upgrade = mutate_state(next_batch);
         if !canisters_to_upgrade.is_empty() {
-            ic_cdk::block_on(perform_upgrades(canisters_to_upgrade));
+            ic_cdk::spawn(perform_upgrades(canisters_to_upgrade));
         }
     }
 
@@ -197,5 +211,16 @@ mod upgrade_canisters {
             from_version,
             to_version,
         });
+    }
+}
+
+mod recalculate_blob_metrics {
+    use super::*;
+
+    pub fn run() {
+        mutate_state(|state| {
+            let now = state.env.now();
+            state.data.blobs.recalculate_metrics_if_due(now);
+        })
     }
 }
