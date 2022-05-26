@@ -22,13 +22,17 @@ export class OpenStorageAgent {
         return this.indexClient.user();
     }
 
+    generateHash(bytes: ArrayBuffer): number[] {
+        return Array.from(new Uint8Array(hashBytes(bytes)));
+    }
+
     async uploadFile(
         mimeType: string,
         accessors: Array<Principal>,
         bytes: ArrayBuffer,
         onProgress?: (percentComplete: number) => void
     ): Promise<UploadFileResponse> {
-        const hash = Array.from(new Uint8Array(hashBytes(bytes)));
+        const hash = this.generateHash(bytes);
         const fileSize = bytes.byteLength;
 
         const allocatedBucketResponse = await this.indexClient.allocatedBucket(
