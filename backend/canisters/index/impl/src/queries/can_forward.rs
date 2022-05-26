@@ -8,11 +8,11 @@ use index_canister::{
 
 #[query]
 #[trace]
-fn reference_counts(args: Args) -> Response {
-    read_state(|state| reference_counts_impl(args, state))
+fn can_forward(args: Args) -> Response {
+    read_state(|state| can_forward_impl(args, state))
 }
 
-fn reference_counts_impl(args: Args, runtime_state: &RuntimeState) -> Response {
+fn can_forward_impl(args: Args, runtime_state: &RuntimeState) -> Response {
     let user_id = runtime_state.env.caller();
     if let Some(user) = runtime_state.data.users.get(&user_id) {
         let user_owns_blob = runtime_state.data.blobs.user_owns_blob(&user_id, &args.file_hash);
