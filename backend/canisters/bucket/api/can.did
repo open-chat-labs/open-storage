@@ -61,8 +61,27 @@ type DeleteFileFailureReason =
         NotFound;
     };
 
+type FileInfoArgs =
+    record {
+        file_id: FileId;
+    };
+
+type FileInfoResponse =
+    variant {
+        Success: FileInfoSuccessResult;
+        NotFound;
+    };
+
+type FileInfoSuccessResult =
+    record {
+        is_owner: bool;
+        file_size: nat64;
+        file_hash: Hash;
+    };
+
 service: {
     upload_chunk_v2: (UploadChunkArgs) -> (UploadChunkResponse);
     delete_file: (DeleteFileArgs) -> (DeleteFileResponse);
     delete_files: (DeleteFilesArgs) -> (DeleteFilesResponse);
+    file_info: (FileInfoArgs) -> (FileInfoResponse) query;
 }
