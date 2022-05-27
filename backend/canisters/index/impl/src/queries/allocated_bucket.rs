@@ -1,19 +1,21 @@
 use crate::{read_state, RuntimeState, DEFAULT_CHUNK_SIZE_BYTES};
 use canister_api_macros::trace;
 use ic_cdk_macros::query;
-use index_canister::allocated_bucket::{Args as ArgsV1, Response as ResponseV1};
-use index_canister::allocated_bucket_v2::{Response::*, *};
+use index_canister::{
+    allocated_bucket::{Response::*, *},
+    allocated_bucket_v2, ProjectedAllowance,
+};
 
 #[query]
 #[trace]
-fn allocated_bucket(args: ArgsV1) -> ResponseV1 {
-    read_state(|state| allocated_bucket_impl(args.into(), state)).into()
+fn allocated_bucket(args: Args) -> Response {
+    read_state(|state| allocated_bucket_impl(args, state))
 }
 
 #[query]
 #[trace]
-fn allocated_bucket_v2(args: Args) -> Response {
-    read_state(|state| allocated_bucket_impl(args, state))
+fn allocated_bucket_v2(args: Args) -> allocated_bucket_v2::Response {
+    read_state(|state| allocated_bucket_impl(args, state)).into()
 }
 
 fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
@@ -30,10 +32,11 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
         };
 
         if bytes_used_after_upload > byte_limit {
-            return AllowanceExceeded(AllowanceExceededResult {
+            return AllowanceExceeded(ProjectedAllowance {
                 byte_limit,
                 bytes_used,
                 bytes_used_after_upload,
+                bytes_used_after_operation: bytes_used_after_upload,
             });
         }
 
@@ -47,9 +50,12 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
             Success(SuccessResult {
                 canister_id,
                 chunk_size: DEFAULT_CHUNK_SIZE_BYTES,
-                byte_limit,
-                bytes_used,
-                bytes_used_after_upload,
+                projected_allowance: ProjectedAllowance {
+                    byte_limit,
+                    bytes_used,
+                    bytes_used_after_upload,
+                    bytes_used_after_operation: bytes_used_after_upload,
+                },
             })
         } else {
             BucketUnavailable
