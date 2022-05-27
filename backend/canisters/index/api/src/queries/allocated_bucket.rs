@@ -21,8 +21,5 @@ pub enum Response {
 pub struct SuccessResult {
     pub canister_id: CanisterId,
     pub chunk_size: u32,
-    pub byte_limit: u64,
-    pub bytes_used: u64,
-    pub bytes_used_after_upload: u64,
     pub projected_allowance: ProjectedAllowance,
 }

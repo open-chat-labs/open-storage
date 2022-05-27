@@ -3,7 +3,7 @@ use canister_api_macros::trace;
 use ic_cdk_macros::query;
 use index_canister::{
     allocated_bucket::{Response::*, *},
-    ProjectedAllowance,
+    allocated_bucket_v2, ProjectedAllowance,
 };
 
 #[query]
@@ -14,8 +14,8 @@ fn allocated_bucket(args: Args) -> Response {
 
 #[query]
 #[trace]
-fn allocated_bucket_v2(args: Args) -> Response {
-    read_state(|state| allocated_bucket_impl(args, state))
+fn allocated_bucket_v2(args: Args) -> allocated_bucket_v2::Response {
+    read_state(|state| allocated_bucket_impl(args, state)).into()
 }
 
 fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
@@ -50,9 +50,6 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
             Success(SuccessResult {
                 canister_id,
                 chunk_size: DEFAULT_CHUNK_SIZE_BYTES,
-                byte_limit,
-                bytes_used,
-                bytes_used_after_upload,
                 projected_allowance: ProjectedAllowance {
                     byte_limit,
                     bytes_used,
