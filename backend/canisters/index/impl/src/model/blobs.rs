@@ -41,8 +41,7 @@ impl Blobs {
     pub fn bucket(&self, hash: &Hash) -> Option<CanisterId> {
         self.blobs
             .get(hash)
-            .map(|b| b.owners.values().flatten().map(|rc| rc.bucket).next())
-            .flatten()
+            .and_then(|b| b.owners.values().flatten().map(|rc| rc.bucket).next())
     }
 
     pub fn user_owns_blob(&self, user_id: &UserId, hash: &Hash) -> bool {

@@ -45,7 +45,15 @@ type AllocatedBucketArgs =
 type AllocatedBucketResponse = 
     variant {
         Success: AllocatedBucketSuccessResult;
-        AllowanceExceeded: AllocatedBucketAllowanceExceededResult;
+        AllowanceExceeded: ProjectedAllowance;
+        UserNotFound;
+        BucketUnavailable;
+    };
+
+type AllocatedBucketV2Response = 
+    variant {
+        Success: AllocatedBucketV2SuccessResult;
+        AllowanceExceeded: ProjectedAllowance;
         UserNotFound;
         BucketUnavailable;
     };
@@ -54,16 +62,38 @@ type AllocatedBucketSuccessResult =
     record {
         canister_id: CanisterId;
         chunk_size: nat32;
+        projected_allowance: ProjectedAllowance;
+    };
+
+type AllocatedBucketV2SuccessResult =
+    record {
+        canister_id: CanisterId;
+        chunk_size: nat32;
         byte_limit: nat64;
         bytes_used: nat64;
         bytes_used_after_upload: nat64;
+        projected_allowance: ProjectedAllowance;
     };
 
-type AllocatedBucketAllowanceExceededResult =
+type ProjectedAllowance =
     record {
         byte_limit: nat64;
         bytes_used: nat64;
         bytes_used_after_upload: nat64;
+        bytes_used_after_operation: nat64;
+    };
+
+type CanForwardArgs =
+    record {
+        file_hash: Hash;
+        file_size: nat64;
+    };
+
+type CanForwardResponse =
+    variant {
+        Success: ProjectedAllowance;
+        AllowanceExceeded: ProjectedAllowance;
+        UserNotFound;
     };
 
 type UserArgs =
@@ -86,6 +116,8 @@ service: {
     add_or_update_users: (AddOrUpdateUsersArgs) -> (AddOrUpdateUsersResponse);
     remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
     remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
-    allocated_bucket_v2: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
+    allocated_bucket: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
+    allocated_bucket_v2: (AllocatedBucketArgs) -> (AllocatedBucketV2Response) query;
+    can_forward: (CanForwardArgs) -> (CanForwardResponse) query;
     user: (UserArgs) -> (UserResponse) query;
 }
