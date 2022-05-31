@@ -18,13 +18,13 @@ pub struct FileRemoved {
     pub blob_deleted: bool,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct FileRejected {
     pub file_id: FileId,
     pub reason: FileRejectedReason,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum FileRejectedReason {
     AllowanceExceeded,
     UserNotFound,

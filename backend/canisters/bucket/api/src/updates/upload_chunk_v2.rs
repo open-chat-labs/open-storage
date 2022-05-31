@@ -1,10 +1,10 @@
 use candid::CandidType;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::fmt::{Debug, Formatter};
 use types::{AccessorId, FileId, Hash};
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Serialize, Deserialize)]
 pub struct Args {
     pub file_id: FileId,
     pub hash: Hash,
@@ -16,7 +16,7 @@ pub struct Args {
     pub bytes: ByteBuf,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum Response {
     Success,
     AllowanceExceeded,
