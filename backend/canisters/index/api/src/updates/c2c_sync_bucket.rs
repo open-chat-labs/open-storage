@@ -9,12 +9,12 @@ pub struct Args {
     pub bytes_remaining: i64,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum Response {
     Success(SuccessResult),
 }
 
-#[derive(CandidType, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct SuccessResult {
     pub files_rejected: Vec<FileRejected>,
 }

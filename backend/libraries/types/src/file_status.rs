@@ -2,7 +2,7 @@ use crate::{FileRejectedReason, TimestampMillis};
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub enum FileStatus {
     Completed(FileStatusCompleted),
     Uploading(FileStatusUploading),
@@ -16,7 +16,7 @@ pub enum RejectedReason {
     HashMismatch,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FileStatusCompleted {
     pub created: TimestampMillis,
     pub index_sync_complete: bool,
@@ -24,7 +24,7 @@ pub struct FileStatusCompleted {
     pub size: u64,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FileStatusUploading {
     pub created: TimestampMillis,
     pub index_sync_complete: bool,
@@ -34,7 +34,7 @@ pub struct FileStatusUploading {
     pub chunks_remaining: Vec<u32>,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FileStatusRejected {
     pub reason: RejectedReason,
 }

@@ -2,7 +2,7 @@ use crate::canister;
 use candid::{CandidType, Principal};
 use ic_cdk::api;
 use ic_cdk::api::call::CallResult;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::error;
 use types::{CanisterId, CanisterWasm, Version};
 
@@ -14,12 +14,12 @@ pub struct CanisterToUpgrade<A: CandidType> {
 }
 
 pub async fn upgrade<A: CandidType>(canister_to_upgrade: CanisterToUpgrade<A>) -> Result<(), canister::Error> {
-    #[derive(CandidType, Deserialize)]
+    #[derive(CandidType, Serialize, Deserialize)]
     struct StartOrStopCanisterArgs {
         canister_id: Principal,
     }
 
-    #[derive(CandidType, Deserialize)]
+    #[derive(CandidType, Serialize, Deserialize)]
     enum InstallMode {
         #[serde(rename = "install")]
         Install,
@@ -29,7 +29,7 @@ pub async fn upgrade<A: CandidType>(canister_to_upgrade: CanisterToUpgrade<A>) -
         Upgrade,
     }
 
-    #[derive(CandidType, Deserialize)]
+    #[derive(CandidType, Serialize, Deserialize)]
     struct CanisterInstall {
         mode: InstallMode,
         canister_id: Principal,
