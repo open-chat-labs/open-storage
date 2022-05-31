@@ -7,7 +7,7 @@ pub struct Args {
     pub users: Vec<UserConfig>,
 }
 
-#[derive(CandidType, Serialize, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Debug, Clone)]
 pub struct UserConfig {
     pub user_id: UserId,
     pub byte_limit: u64,
