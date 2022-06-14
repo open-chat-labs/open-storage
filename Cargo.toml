@@ -24,7 +24,3 @@ members = [
 lto = true
 opt-level = "z"
 codegen-units = 1
-
-[patch.crates-io]
-ic-cdk = { git = "https://github.com/dfinity/cdk-rs", rev = "cfcf72001a9ff8b0ab756ae765341f13a24285a8" }
-ic-cdk-macros = { git = "https://github.com/dfinity/cdk-rs", rev = "cfcf72001a9ff8b0ab756ae765341f13a24285a8" }

@@ -4,7 +4,6 @@ use candid::Principal;
 use ic_agent::identity::BasicIdentity;
 use ic_agent::Identity;
 use ic_utils::interfaces::ManagementCanister;
-use ic_utils::Canister;
 use types::{CanisterId, Version};
 
 pub async fn create_and_install_service_canisters(identity: BasicIdentity, url: String, test_mode: bool) -> CanisterId {
@@ -32,7 +31,7 @@ pub async fn install_service_canisters(identity: BasicIdentity, url: String, ind
 async fn install_service_canisters_impl(
     principal: Principal,
     index_canister_id: &CanisterId,
-    management_canister: &Canister<'_, ManagementCanister>,
+    management_canister: &ManagementCanister<'_>,
     test_mode: bool,
 ) {
     let version = Version::min();
