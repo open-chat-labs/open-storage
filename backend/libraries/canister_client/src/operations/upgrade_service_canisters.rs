@@ -5,7 +5,6 @@ use ic_agent::identity::BasicIdentity;
 use ic_utils::call::AsyncCall;
 use ic_utils::interfaces::management_canister::builders::InstallMode;
 use ic_utils::interfaces::ManagementCanister;
-use ic_utils::Canister;
 use types::{CanisterId, CanisterWasm, Version};
 
 pub async fn upgrade_index_canister(identity: BasicIdentity, url: String, index_canister_id: CanisterId, version: Version) {
@@ -40,7 +39,7 @@ pub async fn upgrade_bucket_canister(identity: BasicIdentity, url: String, index
 }
 
 async fn upgrade_wasm<A: CandidType + Send + Sync>(
-    management_canister: &Canister<'_, ManagementCanister>,
+    management_canister: &ManagementCanister<'_>,
     canister_id: &CanisterId,
     wasm_bytes: &[u8],
     args: A,
