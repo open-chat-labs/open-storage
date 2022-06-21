@@ -2,9 +2,9 @@ import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import type { IBucketClient } from "./bucket.client.interface";
 import { idlFactory, BucketService } from "./candid/idl";
-import { deleteFileResponse, fileInfoResponse, uploadChunkResponse } from "./mappers";
+import { deleteFileResponse, fileInfoResponse, forwardFileResponse, uploadChunkResponse } from "./mappers";
 import { CandidService } from "../candidService";
-import type { DeleteFileResponse, FileInfoResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { DeleteFileResponse, FileInfoResponse, ForwardFileResponse, UploadChunkResponse } from "../../domain/bucket";
 
 export class BucketClient extends CandidService<BucketService> implements IBucketClient {
     constructor(agent: HttpAgent, canisterId: Principal) {
@@ -33,6 +33,13 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
                 chunk_size: chunkSize,
             }),
             uploadChunkResponse
+        );
+    }
+
+    forwardFile(fileId: bigint, accessors: Array<Principal>): Promise<ForwardFileResponse> {
+        return this.handleResponse(
+            this.service.forward_file({ file_id: fileId, accessors }),
+            forwardFileResponse
         );
     }
 

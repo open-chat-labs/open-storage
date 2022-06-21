@@ -1,7 +1,13 @@
 import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import { v1 as uuidv1 } from "uuid";
-import type { UploadFileResponse, UserResponse } from "./domain/index";
+import type {
+    AllowanceExceeded,
+    ProjectedAllowance,
+    UploadFileResponse,
+    UserNotFound,
+    UserResponse
+} from "./domain/index";
 import { BucketClient } from "./services/bucket/bucket.client";
 import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
@@ -92,7 +98,50 @@ export class OpenStorageAgent {
         };
     }
 
+    async forwardFile(bucketCanisterId: Principal, fileId: bigint, accessors: Array<Principal>): Promise<ForwardFileResponse> {
+        const bucketClient = new BucketClient(this.agent, bucketCanisterId);
+
+        const fileInfoResponse = await bucketClient.fileInfo(fileId);
+        if (fileInfoResponse.kind === "file_not_found") {
+            return fileInfoResponse;
+        }
+
+        const canForwardResponse = await this.indexClient.canForward(fileInfoResponse.fileHash, fileInfoResponse.fileSize);
+        switch (canForwardResponse.kind) {
+            case "user_not_found":
+            case "allowance_exceeded":
+                return canForwardResponse;
+        }
+
+        const forwardFileResponse = await bucketClient.forwardFile(fileId, accessors);
+        switch (forwardFileResponse.kind) {
+            case "success":
+                return {
+                    kind: "success",
+                    newFileId: forwardFileResponse.newFileId,
+                    projectedAllowance: canForwardResponse.projectedAllowance
+                };
+
+            case "not_authorized":
+            case "file_not_found":
+                return forwardFileResponse;
+        }
+    }
+
     private static newFileId(): bigint {
         return BigInt(parseInt(uuidv1().replace(/-/g, ""), 16));
     }
+}
+
+export type ForwardFileResponse =
+    | ForwardFileSuccess
+    | AllowanceExceeded
+    | UserNotFound
+    | { kind: "not_authorized" }
+    | { kind: "file_not_found" }
+
+export type ForwardFileSuccess = {
+    kind: "success",
+    newFileId: bigint,
+    projectedAllowance: ProjectedAllowance,
 }

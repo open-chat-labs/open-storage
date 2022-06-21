@@ -26,6 +26,13 @@ export interface FileInfoSuccessResult {
   'file_hash' : Hash,
   'file_size' : bigint,
 }
+export interface ForwardFileArgs {
+  'accessors' : Array<AccessorId>,
+  'file_id' : FileId,
+}
+export type ForwardFileResponse = { 'NotFound' : null } |
+  { 'NotAuthorized' : null } |
+  { 'Success' : FileId };
 export type Hash = Array<number>;
 export type Milliseconds = bigint;
 export type TimestampMillis = bigint;
@@ -60,5 +67,6 @@ export interface _SERVICE {
   'delete_file' : (arg_0: DeleteFileArgs) => Promise<DeleteFileResponse>,
   'delete_files' : (arg_0: DeleteFilesArgs) => Promise<DeleteFilesResponse>,
   'file_info' : (arg_0: FileInfoArgs) => Promise<FileInfoResponse>,
+  'forward_file' : (arg_0: ForwardFileArgs) => Promise<ForwardFileResponse>,
   'upload_chunk_v2' : (arg_0: UploadChunkArgs) => Promise<UploadChunkResponse>,
 }

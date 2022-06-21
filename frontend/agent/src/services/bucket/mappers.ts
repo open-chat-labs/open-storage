@@ -1,5 +1,5 @@
-import type { CandidDeleteFileResponse, CandidFileInfoResponse, CandidUploadChunkResponse } from "./candid/idl";
-import type { DeleteFileResponse, FileInfoResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { CandidDeleteFileResponse, CandidFileInfoResponse, CandidForwardFileResponse, CandidUploadChunkResponse } from "./candid/idl";
+import type { DeleteFileResponse, FileInfoResponse, ForwardFileResponse, UploadChunkResponse } from "../../domain/bucket";
 import { UnsupportedValueError } from "../../utils/error";
 
 export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadChunkResponse {
@@ -34,6 +34,22 @@ export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadCh
         return "full";
     }
     throw new UnsupportedValueError("Unknown Bucket.CandidUploadChunkResponse type received", candid);
+}
+
+export function forwardFileResponse(candid: CandidForwardFileResponse): ForwardFileResponse {
+    if ("Success" in candid) {
+        return {
+            kind: "success",
+            newFileId: candid.Success,
+        };
+    }
+    if ("NotAuthorized" in candid) {
+        return { kind: "not_authorized" };
+    }
+    if ("NotFound" in candid) {
+        return { kind: "file_not_found" };
+    }
+    throw new UnsupportedValueError("Unknown Bucket.CandidForwardFileResponse type received", candid);
 }
 
 export function deleteFileResponse(candid: CandidDeleteFileResponse): DeleteFileResponse {
