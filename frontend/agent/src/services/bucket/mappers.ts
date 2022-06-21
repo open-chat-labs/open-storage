@@ -33,7 +33,7 @@ export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadCh
     if ("Full" in candid) {
         return "full";
     }
-    throw new UnsupportedValueError("Unknown Bucket.ApiUploadChunkResponse type received", candid);
+    throw new UnsupportedValueError("Unknown Bucket.CandidUploadChunkResponse type received", candid);
 }
 
 export function deleteFileResponse(candid: CandidDeleteFileResponse): DeleteFileResponse {
@@ -46,5 +46,5 @@ export function deleteFileResponse(candid: CandidDeleteFileResponse): DeleteFile
     if ("NotFound" in candid) {
         return "not_found";
     }
-    throw new UnsupportedValueError("Unknown Bucket.ApiDeleteFileResponse type received", candid);
+    throw new UnsupportedValueError("Unknown Bucket.CandidDeleteFileResponse type received", candid);
 }

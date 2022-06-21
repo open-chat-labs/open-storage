@@ -88,8 +88,7 @@ export class OpenStorageAgent {
             canisterId: bucketCanisterId,
             fileId,
             pathPrefix: "/files/",
-            byteLimit: allocatedBucketResponse.byteLimit,
-            bytesUsed: allocatedBucketResponse.bytesUsedAfterUpload,
+            projectedAllowance: allocatedBucketResponse.projectedAllowance,
         };
     }
 
