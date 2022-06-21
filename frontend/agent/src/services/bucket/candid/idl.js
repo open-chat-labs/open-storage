@@ -6,8 +6,31 @@ export const idlFactory = ({ IDL }) => {
     'NotAuthorized' : IDL.Null,
     'Success' : IDL.Null,
   });
-  const AccessorId = IDL.Principal;
+  const DeleteFilesArgs = IDL.Record({ 'file_ids' : IDL.Vec(FileId) });
+  const DeleteFileFailureReason = IDL.Variant({
+    'NotFound' : IDL.Null,
+    'NotAuthorized' : IDL.Null,
+  });
+  const DeleteFileFailure = IDL.Record({
+    'reason' : DeleteFileFailureReason,
+    'file_id' : FileId,
+  });
+  const DeleteFilesResponse = IDL.Record({
+    'failures' : IDL.Vec(DeleteFileFailure),
+    'success' : IDL.Vec(FileId),
+  });
+  const FileInfoArgs = IDL.Record({ 'file_id' : FileId });
   const Hash = IDL.Vec(IDL.Nat8);
+  const FileInfoSuccessResult = IDL.Record({
+    'is_owner' : IDL.Bool,
+    'file_hash' : Hash,
+    'file_size' : IDL.Nat64,
+  });
+  const FileInfoResponse = IDL.Variant({
+    'NotFound' : IDL.Null,
+    'Success' : FileInfoSuccessResult,
+  });
+  const AccessorId = IDL.Principal;
   const UploadChunkArgs = IDL.Record({
     'accessors' : IDL.Vec(AccessorId),
     'chunk_index' : IDL.Nat32,
@@ -32,6 +55,8 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'delete_file' : IDL.Func([DeleteFileArgs], [DeleteFileResponse], []),
+    'delete_files' : IDL.Func([DeleteFilesArgs], [DeleteFilesResponse], []),
+    'file_info' : IDL.Func([FileInfoArgs], [FileInfoResponse], ['query']),
     'upload_chunk_v2' : IDL.Func([UploadChunkArgs], [UploadChunkResponse], []),
   });
 };
