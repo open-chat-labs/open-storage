@@ -10,4 +10,15 @@ export type UploadChunkResponse =
     | "hash_mismatch"
     | "full";
 
-export type DeleteFileResponse = "success" | "not_authorized" | "not_found";
+export type DeleteFileResponse = "success" | "not_authorized" | "file_not_found";
+
+export type FileInfoResponse =
+    | FileInfoSuccess
+    | { kind: "file_not_found" };
+
+export type FileInfoSuccess = {
+    kind: "success",
+    isOwner: boolean,
+    fileSize: bigint,
+    fileHash: Array<number>,
+};

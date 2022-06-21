@@ -1,5 +1,5 @@
 import type { Principal } from "@dfinity/principal";
-import type { DeleteFileResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { DeleteFileResponse, FileInfoResponse, UploadChunkResponse } from "../../domain/bucket";
 
 export interface IBucketClient {
     uploadChunk(
@@ -13,4 +13,5 @@ export interface IBucketClient {
         bytes: Array<number>
     ): Promise<UploadChunkResponse>;
     deleteFile(fileId: bigint): Promise<DeleteFileResponse>;
+    fileInfo(fileId: bigint): Promise<FileInfoResponse>;
 }
