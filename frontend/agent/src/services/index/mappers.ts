@@ -1,5 +1,12 @@
-import type { CandidAllocatedBucketResponse, CandidUserResponse } from "./candid/idl";
-import type { AllocatedBucketResponse, UserResponse } from "../../domain/index";
+import type { CandidAllocatedBucketResponse, CandidCanForwardResponse, CandidProjectedAllowance, CandidUserResponse } from "./candid/idl";
+import type {
+    AllocatedBucketResponse,
+    AllowanceExceeded,
+    CanForwardResponse,
+    ProjectedAllowance,
+    UserNotFound,
+    UserResponse
+} from "../../domain/index";
 import { UnsupportedValueError } from "../../utils/error";
 
 export function allocatedBucketResponse(
@@ -10,23 +17,14 @@ export function allocatedBucketResponse(
             kind: "success",
             canisterId: candid.Success.canister_id,
             chunkSize: candid.Success.chunk_size,
-            byteLimit: candid.Success.byte_limit,
-            bytesUsed: candid.Success.bytes_used,
-            bytesUsedAfterUpload: candid.Success.bytes_used_after_upload,
+            projectedAllowance: projectedAllowance(candid.Success.projected_allowance),
         };
     }
     if ("AllowanceExceeded" in candid) {
-        return {
-            kind: "allowance_exceeded",
-            byteLimit: candid.AllowanceExceeded.byte_limit,
-            bytesUsed: candid.AllowanceExceeded.bytes_used,
-            bytesUsedAfterUpload: candid.AllowanceExceeded.bytes_used_after_upload,
-        };
+        return allowanceExceeded(candid.AllowanceExceeded);
     }
     if ("UserNotFound" in candid) {
-        return {
-            kind: "user_not_found",
-        };
+        return userNotFound();
     }
     if ("BucketUnavailable" in candid) {
         return {
@@ -34,7 +32,26 @@ export function allocatedBucketResponse(
         };
     }
     throw new UnsupportedValueError(
-        "Unknown Index.ApiAllocatedBucketResponse type received",
+        "Unknown Index.CandidAllocatedBucketResponse type received",
+        candid
+    );
+}
+
+export function canForwardResponse(candid: CandidCanForwardResponse): CanForwardResponse {
+    if ("Success" in candid) {
+        return {
+            kind: "success",
+            projectedAllowance: projectedAllowance(candid.Success),
+        };
+    }
+    if ("AllowanceExceeded" in candid) {
+        return allowanceExceeded(candid.AllowanceExceeded);
+    }
+    if ("UserNotFound" in candid) {
+        return userNotFound();
+    }
+    throw new UnsupportedValueError(
+        "Unknown Index.CandidCanForwardResponse type received",
         candid
     );
 }
@@ -48,7 +65,26 @@ export function userResponse(candid: CandidUserResponse): UserResponse {
         };
     }
     if ("UserNotFound" in candid) {
-        return { kind: "user_not_found" };
+        return userNotFound();
     }
-    throw new UnsupportedValueError("Unknown Index.UserResponse type received", candid);
+    throw new UnsupportedValueError("Unknown Index.CandidUserResponse type received", candid);
+}
+
+function allowanceExceeded(candid: CandidProjectedAllowance): AllowanceExceeded {
+    return {
+        kind: "allowance_exceeded",
+        projectedAllowance: projectedAllowance(candid)
+    };
+}
+
+function userNotFound(): UserNotFound {
+    return { kind: "user_not_found" };
+}
+
+function projectedAllowance(candid: CandidProjectedAllowance): ProjectedAllowance {
+    return {
+        byteLimit: candid.byte_limit,
+        bytesUsed: candid.bytes_used,
+        bytesUsedAfterOperation: candid.bytes_used_after_operation,
+    };
 }
