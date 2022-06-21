@@ -13,17 +13,6 @@ export type AllocatedBucketResponse = {
   { 'UserNotFound' : null } |
   { 'BucketUnavailable' : null };
 export interface AllocatedBucketSuccessResult {
-  'canister_id' : CanisterId,
-  'projected_allowance' : ProjectedAllowance,
-  'chunk_size' : number,
-}
-export type AllocatedBucketV2Response = {
-    'Success' : AllocatedBucketV2SuccessResult
-  } |
-  { 'AllowanceExceeded' : ProjectedAllowance } |
-  { 'UserNotFound' : null } |
-  { 'BucketUnavailable' : null };
-export interface AllocatedBucketV2SuccessResult {
   'byte_limit' : bigint,
   'canister_id' : CanisterId,
   'bytes_used_after_upload' : bigint,
@@ -67,11 +56,8 @@ export interface _SERVICE {
   'add_or_update_users' : (arg_0: AddOrUpdateUsersArgs) => Promise<
       AddOrUpdateUsersResponse
     >,
-  'allocated_bucket' : (arg_0: AllocatedBucketArgs) => Promise<
-      AllocatedBucketResponse
-    >,
   'allocated_bucket_v2' : (arg_0: AllocatedBucketArgs) => Promise<
-      AllocatedBucketV2Response
+      AllocatedBucketResponse
     >,
   'can_forward' : (arg_0: CanForwardArgs) => Promise<CanForwardResponse>,
   'remove_accessor' : (arg_0: RemoveAccessorArgs) => Promise<

@@ -19,17 +19,6 @@ export const idlFactory = ({ IDL }) => {
     'bytes_used' : IDL.Nat64,
   });
   const AllocatedBucketSuccessResult = IDL.Record({
-    'canister_id' : CanisterId,
-    'projected_allowance' : ProjectedAllowance,
-    'chunk_size' : IDL.Nat32,
-  });
-  const AllocatedBucketResponse = IDL.Variant({
-    'Success' : AllocatedBucketSuccessResult,
-    'AllowanceExceeded' : ProjectedAllowance,
-    'UserNotFound' : IDL.Null,
-    'BucketUnavailable' : IDL.Null,
-  });
-  const AllocatedBucketV2SuccessResult = IDL.Record({
     'byte_limit' : IDL.Nat64,
     'canister_id' : CanisterId,
     'bytes_used_after_upload' : IDL.Nat64,
@@ -37,8 +26,8 @@ export const idlFactory = ({ IDL }) => {
     'projected_allowance' : ProjectedAllowance,
     'chunk_size' : IDL.Nat32,
   });
-  const AllocatedBucketV2Response = IDL.Variant({
-    'Success' : AllocatedBucketV2SuccessResult,
+  const AllocatedBucketResponse = IDL.Variant({
+    'Success' : AllocatedBucketSuccessResult,
     'AllowanceExceeded' : ProjectedAllowance,
     'UserNotFound' : IDL.Null,
     'BucketUnavailable' : IDL.Null,
@@ -72,14 +61,9 @@ export const idlFactory = ({ IDL }) => {
         [AddOrUpdateUsersResponse],
         [],
       ),
-    'allocated_bucket' : IDL.Func(
-        [AllocatedBucketArgs],
-        [AllocatedBucketResponse],
-        ['query'],
-      ),
     'allocated_bucket_v2' : IDL.Func(
         [AllocatedBucketArgs],
-        [AllocatedBucketV2Response],
+        [AllocatedBucketResponse],
         ['query'],
       ),
     'can_forward' : IDL.Func([CanForwardArgs], [CanForwardResponse], ['query']),

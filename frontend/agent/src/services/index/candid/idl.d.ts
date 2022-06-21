@@ -1,12 +1,12 @@
 import type { IDL } from "@dfinity/candid";
 import {
     _SERVICE,
-    AllocatedBucketV2Response,
+    AllocatedBucketResponse,
     UserResponse,
 } from "./types";
 export {
     _SERVICE as IndexService,
-    AllocatedBucketV2Response as CandidAllocatedBucketResponse,
+    AllocatedBucketResponse as CandidAllocatedBucketResponse,
     UserResponse as CandidUserResponse,
 };
 
