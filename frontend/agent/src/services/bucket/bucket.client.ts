@@ -2,9 +2,9 @@ import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
 import type { IBucketClient } from "./bucket.client.interface";
 import { idlFactory, BucketService } from "./candid/idl";
-import { deleteFileResponse, uploadChunkResponse } from "./mappers";
+import { deleteFileResponse, fileInfoResponse, uploadChunkResponse } from "./mappers";
 import { CandidService } from "../candidService";
-import type { DeleteFileResponse, UploadChunkResponse } from "../../domain/bucket";
+import type { DeleteFileResponse, FileInfoResponse, UploadChunkResponse } from "../../domain/bucket";
 
 export class BucketClient extends CandidService<BucketService> implements IBucketClient {
     constructor(agent: HttpAgent, canisterId: Principal) {
@@ -41,5 +41,12 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
             this.service.delete_file({ file_id: fileId }),
             deleteFileResponse
         );
+    }
+
+    fileInfo(fileId: bigint): Promise<FileInfoResponse> {
+        return this.handleResponse(
+            this.service.file_info({ file_id: fileId }),
+            fileInfoResponse
+        )
     }
 }

@@ -1,13 +1,15 @@
 import type { IDL } from "@dfinity/candid";
 import {
     _SERVICE,
-    UploadChunkResponse,
     DeleteFileResponse,
+    FileInfoResponse,
+    UploadChunkResponse,
 } from "./types";
 export {
     _SERVICE as BucketService,
-    UploadChunkResponse as CandidUploadChunkResponse,
     DeleteFileResponse as CandidDeleteFileResponse,
+    FileInfoResponse as CandidFileInfoResponse,
+    UploadChunkResponse as CandidUploadChunkResponse,
 };
 
 export const idlFactory: IDL.InterfaceFactory;
