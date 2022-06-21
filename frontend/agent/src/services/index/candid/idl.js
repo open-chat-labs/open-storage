@@ -12,23 +12,45 @@ export const idlFactory = ({ IDL }) => {
     'file_size' : IDL.Nat64,
   });
   const CanisterId = IDL.Principal;
+  const ProjectedAllowance = IDL.Record({
+    'bytes_used_after_operation' : IDL.Nat64,
+    'byte_limit' : IDL.Nat64,
+    'bytes_used_after_upload' : IDL.Nat64,
+    'bytes_used' : IDL.Nat64,
+  });
   const AllocatedBucketSuccessResult = IDL.Record({
+    'canister_id' : CanisterId,
+    'projected_allowance' : ProjectedAllowance,
+    'chunk_size' : IDL.Nat32,
+  });
+  const AllocatedBucketResponse = IDL.Variant({
+    'Success' : AllocatedBucketSuccessResult,
+    'AllowanceExceeded' : ProjectedAllowance,
+    'UserNotFound' : IDL.Null,
+    'BucketUnavailable' : IDL.Null,
+  });
+  const AllocatedBucketV2SuccessResult = IDL.Record({
     'byte_limit' : IDL.Nat64,
     'canister_id' : CanisterId,
     'bytes_used_after_upload' : IDL.Nat64,
     'bytes_used' : IDL.Nat64,
+    'projected_allowance' : ProjectedAllowance,
     'chunk_size' : IDL.Nat32,
   });
-  const AllocatedBucketAllowanceExceededResult = IDL.Record({
-    'byte_limit' : IDL.Nat64,
-    'bytes_used_after_upload' : IDL.Nat64,
-    'bytes_used' : IDL.Nat64,
-  });
-  const AllocatedBucketResponse = IDL.Variant({
-    'Success' : AllocatedBucketSuccessResult,
-    'AllowanceExceeded' : AllocatedBucketAllowanceExceededResult,
+  const AllocatedBucketV2Response = IDL.Variant({
+    'Success' : AllocatedBucketV2SuccessResult,
+    'AllowanceExceeded' : ProjectedAllowance,
     'UserNotFound' : IDL.Null,
     'BucketUnavailable' : IDL.Null,
+  });
+  const CanForwardArgs = IDL.Record({
+    'file_hash' : Hash,
+    'file_size' : IDL.Nat64,
+  });
+  const CanForwardResponse = IDL.Variant({
+    'Success' : ProjectedAllowance,
+    'AllowanceExceeded' : ProjectedAllowance,
+    'UserNotFound' : IDL.Null,
   });
   const AccessorId = IDL.Principal;
   const RemoveAccessorArgs = IDL.Record({ 'accessor_id' : AccessorId });
@@ -50,11 +72,17 @@ export const idlFactory = ({ IDL }) => {
         [AddOrUpdateUsersResponse],
         [],
       ),
-    'allocated_bucket_v2' : IDL.Func(
+    'allocated_bucket' : IDL.Func(
         [AllocatedBucketArgs],
         [AllocatedBucketResponse],
         ['query'],
       ),
+    'allocated_bucket_v2' : IDL.Func(
+        [AllocatedBucketArgs],
+        [AllocatedBucketV2Response],
+        ['query'],
+      ),
+    'can_forward' : IDL.Func([CanForwardArgs], [CanForwardResponse], ['query']),
     'remove_accessor' : IDL.Func(
         [RemoveAccessorArgs],
         [RemoveAccessorResponse],

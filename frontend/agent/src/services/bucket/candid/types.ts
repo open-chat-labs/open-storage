@@ -3,10 +3,29 @@ export type AccessorId = Principal;
 export type CanisterId = Principal;
 export type Cycles = bigint;
 export interface DeleteFileArgs { 'file_id' : FileId }
+export interface DeleteFileFailure {
+  'reason' : DeleteFileFailureReason,
+  'file_id' : FileId,
+}
+export type DeleteFileFailureReason = { 'NotFound' : null } |
+  { 'NotAuthorized' : null };
 export type DeleteFileResponse = { 'NotFound' : null } |
   { 'NotAuthorized' : null } |
   { 'Success' : null };
+export interface DeleteFilesArgs { 'file_ids' : Array<FileId> }
+export interface DeleteFilesResponse {
+  'failures' : Array<DeleteFileFailure>,
+  'success' : Array<FileId>,
+}
 export type FileId = bigint;
+export interface FileInfoArgs { 'file_id' : FileId }
+export type FileInfoResponse = { 'NotFound' : null } |
+  { 'Success' : FileInfoSuccessResult };
+export interface FileInfoSuccessResult {
+  'is_owner' : boolean,
+  'file_hash' : Hash,
+  'file_size' : bigint,
+}
 export type Hash = Array<number>;
 export type Milliseconds = bigint;
 export type TimestampMillis = bigint;
@@ -39,5 +58,7 @@ export interface Version {
 }
 export interface _SERVICE {
   'delete_file' : (arg_0: DeleteFileArgs) => Promise<DeleteFileResponse>,
+  'delete_files' : (arg_0: DeleteFilesArgs) => Promise<DeleteFilesResponse>,
+  'file_info' : (arg_0: FileInfoArgs) => Promise<FileInfoResponse>,
   'upload_chunk_v2' : (arg_0: UploadChunkArgs) => Promise<UploadChunkResponse>,
 }
