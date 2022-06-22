@@ -20,7 +20,7 @@ pub struct Files {
     bytes_used: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct File {
     pub owner: UserId,
     pub created: TimestampMillis,
@@ -149,6 +149,49 @@ impl Files {
         }
     }
 
+    pub fn forward(
+        &mut self,
+        caller: UserId,
+        file_id: FileId,
+        new_file_id: FileId,
+        accessors: HashSet<UserId>,
+        now: TimestampMillis,
+    ) -> ForwardFileResult {
+        let (file, size) = match self.file_and_size(&file_id) {
+            Some((f, s)) => (f, s),
+            None => return ForwardFileResult::NotFound,
+        };
+
+        if file.owner == caller || file.accessors.contains(&caller) {
+            let hash = file.hash;
+
+            self.accessors_map.link_many(caller, accessors.iter().copied(), new_file_id);
+            self.reference_counts.incr(hash);
+
+            let new_file = File {
+                owner: caller,
+                created: now,
+                accessors,
+                hash,
+                mime_type: file.mime_type,
+            };
+
+            if self.files.insert(new_file_id, new_file).is_none() {
+                ForwardFileResult::Success(FileAdded {
+                    file_id: new_file_id,
+                    owner: caller,
+                    hash,
+                    size,
+                })
+            } else {
+                // There should never be a file_id clash
+                unreachable!();
+            }
+        } else {
+            ForwardFileResult::NotAuthorized
+        }
+    }
+
     pub fn remove_pending_file(&mut self, file_id: &FileId) -> bool {
         self.pending_files.remove(file_id).is_some()
     }
@@ -206,9 +249,11 @@ impl Files {
     }
 
     fn insert_completed_file(&mut self, file_id: FileId, completed_file: PendingFile, now: TimestampMillis) {
-        for accessor_id in completed_file.accessors.iter() {
-            self.accessors_map.link(*accessor_id, file_id);
-        }
+        self.accessors_map
+            .link_many(completed_file.owner, completed_file.accessors.iter().copied(), file_id);
+
+        self.reference_counts.incr(completed_file.hash);
+        self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes);
 
         self.files.insert(
             file_id,
@@ -220,8 +265,6 @@ impl Files {
                 mime_type: completed_file.mime_type,
             },
         );
-        self.reference_counts.incr(completed_file.hash);
-        self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes);
     }
 
     fn add_blob_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
@@ -242,6 +285,13 @@ impl Files {
                 .checked_sub(bytes.len() as u64)
                 .expect("'bytes used' underflowed");
         }
+    }
+
+    fn file_and_size(&self, file_id: &FileId) -> Option<(File, u64)> {
+        let file = self.get(file_id)?;
+        let size = self.blobs.get(&file.hash).map(|b| b.len() as u64)?;
+
+        Some((file.clone(), size))
     }
 }
 
@@ -281,6 +331,14 @@ struct AccessorsMap {
 }
 
 impl AccessorsMap {
+    pub fn link_many(&mut self, owner: UserId, accessors: impl Iterator<Item = AccessorId>, file_id: FileId) {
+        self.link(owner, file_id);
+
+        for accessor in accessors {
+            self.link(accessor, file_id);
+        }
+    }
+
     pub fn link(&mut self, accessor_id: AccessorId, file_id: FileId) {
         self.map.entry(accessor_id).or_default().insert(file_id);
     }
@@ -430,6 +488,12 @@ pub struct PutChunkResultSuccess {
 
 pub enum RemoveFileResult {
     Success(FileRemoved),
+    NotAuthorized,
+    NotFound,
+}
+
+pub enum ForwardFileResult {
+    Success(FileAdded),
     NotAuthorized,
     NotFound,
 }

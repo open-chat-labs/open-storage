@@ -6,7 +6,7 @@ use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use types::{CanisterId, Cycles, TimestampMillis, Timestamped, Version};
+use types::{CanisterId, Cycles, FileId, TimestampMillis, Timestamped, Version};
 use utils::env::Environment;
 use utils::memory;
 
@@ -51,6 +51,20 @@ impl RuntimeState {
     pub fn is_caller_known_user(&self) -> bool {
         let caller = self.env.caller();
         self.data.users.exists(&caller)
+    }
+
+    pub fn generate_new_file_id(&mut self) -> FileId {
+        loop {
+            let mut file_id = 0u128;
+            file_id += self.env.random_u32() as u128;
+            file_id += (self.env.random_u32() as u128) >> 4;
+            file_id += (self.env.random_u32() as u128) >> 8;
+            file_id += (self.env.random_u32() as u128) >> 12;
+
+            if self.data.files.get(&file_id).is_none() {
+                return file_id;
+            }
+        }
     }
 
     pub fn metrics(&self) -> Metrics {

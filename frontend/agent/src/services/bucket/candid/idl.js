@@ -31,6 +31,15 @@ export const idlFactory = ({ IDL }) => {
     'Success' : FileInfoSuccessResult,
   });
   const AccessorId = IDL.Principal;
+  const ForwardFileArgs = IDL.Record({
+    'accessors' : IDL.Vec(AccessorId),
+    'file_id' : FileId,
+  });
+  const ForwardFileResponse = IDL.Variant({
+    'NotFound' : IDL.Null,
+    'NotAuthorized' : IDL.Null,
+    'Success' : FileId,
+  });
   const UploadChunkArgs = IDL.Record({
     'accessors' : IDL.Vec(AccessorId),
     'chunk_index' : IDL.Nat32,
@@ -57,6 +66,7 @@ export const idlFactory = ({ IDL }) => {
     'delete_file' : IDL.Func([DeleteFileArgs], [DeleteFileResponse], []),
     'delete_files' : IDL.Func([DeleteFilesArgs], [DeleteFilesResponse], []),
     'file_info' : IDL.Func([FileInfoArgs], [FileInfoResponse], ['query']),
+    'forward_file' : IDL.Func([ForwardFileArgs], [ForwardFileResponse], []),
     'upload_chunk_v2' : IDL.Func([UploadChunkArgs], [UploadChunkResponse], []),
   });
 };
