@@ -10,7 +10,7 @@ use types::{
     CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, TimestampMillis, Timestamped,
     UserId, Version,
 };
-use utils::canister::CanistersRequiringUpgrade;
+use utils::canister::{CanistersRequiringUpgrade, FailedUpgradeCount};
 use utils::env::Environment;
 use utils::memory;
 
@@ -54,6 +54,7 @@ impl RuntimeState {
 
     pub fn metrics(&self) -> Metrics {
         let blob_metrics = self.data.blobs.metrics();
+        let bucket_upgrade_metrics = self.data.canisters_requiring_upgrade.metrics();
 
         Metrics {
             memory_used: memory::used(),
@@ -66,6 +67,10 @@ impl RuntimeState {
             total_file_bytes: blob_metrics.total_file_bytes,
             active_buckets: self.data.buckets.iter_active_buckets().map(|b| b.into()).collect(),
             full_buckets: self.data.buckets.iter_full_buckets().map(|b| b.into()).collect(),
+            bucket_upgrades_pending: bucket_upgrade_metrics.pending as u64,
+            bucket_upgrades_in_progress: bucket_upgrade_metrics.in_progress as u64,
+            bucket_upgrades_failed: bucket_upgrade_metrics.failed,
+            bucket_canister_wasm: self.data.bucket_canister_wasm.version,
         }
     }
 }
@@ -161,6 +166,10 @@ pub struct Metrics {
     pub total_file_bytes: u64,
     pub active_buckets: Vec<BucketMetrics>,
     pub full_buckets: Vec<BucketMetrics>,
+    pub bucket_upgrades_pending: u64,
+    pub bucket_upgrades_in_progress: u64,
+    pub bucket_upgrades_failed: Vec<FailedUpgradeCount>,
+    pub bucket_canister_wasm: Version,
 }
 
 #[derive(CandidType, Serialize, Debug)]
