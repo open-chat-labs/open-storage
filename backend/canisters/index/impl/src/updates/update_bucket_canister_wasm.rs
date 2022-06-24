@@ -22,6 +22,7 @@ fn update_bucket_canister_wasm_impl(args: Args, runtime_state: &mut RuntimeState
     if canisters_to_upgrade.is_empty() {
         VersionNotHigher
     } else {
+        runtime_state.data.bucket_canister_wasm = args.bucket_canister_wasm;
         for canister_id in canisters_to_upgrade {
             runtime_state.data.canisters_requiring_upgrade.enqueue(canister_id)
         }
