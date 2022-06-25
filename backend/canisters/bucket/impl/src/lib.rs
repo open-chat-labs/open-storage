@@ -57,9 +57,9 @@ impl RuntimeState {
         loop {
             let mut file_id = 0u128;
             file_id += self.env.random_u32() as u128;
-            file_id += (self.env.random_u32() as u128) >> 4;
-            file_id += (self.env.random_u32() as u128) >> 8;
-            file_id += (self.env.random_u32() as u128) >> 12;
+            file_id += (self.env.random_u32() as u128) << 32;
+            file_id += (self.env.random_u32() as u128) << 64;
+            file_id += (self.env.random_u32() as u128) << 96;
 
             if self.data.files.get(&file_id).is_none() {
                 return file_id;
