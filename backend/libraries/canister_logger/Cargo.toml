@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 candid = "0.7.14"
-ic-cdk = "0.5.1"
+ic-cdk = "0.5.2"
 serde = "1.0.137"
 tracing = "0.1.35"
 tracing-attributes = "0.1.21"

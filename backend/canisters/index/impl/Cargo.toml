@@ -19,8 +19,8 @@ bucket_canister = { path = "../../bucket/api" }
 bucket_canister_c2c_client = { path = "../../bucket/c2c_client" }
 futures = "0.3.21"
 http_request = { path = "../../../libraries/http_request" }
-ic-cdk = "0.5.1"
-ic-cdk-macros = "0.5.1"
+ic-cdk = "0.5.2"
+ic-cdk-macros = "0.5.2"
 index_canister = { path = "../api" }
 serde = "1.0.137"
 serializer = { path = "../../../libraries/serializer" }
