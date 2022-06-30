@@ -1,9 +1,10 @@
 use crate::guards::caller_is_service_principal;
 use crate::model::bucket_sync_state::EventToSync;
-use crate::{mutate_state, RuntimeState, UserRecord};
+use crate::{mutate_state, RuntimeState, UserRecordInternal};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
 use index_canister::add_or_update_users::{Response::*, *};
+use std::collections::HashSet;
 
 #[update(guard = "caller_is_service_principal")]
 #[trace]
@@ -18,9 +19,10 @@ fn add_or_update_users_impl(args: Args, runtime_state: &mut RuntimeState) -> Res
         } else {
             runtime_state.data.users.insert(
                 user_config.user_id,
-                UserRecord {
+                UserRecordInternal {
                     byte_limit: user_config.byte_limit,
                     bytes_used: 0,
+                    blobs_owned: HashSet::new(),
                 },
             );
 

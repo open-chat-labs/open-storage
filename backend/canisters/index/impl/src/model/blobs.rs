@@ -48,6 +48,10 @@ impl Blobs {
         self.blobs.get(hash).map_or(false, |b| b.owners.contains_key(user_id))
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = (&Hash, &BlobRecord)> {
+        self.blobs.iter()
+    }
+
     pub fn metrics(&self) -> &Metrics {
         &self.cached_metrics
     }
