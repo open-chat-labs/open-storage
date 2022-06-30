@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
-    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, TimestampMillis, Timestamped,
-    UserId, Version,
+    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Hash, TimestampMillis,
+    Timestamped, UserId, Version,
 };
 use utils::canister::{CanistersRequiringUpgrade, FailedUpgradeCount};
 use utils::env::Environment;
@@ -79,7 +79,7 @@ impl RuntimeState {
 struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
-    pub users: HashMap<UserId, UserRecord>,
+    pub users: HashMap<UserId, UserRecordInternal>,
     pub blobs: Blobs,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
@@ -123,6 +123,7 @@ impl Data {
                     });
                 } else {
                     user.bytes_used = bytes_used_after_upload;
+                    user.blobs_owned.insert(hash);
                 }
             }
         } else {
@@ -143,15 +144,28 @@ impl Data {
         if let Some(bytes_removed) = self.blobs.remove(hash, owner, bucket) {
             if let Some(user) = self.users.get_mut(&owner) {
                 user.bytes_used = user.bytes_used.saturating_sub(bytes_removed);
+                user.blobs_owned.remove(&hash);
+            }
+        }
+    }
+
+    pub fn hydrate_blobs_owned(&mut self) {
+        for (hash, references) in self.blobs.iter() {
+            for user_id in references.owners.keys() {
+                if let Some(user) = self.users.get_mut(user_id) {
+                    user.blobs_owned.insert(*hash);
+                }
             }
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserRecord {
+struct UserRecordInternal {
     pub byte_limit: u64,
     pub bytes_used: u64,
+    #[serde(default)]
+    pub blobs_owned: HashSet<Hash>,
 }
 
 #[derive(CandidType, Serialize, Debug)]
