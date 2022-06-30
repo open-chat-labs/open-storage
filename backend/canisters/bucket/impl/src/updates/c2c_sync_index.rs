@@ -22,7 +22,7 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
 
     for user_id in args.users_removed {
         if let Some(user) = runtime_state.data.users.remove(user_id) {
-            for file_id in user.files_uploaded() {
+            for file_id in user.files_owned() {
                 if let RemoveFileResult::Success(b) = runtime_state.data.files.remove(user_id, file_id) {
                     files_removed.push(b)
                 }

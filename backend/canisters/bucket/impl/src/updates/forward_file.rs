@@ -1,6 +1,7 @@
 use crate::guards::caller_is_known_user;
 use crate::model::files::ForwardFileResult;
 use crate::model::index_sync_state::EventToSync;
+use crate::model::users::{FileStatusInternal, IndexSyncComplete};
 use crate::{mutate_state, RuntimeState};
 use bucket_canister::forward_file::{Response::*, *};
 use canister_api_macros::trace;
@@ -24,6 +25,8 @@ fn forward_file_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         .forward(caller, args.file_id, new_file_id, accessors, now)
     {
         ForwardFileResult::Success(f) => {
+            let user = runtime_state.data.users.get_mut(&caller).unwrap();
+            user.set_file_status(new_file_id, FileStatusInternal::Complete(IndexSyncComplete::No));
             runtime_state.data.index_sync_state.enqueue(EventToSync::FileAdded(f));
             Success(new_file_id)
         }

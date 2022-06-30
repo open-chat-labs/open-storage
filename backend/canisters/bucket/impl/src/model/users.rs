@@ -31,20 +31,21 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    files_uploaded: HashMap<FileId, FileStatusInternal>,
+    #[serde(alias = "files_uploaded")]
+    files_owned: HashMap<FileId, FileStatusInternal>,
 }
 
 impl UserRecord {
-    pub fn files_uploaded(&self) -> Vec<FileId> {
-        self.files_uploaded.keys().copied().collect()
+    pub fn files_owned(&self) -> Vec<FileId> {
+        self.files_owned.keys().copied().collect()
     }
 
     pub fn file_status(&self, file_id: &FileId) -> Option<&FileStatusInternal> {
-        self.files_uploaded.get(file_id)
+        self.files_owned.get(file_id)
     }
 
     pub fn set_file_status(&mut self, file_id: FileId, status: FileStatusInternal) -> Option<FileStatusInternal> {
-        self.files_uploaded.insert(file_id, status)
+        self.files_owned.insert(file_id, status)
     }
 }
 
