@@ -13,3 +13,4 @@ generate_c2c_call!(c2c_sync_bucket);
 generate_c2c_call!(remove_accessor);
 generate_c2c_call!(remove_user);
 generate_c2c_call!(update_bucket_canister_wasm);
+generate_c2c_call!(update_user_id);
