@@ -38,6 +38,12 @@ impl Blobs {
         None
     }
 
+    pub fn update_user_id(&mut self, hash: &Hash, old_user_id: UserId, new_user_id: UserId) {
+        if let Some(blob) = self.blobs.get_mut(hash) {
+            blob.update_user_id(old_user_id, new_user_id);
+        }
+    }
+
     pub fn bucket(&self, hash: &Hash) -> Option<CanisterId> {
         self.blobs
             .get(hash)
@@ -114,6 +120,12 @@ impl BlobRecord {
             }
         }
         removed_from_user
+    }
+
+    pub fn update_user_id(&mut self, old_user_id: UserId, new_user_id: UserId) {
+        if let Some(refs) = self.owners.remove(&old_user_id) {
+            self.owners.insert(new_user_id, refs);
+        }
     }
 }
 

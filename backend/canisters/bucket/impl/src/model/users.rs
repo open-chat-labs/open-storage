@@ -12,8 +12,8 @@ impl Users {
         self.users.insert(user_id, UserRecord::default()).is_none()
     }
 
-    pub fn remove(&mut self, user_id: UserId) -> Option<UserRecord> {
-        self.users.remove(&user_id)
+    pub fn remove(&mut self, user_id: &UserId) -> Option<UserRecord> {
+        self.users.remove(user_id)
     }
 
     pub fn exists(&self, user_id: &UserId) -> bool {
@@ -26,6 +26,15 @@ impl Users {
 
     pub fn get_mut(&mut self, user_id: &UserId) -> Option<&mut UserRecord> {
         self.users.get_mut(user_id)
+    }
+
+    pub fn update_user_id(&mut self, old_user_id: UserId, new_user_id: UserId) -> bool {
+        if let Some(user) = self.users.remove(&old_user_id) {
+            self.users.insert(new_user_id, user);
+            true
+        } else {
+            false
+        }
     }
 }
 

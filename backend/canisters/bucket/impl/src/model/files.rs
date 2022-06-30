@@ -229,6 +229,29 @@ impl Files {
         files_removed
     }
 
+    pub fn update_owner(&mut self, file_id: &FileId, new_owner: UserId) -> bool {
+        if let Some(file) = self.files.get_mut(file_id) {
+            file.owner = new_owner;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn update_accessor_id(&mut self, old_accessor_id: AccessorId, new_accessor_id: AccessorId) {
+        if let Some(files) = self.accessors_map.map.remove(&old_accessor_id) {
+            for file_id in files.iter() {
+                if let Some(file) = self.files.get_mut(file_id) {
+                    if file.accessors.remove(&old_accessor_id) {
+                        file.accessors.insert(new_accessor_id);
+                    }
+                }
+            }
+
+            self.accessors_map.map.insert(new_accessor_id, files);
+        }
+    }
+
     pub fn contains_hash(&self, hash: &Hash) -> bool {
         self.blobs.contains_key(hash)
     }

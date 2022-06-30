@@ -7,6 +7,7 @@ pub struct Args {
     pub users_added: Vec<UserId>,
     pub users_removed: Vec<UserId>,
     pub accessors_removed: Vec<AccessorId>,
+    pub user_ids_updated: Vec<(UserId, UserId)>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
