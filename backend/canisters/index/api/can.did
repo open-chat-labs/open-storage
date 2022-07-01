@@ -36,6 +36,19 @@ type RemoveAccessorResponse =
         Success;
     };
 
+type UpdateUserIdArgs =
+    record {
+        old_user_id: UserId;
+        new_user_id: UserId;
+    };
+
+type UpdateUserIdResponse =
+    variant {
+        Success;
+        UserNotFound;
+        UserIdAlreadyExists;
+    };
+
 type AllocatedBucketArgs =
     record {
         file_hash: Hash;
@@ -101,6 +114,7 @@ service: {
     add_or_update_users: (AddOrUpdateUsersArgs) -> (AddOrUpdateUsersResponse);
     remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
     remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
+    update_user_id: (UpdateUserIdArgs) -> (UpdateUserIdResponse);
     allocated_bucket_v2: (AllocatedBucketArgs) -> (AllocatedBucketResponse) query;
     can_forward: (CanForwardArgs) -> (CanForwardResponse) query;
     user: (UserArgs) -> (UserResponse) query;
