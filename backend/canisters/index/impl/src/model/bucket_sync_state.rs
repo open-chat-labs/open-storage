@@ -32,6 +32,7 @@ impl BucketSyncState {
                 users_added: Vec::new(),
                 users_removed: Vec::new(),
                 accessors_removed: Vec::new(),
+                user_ids_updated: Vec::new(),
             };
 
             for _ in 0..MAX_EVENTS_TO_SYNC_PER_BATCH {
@@ -40,6 +41,7 @@ impl BucketSyncState {
                         EventToSync::UserAdded(a) => args.users_added.push(a),
                         EventToSync::UserRemoved(r) => args.users_removed.push(r),
                         EventToSync::AccessorRemoved(r) => args.accessors_removed.push(r),
+                        EventToSync::UserIdUpdated(old, new) => args.user_ids_updated.push((old, new)),
                     }
                 } else {
                     break;
@@ -65,4 +67,5 @@ pub enum EventToSync {
     UserAdded(UserId),
     UserRemoved(UserId),
     AccessorRemoved(AccessorId),
+    UserIdUpdated(UserId, UserId),
 }

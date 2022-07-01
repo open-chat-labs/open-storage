@@ -5,4 +5,5 @@ pub mod c2c_sync_bucket;
 pub mod remove_accessor;
 pub mod remove_user;
 pub mod update_bucket_canister_wasm;
+pub mod update_user_id;
 pub mod wallet_receive;

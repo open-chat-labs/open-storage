@@ -21,7 +21,7 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
     let mut files_removed: Vec<FileRemoved> = Vec::new();
 
     for user_id in args.users_removed {
-        if let Some(user) = runtime_state.data.users.remove(user_id) {
+        if let Some(user) = runtime_state.data.users.remove(&user_id) {
             for file_id in user.files_owned() {
                 if let RemoveFileResult::Success(b) = runtime_state.data.files.remove(user_id, file_id) {
                     files_removed.push(b)
@@ -41,6 +41,16 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
 
         for removed in excess {
             runtime_state.data.index_sync_state.enqueue(EventToSync::FileRemoved(removed));
+        }
+    }
+
+    for (old_user_id, new_user_id) in args.user_ids_updated {
+        if runtime_state.data.users.update_user_id(old_user_id, new_user_id) {
+            let user = runtime_state.data.users.get(&new_user_id).unwrap();
+            for file_id in user.files_owned() {
+                runtime_state.data.files.update_owner(&file_id, new_user_id);
+            }
+            runtime_state.data.files.update_accessor_id(old_user_id, new_user_id);
         }
     }
 
