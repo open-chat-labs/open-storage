@@ -1,6 +1,6 @@
 {
     "name": "@open-ic/open-storage-agent",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "",
     "main": "lib/agent.js",
     "scripts": {
@@ -9,12 +9,12 @@
         "format": "prettier './src/**/*.ts' --write"
     },
     "dependencies": {
-        "@dfinity/agent": "^0.12.0",
-        "@dfinity/auth-client": "^0.12.0",
-        "@dfinity/authentication": "^0.12.0",
-        "@dfinity/candid": "^0.12.0",
-        "@dfinity/identity": "^0.12.0",
-        "@dfinity/principal": "^0.12.0",
+        "@dfinity/agent": "^0.13.2",
+        "@dfinity/auth-client": "^0.13.2",
+        "@dfinity/authentication": "^0.13.2",
+        "@dfinity/candid": "^0.13.2",
+        "@dfinity/identity": "^0.13.2",
+        "@dfinity/principal": "^0.13.2",
         "js-sha3": "^0.8.0",
         "uuid": "^3.4.0"
     },
