@@ -68,7 +68,7 @@ mod ensure_sufficient_active_buckets {
         }
 
         CreateBucket(CreateBucketArgs {
-            canister_wasm: runtime_state.data.bucket_canister_wasm.decompress(),
+            canister_wasm: runtime_state.data.bucket_canister_wasm.clone(),
             cycles_to_use: cycles_required,
             init_canister_args: bucket_canister::init::Args {
                 wasm_version: runtime_state.data.bucket_canister_wasm.version,
@@ -162,15 +162,14 @@ mod upgrade_canisters {
     fn try_get_next(runtime_state: &mut RuntimeState) -> Option<CanisterToUpgrade> {
         let canister_id = runtime_state.data.canisters_requiring_upgrade.try_take_next()?;
         let bucket = runtime_state.data.buckets.get(&canister_id)?;
-        let new_wasm = runtime_state.data.bucket_canister_wasm.decompress();
+        let new_wasm = runtime_state.data.bucket_canister_wasm.clone();
+        let wasm_version = new_wasm.version;
 
         Some(CanisterToUpgrade {
             canister_id,
             current_wasm_version: bucket.wasm_version,
-            new_wasm: runtime_state.data.bucket_canister_wasm.decompress(),
-            args: bucket_canister::post_upgrade::Args {
-                wasm_version: new_wasm.version,
-            },
+            new_wasm,
+            args: bucket_canister::post_upgrade::Args { wasm_version },
         })
     }
 
