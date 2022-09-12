@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-candid = "0.7.14"
+candid = "0.7.16"
 canister_client_macros = { path = "../canister_client_macros" }
 generic-array = "0.14.5"
 ic-cdk = "0.5.2"

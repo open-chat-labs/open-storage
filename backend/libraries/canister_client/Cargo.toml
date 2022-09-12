@@ -7,12 +7,12 @@ edition = "2021"
 
 [dependencies]
 bucket_canister = { path = "../../canisters/bucket/api" }
-candid = "0.7.14"
+candid = "0.7.16"
 canister_client_macros = { path = "../canister_client_macros", features = ["ingress"] }
 dirs = "4.0.0"
 garcon = "0.2.3"
-ic-agent = "0.17.0"
-ic-utils = "0.17.0"
+ic-agent = "0.20.0"
+ic-utils = "0.20.0"
 index_canister = { path = "../../canisters/index/api" }
 index_canister_client = { path = "../../canisters/index/client" }
 serde = "1.0.137"

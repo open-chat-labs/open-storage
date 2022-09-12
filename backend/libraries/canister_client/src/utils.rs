@@ -80,18 +80,11 @@ pub async fn install_wasm<A: CandidType + Sync + Send>(
         .expect("Failed to install wasm");
 }
 
-pub fn get_canister_wasm(canister_name: CanisterName, version: Version, compressed: bool) -> CanisterWasm {
-    let mut file_name = canister_name.to_string() + "_canister_impl-opt.wasm";
-    if compressed {
-        file_name += ".xz";
-    }
+pub fn get_canister_wasm(canister_name: CanisterName, version: Version) -> CanisterWasm {
+    let file_name = canister_name.to_string() + "_canister_impl.wasm.gz";
     let bytes = read_file_from_local_bin(&file_name);
 
-    CanisterWasm {
-        module: bytes,
-        compressed,
-        version,
-    }
+    CanisterWasm { module: bytes, version }
 }
 
 pub fn read_file_from_local_bin(file_name: &str) -> Vec<u8> {

@@ -4,11 +4,9 @@ IDENTITY=$1
 TEST_MODE=true
 
 # Pass in the dfx identity name
-# eg './deploy-local openstorage'
+# eg './deploy-local.sh openstorage'
 ./generate-wasm.sh index_canister_impl
 ./generate-wasm.sh bucket_canister_impl
-
-./compress-wasm.sh bucket_canister_impl
 
 dfx --identity $IDENTITY canister create index
 

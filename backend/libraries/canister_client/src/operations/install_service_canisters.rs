@@ -36,8 +36,8 @@ async fn install_service_canisters_impl(
 ) {
     let version = Version::min();
 
-    let index_canister_wasm = get_canister_wasm(CanisterName::Index, version, false);
-    let bucket_canister_wasm = get_canister_wasm(CanisterName::Bucket, Version::min(), true);
+    let index_canister_wasm = get_canister_wasm(CanisterName::Index, version);
+    let bucket_canister_wasm = get_canister_wasm(CanisterName::Bucket, Version::min());
     let index_init_args = index_canister::init::Args {
         service_principals: vec![principal],
         bucket_canister_wasm,

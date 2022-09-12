@@ -10,7 +10,7 @@ use types::{CanisterId, CanisterWasm, Version};
 pub async fn upgrade_index_canister(identity: BasicIdentity, url: String, index_canister_id: CanisterId, version: Version) {
     let agent = build_ic_agent(url, identity).await;
     let management_canister = build_management_canister(&agent);
-    let canister_wasm = get_canister_wasm(CanisterName::Index, version, false);
+    let canister_wasm = get_canister_wasm(CanisterName::Index, version);
     let args = index_canister::post_upgrade::Args { wasm_version: version };
 
     upgrade_wasm(&management_canister, &index_canister_id, &canister_wasm.module, args).await;
@@ -19,11 +19,10 @@ pub async fn upgrade_index_canister(identity: BasicIdentity, url: String, index_
 
 pub async fn upgrade_bucket_canister(identity: BasicIdentity, url: String, index_canister_id: CanisterId, version: Version) {
     let agent = build_ic_agent(url, identity).await;
-    let canister_wasm = get_canister_wasm(CanisterName::Bucket, version, true);
+    let canister_wasm = get_canister_wasm(CanisterName::Bucket, version);
     let args = index_canister::update_bucket_canister_wasm::Args {
         bucket_canister_wasm: CanisterWasm {
             version,
-            compressed: canister_wasm.compressed,
             module: canister_wasm.module,
         },
     };
