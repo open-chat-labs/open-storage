@@ -6,14 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-candid = "0.7.16"
+candid = { workspace = true }
 canister_client_macros = { path = "../canister_client_macros" }
-generic-array = "0.14.5"
-ic-cdk = "0.5.2"
-itertools = "0.10.3"
-rand = "0.7.3"
-serde = "1.0.137"
-serde_bytes = "0.11.6"
-sha3 = "0.10.1"
-tracing = "0.1.35"
+generic-array = { workspace = true }
+ic-cdk = { workspace = true }
+itertools = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+sha3 = { workspace = true }
+tracing = { workspace = true }
 types = { path = "../types" }
