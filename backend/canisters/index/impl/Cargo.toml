@@ -10,20 +10,20 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-arrayref = "0.3.6"
-candid = "0.7.16"
+arrayref = { workspace = true }
+candid = { workspace = true }
 canister_api_macros = { path = "../../../libraries/canister_api_macros" }
 canister_logger = { path = "../../../libraries/canister_logger" }
 canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "b06d3b984e39fa3a23828521934ef0370b720b18" }
 bucket_canister = { path = "../../bucket/api" }
 bucket_canister_c2c_client = { path = "../../bucket/c2c_client" }
-futures = "0.3.21"
+futures = { workspace = true }
 http_request = { path = "../../../libraries/http_request" }
-ic-cdk = "0.5.2"
-ic-cdk-macros = "0.5.2"
+ic-cdk = { workspace = true }
+ic-cdk-macros = { workspace = true }
 index_canister = { path = "../api" }
-serde = "1.0.137"
+serde = { workspace = true }
 serializer = { path = "../../../libraries/serializer" }
-tracing = "0.1.35"
+tracing = { workspace = true }
 types = { path = "../../../libraries/types" }
 utils = { path = "../../../libraries/utils" }

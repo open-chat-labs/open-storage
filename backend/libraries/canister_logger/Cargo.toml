@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-candid = "0.7.16"
-ic-cdk = "0.5.2"
-serde = "1.0.137"
-tracing = "0.1.35"
-tracing-attributes = "0.1.21"
-tracing-subscriber = { version = "0.3.11", features = ["json"] }
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }
+tracing-attributes = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["json"] }
 types = { path = "../types" }
