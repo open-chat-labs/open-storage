@@ -9,6 +9,7 @@ edition = "2021"
 candid = { workspace = true }
 canister_client_macros = { path = "../canister_client_macros" }
 generic-array = { workspace = true }
+getrandom = { workspace = true, features = ["custom"] }
 ic-cdk = { workspace = true }
 itertools = { workspace = true }
 rand = { workspace = true }
