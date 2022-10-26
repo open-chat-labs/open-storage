@@ -1,5 +1,6 @@
 use crate::model::bucket_sync_state::BucketSyncState;
 use crate::model::bucket_sync_state::EventToSync;
+use crate::BucketMetrics;
 use arrayref::array_ref;
 use bucket_canister::c2c_sync_index;
 use serde::{Deserialize, Serialize};
@@ -119,6 +120,8 @@ pub struct BucketRecord {
     pub canister_id: CanisterId,
     pub wasm_version: Version,
     pub bytes_used: u64,
+    #[serde(default)]
+    pub bytes_remaining: i64,
     pub sync_state: BucketSyncState,
     pub cycle_top_ups: Vec<CyclesTopUp>,
 }
@@ -129,8 +132,21 @@ impl BucketRecord {
             canister_id,
             wasm_version,
             bytes_used: 0,
+            bytes_remaining: 0,
             sync_state: BucketSyncState::default(),
             cycle_top_ups: Vec::new(),
+        }
+    }
+}
+
+impl From<&BucketRecord> for BucketMetrics {
+    fn from(bucket: &BucketRecord) -> Self {
+        BucketMetrics {
+            canister_id: bucket.canister_id,
+            wasm_version: bucket.wasm_version,
+            bytes_used: bucket.bytes_used,
+            bytes_remaining: bucket.bytes_remaining,
+            cycle_top_ups: bucket.cycle_top_ups.clone(),
         }
     }
 }

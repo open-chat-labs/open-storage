@@ -1,4 +1,4 @@
-use crate::{calc_chunk_count, DATA_LIMIT_BYTES, MAX_BLOB_SIZE_BYTES};
+use crate::{calc_chunk_count, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk_v2::Args as UploadChunkArgs;
 use candid::Principal;
 use serde::{Deserialize, Serialize};
@@ -260,8 +260,8 @@ impl Files {
         self.blobs.get(hash).map(|b| b.len() as u64)
     }
 
-    pub fn bytes_remaining(&self) -> i64 {
-        (DATA_LIMIT_BYTES as i64) - (self.bytes_used as i64)
+    pub fn bytes_used(&self) -> u64 {
+        self.bytes_used
     }
 
     pub fn metrics(&self) -> Metrics {

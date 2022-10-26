@@ -19,7 +19,7 @@ impl IndexSyncState {
         self.queue.push_back(event);
     }
 
-    pub fn pop_args_for_next_sync(&mut self, bytes_remaining: i64) -> Option<Args> {
+    pub fn pop_args_for_next_sync(&mut self, bytes_used: u64, bytes_remaining: i64) -> Option<Args> {
         if self.in_progress {
             None
         } else if let Some(args) = self.args_to_retry.take() {
@@ -29,9 +29,10 @@ impl IndexSyncState {
             None
         } else {
             let mut args = Args {
-                bytes_remaining,
                 files_added: Vec::new(),
                 files_removed: Vec::new(),
+                bytes_used,
+                bytes_remaining,
             };
 
             for _ in 0..MAX_EVENTS_TO_SYNC_PER_BATCH {

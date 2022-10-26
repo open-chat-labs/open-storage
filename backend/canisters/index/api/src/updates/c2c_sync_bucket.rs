@@ -6,6 +6,7 @@ use types::{FileAdded, FileRejected, FileRemoved};
 pub struct Args {
     pub files_added: Vec<FileAdded>,
     pub files_removed: Vec<FileRemoved>,
+    pub bytes_used: u64,
     pub bytes_remaining: i64,
 }
 
