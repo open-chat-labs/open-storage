@@ -1,5 +1,5 @@
 use crate::model::blobs::Blobs;
-use crate::model::buckets::{BucketRecord, Buckets};
+use crate::model::buckets::Buckets;
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
-    CanisterId, CanisterWasm, Cycles, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Hash, TimestampMillis,
-    Timestamped, UserId, Version,
+    CanisterId, CanisterWasm, Cycles, CyclesTopUp, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Hash,
+    TimestampMillis, Timestamped, UserId, Version,
 };
 use utils::canister::{CanistersRequiringUpgrade, FailedUpgradeCount};
 use utils::env::Environment;
@@ -191,14 +191,6 @@ pub struct BucketMetrics {
     pub canister_id: CanisterId,
     pub wasm_version: Version,
     pub bytes_used: u64,
-}
-
-impl From<&BucketRecord> for BucketMetrics {
-    fn from(bucket: &BucketRecord) -> Self {
-        BucketMetrics {
-            canister_id: bucket.canister_id,
-            wasm_version: bucket.wasm_version,
-            bytes_used: bucket.bytes_used,
-        }
-    }
+    pub bytes_remaining: i64,
+    pub cycle_top_ups: Vec<CyclesTopUp>,
 }

@@ -1,5 +1,5 @@
 use crate::model::users::FileStatusInternal;
-use crate::{mutate_state, RuntimeState, MIN_CYCLES_BALANCE};
+use crate::{mutate_state, RuntimeState, DATA_LIMIT_BYTES, MIN_CYCLES_BALANCE};
 use ic_cdk_macros::heartbeat;
 use index_canister::c2c_sync_bucket::{Args, Response, SuccessResult};
 use types::CanisterId;
@@ -20,11 +20,13 @@ mod sync_index {
     }
 
     fn next_batch(runtime_state: &mut RuntimeState) -> Option<(CanisterId, Args)> {
-        let bytes_remaining = runtime_state.data.files.bytes_remaining();
+        let bytes_used = runtime_state.data.files.bytes_used();
+        let bytes_remaining = (DATA_LIMIT_BYTES as i64) - (bytes_used as i64);
+
         runtime_state
             .data
             .index_sync_state
-            .pop_args_for_next_sync(bytes_remaining)
+            .pop_args_for_next_sync(bytes_used, bytes_remaining)
             .map(|args| (runtime_state.data.index_canister_id, args))
     }
 

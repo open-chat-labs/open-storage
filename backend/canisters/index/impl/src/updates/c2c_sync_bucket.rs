@@ -23,6 +23,11 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
         runtime_state.data.remove_file_reference(bucket, file);
     }
 
+    if let Some(b) = runtime_state.data.buckets.get_mut(&bucket) {
+        b.bytes_used = args.bytes_used;
+        b.bytes_remaining = args.bytes_remaining;
+    }
+
     if args.bytes_remaining <= 0 {
         runtime_state.data.buckets.archive(bucket);
     }
