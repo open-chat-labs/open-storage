@@ -51,18 +51,9 @@ mod ensure_sufficient_active_buckets {
             return DoNothing;
         }
 
-        let (cycles_required, min_cycles_balance) = if runtime_state.data.test_mode {
-            (
-                (BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE) / 4,
-                MIN_CYCLES_BALANCE / 10,
-            )
-        } else {
-            (
-                BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE,
-                MIN_CYCLES_BALANCE,
-            )
-        };
-        if !utils::cycles::can_spend_cycles(cycles_required, min_cycles_balance) {
+        let cycles_required = BUCKET_CANISTER_INITIAL_CYCLES_BALANCE + CREATE_CANISTER_CYCLES_FEE;
+
+        if !utils::cycles::can_spend_cycles(cycles_required, MIN_CYCLES_BALANCE) {
             runtime_state.data.buckets.release_creation_lock();
             return CyclesBalanceTooLow;
         }
