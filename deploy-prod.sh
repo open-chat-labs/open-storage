@@ -8,8 +8,6 @@ TEST_MODE=$2
 ./generate-wasm.sh index_canister_impl
 ./generate-wasm.sh bucket_canister_impl
 
-./compress-wasm.sh bucket_canister_impl
-
 INDEX_CANISTER_ID=$(dfx canister --network ic id index)
 
 cargo run \
