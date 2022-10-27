@@ -148,23 +148,12 @@ impl Data {
             }
         }
     }
-
-    pub fn hydrate_blobs_owned(&mut self) {
-        for (hash, references) in self.blobs.iter() {
-            for user_id in references.owners.keys() {
-                if let Some(user) = self.users.get_mut(user_id) {
-                    user.blobs_owned.insert(*hash);
-                }
-            }
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct UserRecordInternal {
     pub byte_limit: u64,
     pub bytes_used: u64,
-    #[serde(default)]
     pub blobs_owned: HashSet<Hash>,
 }
 

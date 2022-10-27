@@ -8,7 +8,6 @@ const RECALCULATE_METRICS_INTERVAL: Milliseconds = 10 * 60 * 1000; // 10 minutes
 #[derive(Serialize, Deserialize, Default)]
 pub struct Blobs {
     blobs: HashMap<Hash, BlobRecord>,
-    #[serde(default)]
     cached_metrics: Metrics,
 }
 
@@ -52,10 +51,6 @@ impl Blobs {
 
     pub fn user_owns_blob(&self, user_id: &UserId, hash: &Hash) -> bool {
         self.blobs.get(hash).map_or(false, |b| b.owners.contains_key(user_id))
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = (&Hash, &BlobRecord)> {
-        self.blobs.iter()
     }
 
     pub fn metrics(&self) -> &Metrics {
