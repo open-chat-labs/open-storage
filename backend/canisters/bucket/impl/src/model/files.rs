@@ -2,7 +2,7 @@ use crate::model::stable_blob_storage::StableBlobStorage;
 use crate::{calc_chunk_count, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk_v2::Args as UploadChunkArgs;
 use candid::Principal;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
@@ -16,7 +16,9 @@ pub struct Files {
     pending_files: HashMap<FileId, PendingFile>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
-    #[serde(deserialize_with = "migrate_to_stable_storage")]
+    #[serde(skip_serializing, alias = "blobs")]
+    blobs_old: HashMap<Hash, ByteBuf>,
+    #[serde(skip_deserializing)]
     blobs: StableBlobStorage,
     bytes_used: u64,
 }
@@ -38,6 +40,12 @@ impl File {
 }
 
 impl Files {
+    pub fn migrate_to_stable_storage(&mut self) {
+        for (k, v) in self.blobs_old.drain() {
+            self.blobs.insert(k, v.into_vec());
+        }
+    }
+
     pub fn get(&self, file_id: &FileId) -> Option<&File> {
         self.files.get(file_id)
     }
@@ -534,17 +542,4 @@ pub struct ChunkSizeMismatch {
 pub struct Metrics {
     pub file_count: u64,
     pub blob_count: u64,
-}
-
-// One time job to move files into stable storage
-fn migrate_to_stable_storage<'de, D: Deserializer<'de>>(de: D) -> Result<StableBlobStorage, D::Error> {
-    let map: HashMap<Hash, ByteBuf> = HashMap::deserialize(de)?;
-
-    let mut storage = StableBlobStorage::default();
-
-    for (k, v) in map {
-        storage.insert(k, v.into_vec());
-    }
-
-    Ok(storage)
 }
