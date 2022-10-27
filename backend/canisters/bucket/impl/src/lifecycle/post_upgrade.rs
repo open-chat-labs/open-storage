@@ -16,10 +16,8 @@ fn post_upgrade(args: Args) {
     let env = Box::new(CanisterEnv::new());
     let reader = BufferedStableReader::new(BUFFER_SIZE);
 
-    let (mut data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
+    let (data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
         serializer::deserialize(reader).unwrap();
-
-    data.files.migrate_to_stable_storage();
 
     init_logger(data.test_mode);
     init_state(env, data, args.wasm_version);

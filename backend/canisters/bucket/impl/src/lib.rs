@@ -77,6 +77,7 @@ impl RuntimeState {
             wasm_version: WASM_VERSION.with(|v| **v.borrow()),
             file_count: file_metrics.file_count,
             blob_count: file_metrics.blob_count,
+            blobs_to_migrate: file_metrics.blobs_to_migrate,
             index_sync_queue_length: self.data.index_sync_state.queue_len(),
         }
     }
@@ -113,6 +114,7 @@ pub struct Metrics {
     pub wasm_version: Version,
     pub file_count: u64,
     pub blob_count: u64,
+    pub blobs_to_migrate: usize,
     pub index_sync_queue_length: u32,
 }
 
