@@ -18,7 +18,7 @@ pub struct Files {
     accessors_map: AccessorsMap,
     #[serde(alias = "blobs")]
     blobs_old: HashMap<Hash, ByteBuf>,
-    #[serde(default)]
+    #[serde(skip_deserializing)]
     blobs: StableBlobStorage,
     bytes_used: u64,
 }
