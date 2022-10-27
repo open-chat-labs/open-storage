@@ -1,13 +1,11 @@
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, Storable};
+use crate::memory::{get_blobs_memory, Memory};
+use ic_stable_structures::{StableBTreeMap, Storable};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::mem::size_of;
 use types::Hash;
 
 const MAX_VALUE_SIZE: usize = 4 * 1024; // 4KB
-
-type Memory = VirtualMemory<DefaultMemoryImpl>;
 
 #[derive(Serialize, Deserialize)]
 pub struct StableBlobStorage {
@@ -17,7 +15,7 @@ pub struct StableBlobStorage {
 
 impl StableBlobStorage {
     pub fn get(&self, hash: &Hash) -> Option<Vec<u8>> {
-        self.value_iterator(hash).map(|i| i.flat_map(|v| v).collect())
+        self.value_iterator(hash).map(|i| i.flatten().collect())
     }
 
     pub fn data_size(&self, hash: &Hash) -> Option<u64> {
@@ -65,8 +63,7 @@ impl StableBlobStorage {
 }
 
 fn init_blobs() -> StableBTreeMap<Memory, Key, Vec<u8>> {
-    let memory_manager = MemoryManager::init(DefaultMemoryImpl::default());
-    let memory = memory_manager.get(MemoryId::new(0));
+    let memory = get_blobs_memory();
 
     StableBTreeMap::init(memory, size_of::<Key>() as u32, MAX_VALUE_SIZE as u32)
 }

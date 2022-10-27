@@ -8,10 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use types::{CanisterId, Cycles, FileId, TimestampMillis, Timestamped, Version};
 use utils::env::Environment;
-use utils::memory;
 
 mod guards;
 mod lifecycle;
+mod memory;
 mod model;
 mod queries;
 mod updates;
@@ -71,7 +71,7 @@ impl RuntimeState {
         let file_metrics = self.data.files.metrics();
 
         Metrics {
-            memory_used: memory::used(),
+            memory_used: utils::memory::used(),
             now: self.env.now(),
             cycles_balance: self.env.cycles_balance(),
             wasm_version: WASM_VERSION.with(|v| **v.borrow()),
