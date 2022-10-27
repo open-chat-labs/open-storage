@@ -148,6 +148,12 @@ mod tests {
         assert_eq!(key.chunk_index_bytes, key_round_tripped.chunk_index_bytes);
     }
 
+    #[test]
+    fn key_size() {
+        // If the key size ever changes, old data won't be accessible
+        assert_eq!(size_of::<Key>(), 36);
+    }
+
     fn default_hash() -> Hash {
         let vec: Vec<_> = (0..32).into_iter().collect();
         Hash::try_from(vec).unwrap()
