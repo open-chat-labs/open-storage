@@ -16,7 +16,7 @@ cargo run \
   'https://ic0.app/' \
   $IDENTITY \
   $INDEX_CANISTER_ID \
-  CANISTER_NAME \
+  $CANISTER_NAME \
   $VERSION \
 
 TAG=v$VERSION-$CANISTER_NAME
