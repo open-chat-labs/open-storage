@@ -1,7 +1,7 @@
 #!/bin/sh
 
 IDENTITY=$1
-CANISTER_TO_UPGRADE=$2
+CANISTER_NAME=$2
 VERSION=$3
 
 # Pass in the dfx identity name
@@ -16,5 +16,10 @@ cargo run \
   'https://ic0.app/' \
   $IDENTITY \
   $INDEX_CANISTER_ID \
-  $CANISTER_TO_UPGRADE \
+  $CANISTER_NAME \
   $VERSION \
+
+TAG=v$VERSION-$CANISTER_NAME
+
+git tag $TAG HEAD
+git push origin tag $TAG
