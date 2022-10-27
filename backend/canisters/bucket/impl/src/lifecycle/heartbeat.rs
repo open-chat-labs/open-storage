@@ -8,7 +8,6 @@ use types::CanisterId;
 fn heartbeat() {
     sync_index::run();
     check_cycles_balance::run();
-    migrate_blobs_to_stable_memory::run();
 }
 
 mod sync_index {
@@ -79,16 +78,6 @@ mod check_cycles_balance {
             let index_canister_id = state.data.index_canister_id;
             let now = state.env.now();
             utils::cycles::check_cycles_balance(MIN_CYCLES_BALANCE, index_canister_id, now);
-        })
-    }
-}
-
-mod migrate_blobs_to_stable_memory {
-    use super::*;
-
-    pub fn run() {
-        mutate_state(|state| {
-            state.data.files.migrate_to_stable_storage();
         })
     }
 }
