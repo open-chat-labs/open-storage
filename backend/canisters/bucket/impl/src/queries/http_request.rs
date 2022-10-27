@@ -96,7 +96,7 @@ fn continue_streaming_file(token: Token, runtime_state: &RuntimeState) -> Stream
     }
 }
 
-fn chunk_bytes(blob_bytes: &ByteBuf, chunk_index: u32) -> (ByteBuf, bool) {
+fn chunk_bytes(mut blob_bytes: Vec<u8>, chunk_index: u32) -> (ByteBuf, bool) {
     let total_size = blob_bytes.len();
     let total_chunks = calc_chunk_count(BLOB_RESPONSE_CHUNK_SIZE_BYTES, total_size as u64);
     let last_chunk_index = total_chunks - 1;
@@ -109,7 +109,10 @@ fn chunk_bytes(blob_bytes: &ByteBuf, chunk_index: u32) -> (ByteBuf, bool) {
     let start = (BLOB_RESPONSE_CHUNK_SIZE_BYTES as usize) * (chunk_index as usize);
     let end = min(start + (BLOB_RESPONSE_CHUNK_SIZE_BYTES as usize), total_size);
 
-    (ByteBuf::from(&blob_bytes.as_slice()[start..end]), stream_next_chunk)
+    blob_bytes.drain(end..);
+    blob_bytes.drain(0..start);
+
+    (ByteBuf::from(blob_bytes), stream_next_chunk)
 }
 
 fn build_token(blob_id: u128, index: u32) -> Token {
