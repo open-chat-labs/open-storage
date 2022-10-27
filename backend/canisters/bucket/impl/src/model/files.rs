@@ -1,7 +1,8 @@
+use crate::model::stable_blob_storage::StableBlobStorage;
 use crate::{calc_chunk_count, MAX_BLOB_SIZE_BYTES};
 use bucket_canister::upload_chunk_v2::Args as UploadChunkArgs;
 use candid::Principal;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
@@ -15,8 +16,8 @@ pub struct Files {
     pending_files: HashMap<FileId, PendingFile>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
-    // TODO move this to stable memory
-    blobs: HashMap<Hash, ByteBuf>,
+    #[serde(deserialize_with = "migrate_to_stable_storage")]
+    blobs: StableBlobStorage,
     bytes_used: u64,
 }
 
@@ -45,7 +46,7 @@ impl Files {
         self.pending_files.get(file_id)
     }
 
-    pub fn blob_bytes(&self, hash: &Hash) -> Option<&ByteBuf> {
+    pub fn blob_bytes(&self, hash: &Hash) -> Option<Vec<u8>> {
         self.blobs.get(hash)
     }
 
@@ -253,11 +254,11 @@ impl Files {
     }
 
     pub fn contains_hash(&self, hash: &Hash) -> bool {
-        self.blobs.contains_key(hash)
+        self.blobs.exists(hash)
     }
 
     pub fn data_size(&self, hash: &Hash) -> Option<u64> {
-        self.blobs.get(hash).map(|b| b.len() as u64)
+        self.blobs.data_size(hash)
     }
 
     pub fn bytes_used(&self) -> u64 {
@@ -266,8 +267,8 @@ impl Files {
 
     pub fn metrics(&self) -> Metrics {
         Metrics {
-            file_count: self.files.len() as u32,
-            blob_count: self.blobs.len() as u32,
+            file_count: self.files.len() as u64,
+            blob_count: self.blobs.len(),
         }
     }
 
@@ -276,7 +277,7 @@ impl Files {
             .link_many(completed_file.owner, completed_file.accessors.iter().copied(), file_id);
 
         self.reference_counts.incr(completed_file.hash);
-        self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes);
+        self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes.into_vec());
 
         self.files.insert(
             file_id,
@@ -290,23 +291,21 @@ impl Files {
         );
     }
 
-    fn add_blob_if_not_exists(&mut self, hash: Hash, bytes: ByteBuf) {
-        if let Vacant(e) = self.blobs.entry(hash) {
+    fn add_blob_if_not_exists(&mut self, hash: Hash, bytes: Vec<u8>) {
+        if !self.blobs.exists(&hash) {
             self.bytes_used = self
                 .bytes_used
                 .checked_add(bytes.len() as u64)
                 .expect("'bytes_used' overflowed");
 
-            e.insert(bytes);
+            self.blobs.insert(hash, bytes);
         }
     }
 
     fn remove_blob(&mut self, hash: &Hash) {
-        if let Some(bytes) = self.blobs.remove(hash) {
-            self.bytes_used = self
-                .bytes_used
-                .checked_sub(bytes.len() as u64)
-                .expect("'bytes used' underflowed");
+        if let Some(size) = self.blobs.data_size(hash) {
+            self.blobs.remove(hash);
+            self.bytes_used = self.bytes_used.checked_sub(size as u64).expect("'bytes used' underflowed");
         }
     }
 
@@ -533,6 +532,19 @@ pub struct ChunkSizeMismatch {
 }
 
 pub struct Metrics {
-    pub file_count: u32,
-    pub blob_count: u32,
+    pub file_count: u64,
+    pub blob_count: u64,
+}
+
+// One time job to move files into stable storage
+fn migrate_to_stable_storage<'de, D: Deserializer<'de>>(de: D) -> Result<StableBlobStorage, D::Error> {
+    let map: HashMap<Hash, ByteBuf> = HashMap::deserialize(de)?;
+
+    let mut storage = StableBlobStorage::default();
+
+    for (k, v) in map {
+        storage.insert(k, v.into_vec());
+    }
+
+    Ok(storage)
 }

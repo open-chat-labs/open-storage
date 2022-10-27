@@ -206,6 +206,7 @@ dependencies = [
  "http_request",
  "ic-cdk",
  "ic-cdk-macros",
+ "ic-stable-structures",
  "index_canister",
  "index_canister_c2c_client",
  "num-traits",
@@ -993,6 +994,11 @@ dependencies = [
  "serde_tokenstream",
  "syn",
 ]
+
+[[package]]
+name = "ic-stable-structures"
+version = "0.1.2"
+source = "git+https://github.com/dfinity/stable-structures?rev=ed68e459193a83a02f6914b011f4354d513cb6cd#ed68e459193a83a02f6914b011f4354d513cb6cd"
 
 [[package]]
 name = "ic-utils"

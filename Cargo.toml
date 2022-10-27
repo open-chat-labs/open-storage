@@ -34,6 +34,7 @@ hex = "0.4.3"
 ic-agent = "0.22.0"
 ic-cdk = "0.6.1"
 ic-cdk-macros = "0.6.1"
+ic-stable-structures = { git = "https://github.com/dfinity/stable-structures", rev = "ed68e459193a83a02f6914b011f4354d513cb6cd" }
 ic-utils = "0.22.0"
 itertools = "0.10.5"
 num-traits = "0.2.15"

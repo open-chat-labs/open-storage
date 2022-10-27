@@ -111,8 +111,8 @@ pub struct Metrics {
     pub now: TimestampMillis,
     pub cycles_balance: Cycles,
     pub wasm_version: Version,
-    pub file_count: u32,
-    pub blob_count: u32,
+    pub file_count: u64,
+    pub blob_count: u64,
     pub index_sync_queue_length: u32,
 }
 
