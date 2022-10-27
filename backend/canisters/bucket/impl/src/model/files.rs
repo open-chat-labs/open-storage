@@ -16,9 +16,6 @@ pub struct Files {
     pending_files: HashMap<FileId, PendingFile>,
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
-    #[serde(alias = "blobs")]
-    blobs_old: HashMap<Hash, ByteBuf>,
-    #[serde(skip_deserializing)]
     blobs: StableBlobStorage,
     bytes_used: u64,
 }
@@ -40,14 +37,6 @@ impl File {
 }
 
 impl Files {
-    pub fn migrate_to_stable_storage(&mut self) {
-        const BATCH_SIZE: usize = 50;
-        let keys_batch: Vec<_> = self.blobs_old.keys().take(BATCH_SIZE).copied().collect();
-        for (k, v) in keys_batch.iter().flat_map(|k| self.blobs_old.remove_entry(k)) {
-            self.blobs.insert(k, v.into_vec());
-        }
-    }
-
     pub fn get(&self, file_id: &FileId) -> Option<&File> {
         self.files.get(file_id)
     }
@@ -279,7 +268,6 @@ impl Files {
         Metrics {
             file_count: self.files.len() as u64,
             blob_count: self.blobs.len(),
-            blobs_to_migrate: self.blobs_old.len(),
         }
     }
 
@@ -545,5 +533,4 @@ pub struct ChunkSizeMismatch {
 pub struct Metrics {
     pub file_count: u64,
     pub blob_count: u64,
-    pub blobs_to_migrate: usize,
 }
