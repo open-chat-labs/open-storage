@@ -17,6 +17,13 @@ pub struct Buckets {
 }
 
 impl Buckets {
+    // Now that we are storing blobs in stable memory the buckets can each hold far more data
+    pub fn unarchive_all(&mut self) {
+        for (_, b) in self.full_buckets.drain() {
+            self.active_buckets.push(b);
+        }
+    }
+
     pub fn get(&self, canister_id: &CanisterId) -> Option<&BucketRecord> {
         self.active_buckets
             .iter()
