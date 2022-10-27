@@ -11,6 +11,8 @@ const MAX_VALUE_SIZE: usize = 4 * 1024; // 4KB
 pub struct StableBlobStorage {
     #[serde(skip, default = "init_blobs")]
     blobs: StableBTreeMap<Memory, Key, Vec<u8>>,
+    #[serde(default)]
+    count: u64,
 }
 
 impl StableBlobStorage {
@@ -27,15 +29,18 @@ impl StableBlobStorage {
     }
 
     pub fn len(&self) -> u64 {
-        self.blobs.len()
+        self.count
     }
 
     pub fn insert(&mut self, hash: Hash, value: Vec<u8>) {
         for (index, chunk) in value.chunks(MAX_VALUE_SIZE).enumerate() {
             let key = Key::new(hash, index as u32);
 
-            self.blobs.insert(key, chunk.to_vec()).unwrap();
+            if self.blobs.insert(key, chunk.to_vec()).unwrap().is_some() {
+                panic!("A blob already exists with hash {:?}", hash);
+            }
         }
+        self.count = self.count.saturating_add(1);
     }
 
     pub fn remove(&mut self, hash: &Hash) -> bool {
@@ -47,6 +52,7 @@ impl StableBlobStorage {
             for key in keys {
                 self.blobs.remove(&key);
             }
+            self.count = self.count.saturating_sub(1);
             true
         }
     }
@@ -70,7 +76,10 @@ fn init_blobs() -> StableBTreeMap<Memory, Key, Vec<u8>> {
 
 impl Default for StableBlobStorage {
     fn default() -> Self {
-        StableBlobStorage { blobs: init_blobs() }
+        StableBlobStorage {
+            blobs: init_blobs(),
+            count: 0,
+        }
     }
 }
 
