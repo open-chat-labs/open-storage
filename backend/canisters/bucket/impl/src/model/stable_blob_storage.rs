@@ -125,7 +125,7 @@ mod tests {
         assert_eq!(value_in, value_out)
     }
 
-    // Checks that, for keys with matching prefixes, KeyA > KeyB <=> chunk_index A > chunk_index B
+    // Checks that for keys with matching prefixes, KeyA > KeyB <=> chunk_index A > chunk_index B
     #[test]
     fn key_ordering() {
         let hash = default_hash();
