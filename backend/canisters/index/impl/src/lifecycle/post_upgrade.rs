@@ -19,7 +19,6 @@ fn post_upgrade(args: Args) {
     let (mut data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
         serializer::deserialize(reader).unwrap();
 
-    data.buckets.unarchive_all();
     data.hydrate_blobs_owned();
 
     init_logger(data.test_mode);
