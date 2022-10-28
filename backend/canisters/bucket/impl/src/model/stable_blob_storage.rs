@@ -11,7 +11,6 @@ const MAX_VALUE_SIZE: usize = 4 * 1024; // 4KB
 pub struct StableBlobStorage {
     #[serde(skip, default = "init_blobs")]
     blobs: StableBTreeMap<Memory, Key, Vec<u8>>,
-    #[serde(default)]
     count: u64,
 }
 

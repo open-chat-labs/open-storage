@@ -120,7 +120,6 @@ pub struct BucketRecord {
     pub canister_id: CanisterId,
     pub wasm_version: Version,
     pub bytes_used: u64,
-    #[serde(default)]
     pub bytes_remaining: i64,
     pub sync_state: BucketSyncState,
     pub cycle_top_ups: Vec<CyclesTopUp>,
