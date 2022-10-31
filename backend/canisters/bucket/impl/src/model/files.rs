@@ -37,6 +37,10 @@ impl File {
 }
 
 impl Files {
+    pub fn recalculate_count(&mut self) {
+        self.blobs.recalculate_count();
+    }
+
     pub fn get(&self, file_id: &FileId) -> Option<&File> {
         self.files.get(file_id)
     }

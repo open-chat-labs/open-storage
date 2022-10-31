@@ -1,5 +1,6 @@
 use crate::memory::{get_blobs_memory, Memory};
 use ic_stable_structures::{StableBTreeMap, Storable};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::mem::size_of;
@@ -15,6 +16,10 @@ pub struct StableBlobStorage {
 }
 
 impl StableBlobStorage {
+    pub fn recalculate_count(&mut self) {
+        self.count = self.blobs.iter().map(|(k, _)| k.prefix).unique().count() as u64;
+    }
+
     pub fn get(&self, hash: &Hash) -> Option<Vec<u8>> {
         self.value_iterator(hash).map(|i| i.flatten().collect())
     }
