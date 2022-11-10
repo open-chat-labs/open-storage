@@ -30,7 +30,8 @@ fn forward_file_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             runtime_state.data.index_sync_state.enqueue(EventToSync::FileAdded(f));
             Success(new_file_id)
         }
-        ForwardFileResult::NotAuthorized => NotAuthorized,
+        // TODO Add this back in once we support access tokens
+        // ForwardFileResult::NotAuthorized => NotAuthorized,
         ForwardFileResult::NotFound => NotFound,
     }
 }
