@@ -166,33 +166,29 @@ impl Files {
             None => return ForwardFileResult::NotFound,
         };
 
-        if file.owner == caller || file.accessors.contains(&caller) {
-            let hash = file.hash;
+        let hash = file.hash;
 
-            self.accessors_map.link_many(caller, accessors.iter().copied(), new_file_id);
-            self.reference_counts.incr(hash);
+        self.accessors_map.link_many(caller, accessors.iter().copied(), new_file_id);
+        self.reference_counts.incr(hash);
 
-            let new_file = File {
+        let new_file = File {
+            owner: caller,
+            created: now,
+            accessors,
+            hash,
+            mime_type: file.mime_type,
+        };
+
+        if self.files.insert(new_file_id, new_file).is_none() {
+            ForwardFileResult::Success(FileAdded {
+                file_id: new_file_id,
                 owner: caller,
-                created: now,
-                accessors,
                 hash,
-                mime_type: file.mime_type,
-            };
-
-            if self.files.insert(new_file_id, new_file).is_none() {
-                ForwardFileResult::Success(FileAdded {
-                    file_id: new_file_id,
-                    owner: caller,
-                    hash,
-                    size,
-                })
-            } else {
-                // There should never be a file_id clash
-                unreachable!();
-            }
+                size,
+            })
         } else {
-            ForwardFileResult::NotAuthorized
+            // There should never be a file_id clash
+            unreachable!();
         }
     }
 
@@ -519,7 +515,6 @@ pub enum RemoveFileResult {
 
 pub enum ForwardFileResult {
     Success(FileAdded),
-    NotAuthorized,
     NotFound,
 }
 
