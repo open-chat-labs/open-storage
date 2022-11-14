@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export type AccessorId = Principal;
 export interface AddOrUpdateUsersArgs { 'users' : Array<UserConfig> }
 export type AddOrUpdateUsersResponse = { 'Success' : null };
@@ -27,7 +29,7 @@ export type CanForwardResponse = { 'Success' : ProjectedAllowance } |
 export type CanisterId = Principal;
 export type Cycles = bigint;
 export type FileId = bigint;
-export type Hash = Array<number>;
+export type Hash = Uint8Array | number[];
 export type Milliseconds = bigint;
 export interface ProjectedAllowance {
   'bytes_used_after_operation' : bigint,
@@ -41,6 +43,13 @@ export interface RemoveUserArgs { 'user_id' : UserId }
 export type RemoveUserResponse = { 'Success' : null };
 export type TimestampMillis = bigint;
 export type TimestampNanos = bigint;
+export interface UpdateUserIdArgs {
+  'old_user_id' : UserId,
+  'new_user_id' : UserId,
+}
+export type UpdateUserIdResponse = { 'UserIdAlreadyExists' : null } |
+  { 'Success' : null } |
+  { 'UserNotFound' : null };
 export type UserArgs = {};
 export interface UserConfig { 'byte_limit' : bigint, 'user_id' : UserId }
 export type UserId = Principal;
@@ -53,16 +62,17 @@ export interface Version {
   'patch' : number,
 }
 export interface _SERVICE {
-  'add_or_update_users' : (arg_0: AddOrUpdateUsersArgs) => Promise<
-      AddOrUpdateUsersResponse
-    >,
-  'allocated_bucket_v2' : (arg_0: AllocatedBucketArgs) => Promise<
-      AllocatedBucketResponse
-    >,
-  'can_forward' : (arg_0: CanForwardArgs) => Promise<CanForwardResponse>,
-  'remove_accessor' : (arg_0: RemoveAccessorArgs) => Promise<
-      RemoveAccessorResponse
-    >,
-  'remove_user' : (arg_0: RemoveUserArgs) => Promise<RemoveUserResponse>,
-  'user' : (arg_0: UserArgs) => Promise<UserResponse>,
+  'add_or_update_users' : ActorMethod<
+    [AddOrUpdateUsersArgs],
+    AddOrUpdateUsersResponse
+  >,
+  'allocated_bucket_v2' : ActorMethod<
+    [AllocatedBucketArgs],
+    AllocatedBucketResponse
+  >,
+  'can_forward' : ActorMethod<[CanForwardArgs], CanForwardResponse>,
+  'remove_accessor' : ActorMethod<[RemoveAccessorArgs], RemoveAccessorResponse>,
+  'remove_user' : ActorMethod<[RemoveUserArgs], RemoveUserResponse>,
+  'update_user_id' : ActorMethod<[UpdateUserIdArgs], UpdateUserIdResponse>,
+  'user' : ActorMethod<[UserArgs], UserResponse>,
 }

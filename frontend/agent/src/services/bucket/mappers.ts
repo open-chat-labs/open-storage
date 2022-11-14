@@ -71,7 +71,9 @@ export function fileInfoResponse(candid: CandidFileInfoResponse): FileInfoRespon
             kind: "success",
             isOwner: candid.Success.is_owner,
             fileSize: candid.Success.file_size,
-            fileHash: candid.Success.file_hash,
+            fileHash: Array.isArray(candid.Success.file_hash)
+                ? new Uint8Array(candid.Success.file_hash)
+                : candid.Success.file_hash,
         };
     }
     if ("NotFound" in candid) {

@@ -4,13 +4,13 @@ import type { DeleteFileResponse, FileInfoResponse, ForwardFileResponse, UploadC
 export interface IBucketClient {
     uploadChunk(
         fileId: bigint,
-        hash: Array<number>,
+        hash: Uint8Array,
         mimeType: string,
         accessors: Array<Principal>,
         totalSize: bigint,
         chunkSize: number,
         chunkIndex: number,
-        bytes: Array<number>
+        bytes: Uint8Array,
     ): Promise<UploadChunkResponse>;
     forwardFile(fileId: bigint, accessors: Array<Principal>): Promise<ForwardFileResponse>;
     deleteFile(fileId: bigint): Promise<DeleteFileResponse>;

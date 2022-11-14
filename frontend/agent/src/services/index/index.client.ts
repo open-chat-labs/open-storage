@@ -15,14 +15,14 @@ export class IndexClient extends CandidService<IndexService> implements IIndexCl
         return this.handleResponse(this.service.user({}), userResponse);
     }
 
-    allocatedBucket(fileHash: Array<number>, fileSize: bigint): Promise<AllocatedBucketResponse> {
+    allocatedBucket(fileHash: Uint8Array, fileSize: bigint): Promise<AllocatedBucketResponse> {
         return this.handleResponse(
             this.service.allocated_bucket_v2({ file_hash: fileHash, file_size: fileSize }),
             allocatedBucketResponse
         );
     }
 
-    canForward(fileHash: Array<number>, fileSize: bigint): Promise<CanForwardResponse> {
+    canForward(fileHash: Uint8Array, fileSize: bigint): Promise<CanForwardResponse> {
         return this.handleResponse(
             this.service.can_forward({ file_hash: fileHash, file_size: fileSize }),
             canForwardResponse
