@@ -13,13 +13,13 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
 
     uploadChunk(
         fileId: bigint,
-        hash: Array<number>,
+        hash: Uint8Array,
         mimeType: string,
         accessors: Array<Principal>,
         totalSize: bigint,
         chunkSize: number,
         chunkIndex: number,
-        bytes: Array<number>
+        bytes: Uint8Array,
     ): Promise<UploadChunkResponse> {
         return this.handleResponse(
             this.service.upload_chunk_v2({

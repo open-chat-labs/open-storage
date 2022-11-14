@@ -25,5 +25,5 @@ export type FileInfoSuccess = {
     kind: "success",
     isOwner: boolean,
     fileSize: bigint,
-    fileHash: Array<number>,
+    fileHash: Uint8Array,
 };

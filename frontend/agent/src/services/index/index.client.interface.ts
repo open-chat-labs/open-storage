@@ -2,6 +2,6 @@ import type { AllocatedBucketResponse, CanForwardResponse, UserResponse } from "
 
 export interface IIndexClient {
     user(): Promise<UserResponse>;
-    allocatedBucket(fileHash: Array<number>, fileSize: bigint): Promise<AllocatedBucketResponse>;
-    canForward(fileHash: Array<number>, fileSize: bigint): Promise<CanForwardResponse>;
+    allocatedBucket(fileHash: Uint8Array, fileSize: bigint): Promise<AllocatedBucketResponse>;
+    canForward(fileHash: Uint8Array, fileSize: bigint): Promise<CanForwardResponse>;
 }

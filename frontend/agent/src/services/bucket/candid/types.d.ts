@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export type AccessorId = Principal;
 export type CanisterId = Principal;
 export type Cycles = bigint;
@@ -33,7 +35,7 @@ export interface ForwardFileArgs {
 export type ForwardFileResponse = { 'NotFound' : null } |
   { 'NotAuthorized' : null } |
   { 'Success' : FileId };
-export type Hash = Array<number>;
+export type Hash = Uint8Array | number[];
 export type Milliseconds = bigint;
 export type TimestampMillis = bigint;
 export type TimestampNanos = bigint;
@@ -43,7 +45,7 @@ export interface UploadChunkArgs {
   'hash' : Hash,
   'mime_type' : string,
   'total_size' : bigint,
-  'bytes' : Array<number>,
+  'bytes' : Uint8Array | number[],
   'chunk_size' : number,
   'file_id' : FileId,
 }
@@ -64,9 +66,9 @@ export interface Version {
   'patch' : number,
 }
 export interface _SERVICE {
-  'delete_file' : (arg_0: DeleteFileArgs) => Promise<DeleteFileResponse>,
-  'delete_files' : (arg_0: DeleteFilesArgs) => Promise<DeleteFilesResponse>,
-  'file_info' : (arg_0: FileInfoArgs) => Promise<FileInfoResponse>,
-  'forward_file' : (arg_0: ForwardFileArgs) => Promise<ForwardFileResponse>,
-  'upload_chunk_v2' : (arg_0: UploadChunkArgs) => Promise<UploadChunkResponse>,
+  'delete_file' : ActorMethod<[DeleteFileArgs], DeleteFileResponse>,
+  'delete_files' : ActorMethod<[DeleteFilesArgs], DeleteFilesResponse>,
+  'file_info' : ActorMethod<[FileInfoArgs], FileInfoResponse>,
+  'forward_file' : ActorMethod<[ForwardFileArgs], ForwardFileResponse>,
+  'upload_chunk_v2' : ActorMethod<[UploadChunkArgs], UploadChunkResponse>,
 }

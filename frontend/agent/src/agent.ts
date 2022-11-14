@@ -34,7 +34,7 @@ export class OpenStorageAgent {
         bytes: ArrayBuffer,
         onProgress?: (percentComplete: number) => void
     ): Promise<UploadFileResponse> {
-        const hash = Array.from(new Uint8Array(hashBytes(bytes)));
+        const hash = new Uint8Array(hashBytes(bytes));
         const fileSize = bytes.byteLength;
 
         const allocatedBucketResponse = await this.indexClient.allocatedBucket(
@@ -59,7 +59,7 @@ export class OpenStorageAgent {
         const promises = chunkIndexes.map(async (chunkIndex) => {
             const start = chunkIndex * chunkSize;
             const end = Math.min(start + chunkSize, fileSize);
-            const chunkBytes = Array.from(new Uint8Array(bytes.slice(start, end)));
+            const chunkBytes = new Uint8Array(bytes.slice(start, end));
 
             let attempt = 0;
 
@@ -73,7 +73,7 @@ export class OpenStorageAgent {
                         BigInt(fileSize),
                         chunkSize,
                         chunkIndex,
-                        chunkBytes
+                        chunkBytes,
                     );
 
                     if (chunkResponse === "success") {
