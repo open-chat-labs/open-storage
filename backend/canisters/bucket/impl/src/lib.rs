@@ -1,7 +1,7 @@
-use crate::model::files::Files;
-use crate::model::index_sync_state::IndexSyncState;
+use crate::model::files::{Files, RemoveFileResult};
+use crate::model::index_sync_state::{EventToSync, IndexSyncState};
 use crate::model::users::Users;
-use candid::CandidType;
+use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
 use serde::{Deserialize, Serialize};
@@ -102,6 +102,16 @@ impl Data {
             created: now,
             test_mode,
         }
+    }
+
+    pub fn remove_file(&mut self, caller: Principal, file_id: FileId) -> RemoveFileResult {
+        let result = self.files.remove(caller, file_id);
+
+        if let RemoveFileResult::Success(f) = &result {
+            self.index_sync_state.enqueue(EventToSync::FileRemoved(f.clone()));
+        }
+
+        result
     }
 }
 

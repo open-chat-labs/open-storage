@@ -12,6 +12,9 @@ export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadCh
     if ("FileTooBig" in candid) {
         return "file_too_big";
     }
+    if ("FileExpired" in candid) {
+        return "file_expired";
+    }
     if ("ChunkAlreadyExists" in candid) {
         return "chunk_already_exists";
     }

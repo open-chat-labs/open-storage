@@ -28,8 +28,11 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
             }
             FileStatusInternal::Rejected(RejectedReason::AllowanceExceeded) => return AllowanceExceeded,
             FileStatusInternal::Rejected(RejectedReason::UserNotFound) => return UserNotFound,
+            FileStatusInternal::Rejected(RejectedReason::FileExpired) => return FileExpired,
             FileStatusInternal::Uploading(c) => index_sync_complete = *c,
         }
+    } else if args.expiry.map_or(false, |e| e < now) {
+        return FileExpired;
     } else {
         user.set_file_status(file_id, FileStatusInternal::Uploading(IndexSyncComplete::No));
     }
@@ -49,6 +52,10 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
         }
         PutChunkResult::FileAlreadyExists => FileAlreadyExists,
         PutChunkResult::FileTooBig(_) => FileTooBig,
+        PutChunkResult::FileExpired => {
+            user.set_file_status(file_id, FileStatusInternal::Rejected(RejectedReason::FileExpired));
+            FileExpired
+        }
         PutChunkResult::ChunkAlreadyExists => ChunkAlreadyExists,
         PutChunkResult::ChunkIndexTooHigh => ChunkIndexTooHigh,
         PutChunkResult::ChunkSizeMismatch(_) => ChunkSizeMismatch,

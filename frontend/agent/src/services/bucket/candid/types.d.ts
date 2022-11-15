@@ -46,6 +46,7 @@ export interface UploadChunkArgs {
   'mime_type' : string,
   'total_size' : bigint,
   'bytes' : Uint8Array | number[],
+  'expiry' : [] | [TimestampMillis],
   'chunk_size' : number,
   'file_id' : FileId,
 }
@@ -55,6 +56,7 @@ export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
   { 'FileTooBig' : null } |
   { 'ChunkIndexTooHigh' : null } |
   { 'Success' : null } |
+  { 'FileExpired' : null } |
   { 'HashMismatch' : null } |
   { 'FileAlreadyExists' : null } |
   { 'AllowanceExceeded' : null } |

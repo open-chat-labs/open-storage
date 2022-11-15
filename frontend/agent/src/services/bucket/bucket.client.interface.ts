@@ -11,6 +11,7 @@ export interface IBucketClient {
         chunkSize: number,
         chunkIndex: number,
         bytes: Uint8Array,
+        expiryTimestampMillis: bigint | undefined,
     ): Promise<UploadChunkResponse>;
     forwardFile(fileId: bigint, accessors: Array<Principal>): Promise<ForwardFileResponse>;
     deleteFile(fileId: bigint): Promise<DeleteFileResponse>;

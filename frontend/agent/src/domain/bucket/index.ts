@@ -2,6 +2,7 @@ export type UploadChunkResponse =
     | "success"
     | "file_already_exists"
     | "file_too_big"
+    | "file_expired"
     | "chunk_already_exists"
     | "chunk_index_too_high"
     | "chunk_size_mismatch"

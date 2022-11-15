@@ -40,6 +40,7 @@ export const idlFactory = ({ IDL }) => {
     'NotAuthorized' : IDL.Null,
     'Success' : FileId,
   });
+  const TimestampMillis = IDL.Nat64;
   const UploadChunkArgs = IDL.Record({
     'accessors' : IDL.Vec(AccessorId),
     'chunk_index' : IDL.Nat32,
@@ -47,6 +48,7 @@ export const idlFactory = ({ IDL }) => {
     'mime_type' : IDL.Text,
     'total_size' : IDL.Nat64,
     'bytes' : IDL.Vec(IDL.Nat8),
+    'expiry' : IDL.Opt(TimestampMillis),
     'chunk_size' : IDL.Nat32,
     'file_id' : FileId,
   });
@@ -57,6 +59,7 @@ export const idlFactory = ({ IDL }) => {
     'FileTooBig' : IDL.Null,
     'ChunkIndexTooHigh' : IDL.Null,
     'Success' : IDL.Null,
+    'FileExpired' : IDL.Null,
     'HashMismatch' : IDL.Null,
     'FileAlreadyExists' : IDL.Null,
     'AllowanceExceeded' : IDL.Null,

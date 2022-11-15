@@ -20,6 +20,7 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
         chunkSize: number,
         chunkIndex: number,
         bytes: Uint8Array,
+        expiryTimestampMillis: bigint | undefined,
     ): Promise<UploadChunkResponse> {
         return this.handleResponse(
             this.service.upload_chunk_v2({
@@ -31,6 +32,7 @@ export class BucketClient extends CandidService<BucketService> implements IBucke
                 total_size: totalSize,
                 bytes,
                 chunk_size: chunkSize,
+                expiry: expiryTimestampMillis !== undefined ? [expiryTimestampMillis] : []
             }),
             uploadChunkResponse
         );

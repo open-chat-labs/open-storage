@@ -10,7 +10,7 @@ pub struct FileAdded {
     pub size: u64,
 }
 
-#[derive(CandidType, Serialize, Deserialize, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FileRemoved {
     pub file_id: FileId,
     pub owner: UserId,

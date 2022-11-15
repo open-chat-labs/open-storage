@@ -14,6 +14,7 @@ pub enum RejectedReason {
     UserNotFound,
     AllowanceExceeded,
     HashMismatch,
+    FileExpired,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
