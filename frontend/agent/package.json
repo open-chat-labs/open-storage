@@ -9,12 +9,12 @@
         "format": "prettier './src/**/*.ts' --write"
     },
     "dependencies": {
-        "@dfinity/agent": "^0.14.1",
-        "@dfinity/auth-client": "^0.14.1",
-        "@dfinity/authentication": "^0.14.1",
-        "@dfinity/candid": "^0.14.1",
-        "@dfinity/identity": "^0.14.1",
-        "@dfinity/principal": "^0.14.1",
+        "@dfinity/agent": "0.14.0",
+        "@dfinity/auth-client": "0.14.0",
+        "@dfinity/authentication": "0.14.0",
+        "@dfinity/candid": "0.14.0",
+        "@dfinity/identity": "0.14.0",
+        "@dfinity/principal": "0.14.0",
         "js-sha3": "^0.8.0",
         "uuid": "^9.0.0"
     },
