@@ -246,7 +246,7 @@ impl Files {
         }
     }
 
-    pub fn remove_expired_files(&mut self, now: TimestampMillis, max_count: usize) {
+    pub fn remove_expired_files(&mut self, now: TimestampMillis, max_count: usize) -> Vec<FileRemoved> {
         let mut files_to_remove = Vec::new();
         while let Some((timestamp, files)) = self.expiration_queue.iter_mut().next().filter(|(&t, _)| t <= now) {
             while let Some(file_id) = files.pop_front() {
@@ -265,11 +265,13 @@ impl Files {
             }
         }
 
+        let mut files_removed = Vec::with_capacity(files_to_remove.len());
         for file_id in files_to_remove {
             if let Some(file) = self.files.remove(&file_id) {
-                self.process_removed_file(file_id, file);
+                files_removed.push(self.process_removed_file(file_id, file));
             }
         }
+        files_removed
     }
 
     pub fn contains_hash(&self, hash: &Hash) -> bool {

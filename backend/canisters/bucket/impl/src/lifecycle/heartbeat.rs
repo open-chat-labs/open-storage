@@ -72,12 +72,14 @@ mod sync_index {
 }
 
 mod remove_expired_files {
-    use crate::mutate_state;
+    use crate::{mutate_state, EventToSync};
 
     pub fn run() {
         mutate_state(|state| {
             let now = state.env.now();
-            state.data.files.remove_expired_files(now, 10);
+            for file in state.data.files.remove_expired_files(now, 10) {
+                state.data.index_sync_state.enqueue(EventToSync::FileRemoved(file));
+            }
         });
     }
 }
