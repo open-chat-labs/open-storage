@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use types::{AccessorId, FileAdded, FileId, FileRemoved, Hash, TimestampMillis, UserId};
 use utils::hasher::hash_bytes;
 
@@ -17,6 +17,8 @@ pub struct Files {
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
     blobs: StableBlobStorage,
+    #[serde(default)]
+    expiration_queue: BTreeMap<TimestampMillis, VecDeque<FileId>>,
     bytes_used: u64,
 }
 
@@ -67,6 +69,11 @@ impl Files {
 
         if self.files.contains_key(&args.file_id) {
             return PutChunkResult::FileAlreadyExists;
+        }
+
+        if args.expiry.map_or(false, |e| e < args.now) {
+            self.pending_files.remove(&args.file_id);
+            return PutChunkResult::FileExpired;
         }
 
         let file_id = args.file_id;
@@ -129,22 +136,9 @@ impl Files {
         if let Occupied(e) = self.files.entry(file_id) {
             if e.get().can_be_removed_by(caller) {
                 let file = e.remove();
-                for accessor_id in file.accessors.iter() {
-                    self.accessors_map.unlink(*accessor_id, &file_id);
-                }
+                let file_removed = self.process_removed_file(file_id, file);
 
-                let mut blob_deleted = false;
-                if self.reference_counts.decr(file.hash) == 0 {
-                    self.remove_blob(&file.hash);
-                    blob_deleted = true;
-                }
-
-                RemoveFileResult::Success(FileRemoved {
-                    file_id,
-                    owner: file.owner,
-                    hash: file.hash,
-                    blob_deleted,
-                })
+                RemoveFileResult::Success(file_removed)
             } else {
                 RemoveFileResult::NotAuthorized
             }
@@ -252,6 +246,34 @@ impl Files {
         }
     }
 
+    pub fn remove_expired_files(&mut self, now: TimestampMillis, max_count: usize) -> Vec<FileRemoved> {
+        let mut files_to_remove = Vec::new();
+        while let Some((timestamp, files)) = self.expiration_queue.iter_mut().next().filter(|(&t, _)| t <= now) {
+            while let Some(file_id) = files.pop_front() {
+                files_to_remove.push(file_id);
+                if files_to_remove.len() >= max_count {
+                    break;
+                }
+            }
+
+            if files.is_empty() {
+                let timestamp = *timestamp;
+                self.expiration_queue.remove(&timestamp);
+            }
+            if files_to_remove.len() >= max_count {
+                break;
+            }
+        }
+
+        let mut files_removed = Vec::with_capacity(files_to_remove.len());
+        for file_id in files_to_remove {
+            if let Some(file) = self.files.remove(&file_id) {
+                files_removed.push(self.process_removed_file(file_id, file));
+            }
+        }
+        files_removed
+    }
+
     pub fn contains_hash(&self, hash: &Hash) -> bool {
         self.blobs.exists(hash)
     }
@@ -278,6 +300,13 @@ impl Files {
         self.reference_counts.incr(completed_file.hash);
         self.add_blob_if_not_exists(completed_file.hash, completed_file.bytes.into_vec());
 
+        if let Some(expiry) = completed_file.expiry {
+            self.expiration_queue
+                .entry(expiry)
+                .or_insert_with(VecDeque::new)
+                .push_back(file_id);
+        }
+
         self.files.insert(
             file_id,
             File {
@@ -288,6 +317,25 @@ impl Files {
                 mime_type: completed_file.mime_type,
             },
         );
+    }
+
+    fn process_removed_file(&mut self, file_id: FileId, file: File) -> FileRemoved {
+        let mut blob_deleted = false;
+        if self.reference_counts.decr(file.hash) == 0 {
+            self.remove_blob(&file.hash);
+            blob_deleted = true;
+        }
+
+        for accessor_id in file.accessors.iter() {
+            self.accessors_map.unlink(*accessor_id, &file_id);
+        }
+
+        FileRemoved {
+            file_id,
+            owner: file.owner,
+            hash: file.hash,
+            blob_deleted,
+        }
     }
 
     fn add_blob_if_not_exists(&mut self, hash: Hash, bytes: Vec<u8>) {
@@ -390,6 +438,7 @@ pub struct PendingFile {
     pub total_size: u64,
     pub remaining_chunks: HashSet<u32>,
     pub bytes: ByteBuf,
+    pub expiry: Option<TimestampMillis>,
 }
 
 impl PendingFile {
@@ -452,6 +501,7 @@ pub struct PutChunkArgs {
     chunk_size: u32,
     total_size: u64,
     bytes: ByteBuf,
+    expiry: Option<TimestampMillis>,
     now: TimestampMillis,
 }
 
@@ -467,6 +517,7 @@ impl PutChunkArgs {
             chunk_size: upload_chunk_args.chunk_size,
             total_size: upload_chunk_args.total_size,
             bytes: upload_chunk_args.bytes,
+            expiry: upload_chunk_args.expiry,
             now,
         }
     }
@@ -486,6 +537,7 @@ impl From<PutChunkArgs> for PendingFile {
             total_size: args.total_size,
             remaining_chunks: (0..chunk_count).into_iter().collect(),
             bytes: ByteBuf::from(vec![0; args.total_size as usize]),
+            expiry: args.expiry,
         };
         pending_file.add_chunk(args.chunk_index, args.bytes);
         pending_file
@@ -496,6 +548,7 @@ pub enum PutChunkResult {
     Success(PutChunkResultSuccess),
     FileAlreadyExists,
     FileTooBig(u64),
+    FileExpired,
     ChunkAlreadyExists,
     ChunkIndexTooHigh,
     ChunkSizeMismatch(ChunkSizeMismatch),

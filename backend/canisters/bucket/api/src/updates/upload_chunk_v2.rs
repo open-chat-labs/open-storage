@@ -2,7 +2,7 @@ use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::fmt::{Debug, Formatter};
-use types::{AccessorId, FileId, Hash};
+use types::{AccessorId, FileId, Hash, TimestampMillis};
 
 #[derive(CandidType, Serialize, Deserialize)]
 pub struct Args {
@@ -14,6 +14,7 @@ pub struct Args {
     pub chunk_size: u32,
     pub total_size: u64,
     pub bytes: ByteBuf,
+    pub expiry: Option<TimestampMillis>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
@@ -22,6 +23,7 @@ pub enum Response {
     AllowanceExceeded,
     FileAlreadyExists,
     FileTooBig,
+    FileExpired,
     ChunkAlreadyExists,
     ChunkIndexTooHigh,
     ChunkSizeMismatch,
@@ -41,6 +43,7 @@ impl Debug for Args {
             .field("chunk_size", &self.chunk_size)
             .field("total_size", &self.total_size)
             .field("byte_length", &self.bytes.len())
+            .field("expiry", &self.expiry)
             .finish()
     }
 }

@@ -7,6 +7,7 @@ use types::CanisterId;
 #[heartbeat]
 fn heartbeat() {
     sync_index::run();
+    remove_expired_files::run();
     check_cycles_balance::run();
 }
 
@@ -67,6 +68,19 @@ mod sync_index {
 
     fn handle_error(args: Args, runtime_state: &mut RuntimeState) {
         runtime_state.data.index_sync_state.mark_sync_failed(args);
+    }
+}
+
+mod remove_expired_files {
+    use crate::{mutate_state, EventToSync};
+
+    pub fn run() {
+        mutate_state(|state| {
+            let now = state.env.now();
+            for file in state.data.files.remove_expired_files(now, 10) {
+                state.data.index_sync_state.enqueue(EventToSync::FileRemoved(file));
+            }
+        });
     }
 }
 

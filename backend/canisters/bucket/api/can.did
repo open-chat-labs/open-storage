@@ -10,6 +10,7 @@ type UploadChunkArgs =
         chunk_size: nat32;
         total_size: nat64;
         bytes: blob;
+        expiry: opt TimestampMillis;
     };
 
 type UploadChunkResponse =
@@ -18,6 +19,7 @@ type UploadChunkResponse =
         AllowanceExceeded;
         FileAlreadyExists;
         FileTooBig;
+        FileExpired;
         ChunkAlreadyExists;
         ChunkIndexTooHigh;
         ChunkSizeMismatch;

@@ -32,6 +32,7 @@ export class OpenStorageAgent {
         mimeType: string,
         accessors: Array<Principal>,
         bytes: ArrayBuffer,
+        expiryTimestampMillis?: bigint,
         onProgress?: (percentComplete: number) => void
     ): Promise<UploadFileResponse> {
         const hash = new Uint8Array(hashBytes(bytes));
@@ -74,6 +75,7 @@ export class OpenStorageAgent {
                         chunkSize,
                         chunkIndex,
                         chunkBytes,
+                        expiryTimestampMillis
                     );
 
                     if (chunkResponse === "success") {
