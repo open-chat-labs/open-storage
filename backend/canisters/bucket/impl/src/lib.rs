@@ -16,10 +16,10 @@ mod model;
 mod queries;
 mod updates;
 
-const DATA_LIMIT_BYTES: u64 = 1 << 33; // 8GB
+const DATA_LIMIT_BYTES: u64 = 1 << 34; // 16GB
 const MAX_BLOB_SIZE_BYTES: u64 = 100 * (1 << 20); // 100MB
 const MAX_EVENTS_TO_SYNC_PER_BATCH: usize = 1000;
-const MIN_CYCLES_BALANCE: Cycles = 2_000_000_000_000; // 2T
+const MIN_CYCLES_BALANCE: Cycles = 20_000_000_000_000; // 20T
 
 #[derive(CandidType, Serialize, Deserialize)]
 enum StateVersion {
