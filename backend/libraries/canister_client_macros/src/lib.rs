@@ -12,7 +12,7 @@ macro_rules! generate_update_call {
             let response = agent
                 .update(canister_id, method_name)
                 .with_arg(Encode!(args).expect(&format!("Failed to serialize '{}' args", method_name)))
-                .call_and_wait(delay())
+                .call_and_wait()
                 .await?;
 
             Ok(Decode!(response.as_slice(), $method_name::Response)
@@ -77,13 +77,4 @@ macro_rules! generate_c2c_call_with_cycles {
             result.map(|r| r.0)
         }
     };
-}
-
-#[cfg(feature = "garcon")]
-// How `Agent` is instructed to wait for update calls.
-pub fn delay() -> garcon::Delay {
-    garcon::Delay::builder()
-        .throttle(std::time::Duration::from_millis(500))
-        .timeout(std::time::Duration::from_secs(60 * 5))
-        .build()
 }

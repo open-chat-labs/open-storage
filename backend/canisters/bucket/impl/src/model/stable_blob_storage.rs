@@ -75,7 +75,7 @@ impl StableBlobStorage {
 fn init_blobs() -> StableBTreeMap<Memory, Key, Vec<u8>> {
     let memory = get_blobs_memory();
 
-    StableBTreeMap::init(memory, size_of::<Key>() as u32, MAX_VALUE_SIZE as u32)
+    StableBTreeMap::init_with_sizes(memory, size_of::<Key>() as u32, MAX_VALUE_SIZE as u32)
 }
 
 impl Default for StableBlobStorage {

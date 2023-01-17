@@ -8,9 +8,8 @@ edition = "2021"
 [dependencies]
 bucket_canister = { path = "../../canisters/bucket/api" }
 candid = { workspace = true }
-canister_client_macros = { path = "../canister_client_macros", features = ["ingress"] }
+canister_client_macros = { path = "../canister_client_macros" }
 dirs = { workspace = true }
-garcon = { workspace = true }
 ic-agent = { workspace = true }
 ic-utils = { workspace = true }
 index_canister = { path = "../../canisters/index/api" }

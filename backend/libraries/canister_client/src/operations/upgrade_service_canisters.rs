@@ -1,4 +1,4 @@
-use crate::utils::{build_ic_agent, build_management_canister, delay, get_canister_wasm};
+use crate::utils::{build_ic_agent, build_management_canister, get_canister_wasm};
 use crate::CanisterName;
 use candid::CandidType;
 use ic_agent::identity::BasicIdentity;
@@ -46,7 +46,7 @@ async fn upgrade_wasm<A: CandidType + Send + Sync>(
     println!("Stopping canister {canister_id}");
     management_canister
         .stop_canister(canister_id)
-        .call_and_wait(delay())
+        .call_and_wait()
         .await
         .expect("Failed to stop canister");
     println!("Canister stopped");
@@ -56,7 +56,7 @@ async fn upgrade_wasm<A: CandidType + Send + Sync>(
         .install_code(canister_id, wasm_bytes)
         .with_mode(InstallMode::Upgrade)
         .with_arg(args)
-        .call_and_wait(delay())
+        .call_and_wait()
         .await
     {
         Ok(_) => println!("Wasm upgraded"),
@@ -66,7 +66,7 @@ async fn upgrade_wasm<A: CandidType + Send + Sync>(
     println!("Starting canister {canister_id}");
     management_canister
         .start_canister(canister_id)
-        .call_and_wait(delay())
+        .call_and_wait()
         .await
         .expect("Failed to start canister");
     println!("Canister started");
