@@ -27,15 +27,14 @@ canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "b0
 clap = "3.2.22"
 dirs = "4.0.0"
 futures = "0.3.24"
-garcon = "0.2.3"
 generic-array = "0.14.6"
 getrandom = "0.2.8"
 hex = "0.4.3"
-ic-agent = "0.22.0"
-ic-cdk = "0.6.1"
-ic-cdk-macros = "0.6.1"
-ic-stable-structures = "0.1.2"
-ic-utils = "0.22.0"
+ic-agent = "0.23.0"
+ic-cdk = "0.6.8"
+ic-cdk-macros = "0.6.8"
+ic-stable-structures = "0.3.0"
+ic-utils = "0.23.0"
 itertools = "0.10.5"
 num-traits = "0.2.15"
 proc-macro2 = "1.0.47"
@@ -58,5 +57,5 @@ opt-level = "z"
 codegen-units = 1
 
 [patch.crates-io]
-ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "3849c7bede6db8c5d6c310aaa1b2dcada34aed62" }
-ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "3849c7bede6db8c5d6c310aaa1b2dcada34aed62" }
+ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "f758bf78e6ec18850e6d023c4f60586376d24885" }
+ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "f758bf78e6ec18850e6d023c4f60586376d24885" }
