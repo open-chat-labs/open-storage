@@ -1,4 +1,4 @@
-use crate::lifecycle::{init_logger, init_state, BUFFER_SIZE};
+use crate::lifecycle::{init_cycles_dispenser_client, init_logger, init_state, BUFFER_SIZE};
 use crate::{Data, LOG_MESSAGES};
 use canister_api_macros::trace;
 use canister_logger::{set_panic_hook, LogMessage, LogMessagesWrapper};
@@ -20,6 +20,11 @@ fn post_upgrade(args: Args) {
         serializer::deserialize(reader).unwrap();
 
     init_logger(data.test_mode);
+
+    if let Some(config) = &data.cycles_dispenser_config {
+        init_cycles_dispenser_client(config.canister_id, config.min_cycles_balance);
+    }
+
     init_state(env, data, args.wasm_version);
 
     if !log_messages.is_empty() || !trace_messages.is_empty() {

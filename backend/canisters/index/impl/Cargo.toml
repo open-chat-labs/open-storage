@@ -15,6 +15,7 @@ candid = { workspace = true }
 canister_api_macros = { path = "../../../libraries/canister_api_macros" }
 canister_logger = { path = "../../../libraries/canister_logger" }
 canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "b06d3b984e39fa3a23828521934ef0370b720b18" }
+cycles_dispenser_client = { git = "https://github.com/open-ic/cycles-dispenser", rev = "c65b84be6663b82ff1387523f89aa7fa98b46eb7" }
 bucket_canister = { path = "../../bucket/api" }
 bucket_canister_c2c_client = { path = "../../bucket/c2c_client" }
 futures = { workspace = true }

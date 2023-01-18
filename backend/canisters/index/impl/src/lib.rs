@@ -3,6 +3,7 @@ use crate::model::buckets::Buckets;
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
+use index_canister::init::CyclesDispenserConfig;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -71,6 +72,7 @@ impl RuntimeState {
             bucket_upgrades_in_progress: bucket_upgrade_metrics.in_progress as u64,
             bucket_upgrades_failed: bucket_upgrade_metrics.failed,
             bucket_canister_wasm: self.data.bucket_canister_wasm.version,
+            cycles_dispenser_config: self.data.cycles_dispenser_config.clone(),
         }
     }
 }
@@ -84,11 +86,17 @@ struct Data {
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
     pub total_cycles_spent_on_canisters: Cycles,
+    pub cycles_dispenser_config: Option<CyclesDispenserConfig>,
     pub test_mode: bool,
 }
 
 impl Data {
-    fn new(service_principals: Vec<Principal>, bucket_canister_wasm: CanisterWasm, test_mode: bool) -> Data {
+    fn new(
+        service_principals: Vec<Principal>,
+        bucket_canister_wasm: CanisterWasm,
+        cycles_dispenser_config: Option<CyclesDispenserConfig>,
+        test_mode: bool,
+    ) -> Data {
         Data {
             service_principals: service_principals.into_iter().collect(),
             bucket_canister_wasm,
@@ -97,6 +105,7 @@ impl Data {
             buckets: Buckets::default(),
             canisters_requiring_upgrade: CanistersRequiringUpgrade::default(),
             total_cycles_spent_on_canisters: 0,
+            cycles_dispenser_config,
             test_mode,
         }
     }
@@ -173,6 +182,7 @@ pub struct Metrics {
     pub bucket_upgrades_in_progress: u64,
     pub bucket_upgrades_failed: Vec<FailedUpgradeCount>,
     pub bucket_canister_wasm: Version,
+    pub cycles_dispenser_config: Option<CyclesDispenserConfig>,
 }
 
 #[derive(CandidType, Serialize, Debug)]
