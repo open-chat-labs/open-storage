@@ -188,10 +188,10 @@ name = "bucket_canister"
 version = "0.1.0"
 dependencies = [
  "candid",
- "candid_gen",
+ "candid_gen 0.1.0",
  "serde",
  "serde_bytes",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -202,7 +202,7 @@ dependencies = [
  "canister_client_macros",
  "ic-cdk",
  "tracing",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -213,7 +213,7 @@ dependencies = [
  "candid",
  "canister_api_macros",
  "canister_logger",
- "canister_state_macros",
+ "canister_state_macros 0.1.0 (git+https://github.com/open-ic/ic-utils?rev=b06d3b984e39fa3a23828521934ef0370b720b18)",
  "http_request",
  "ic-cdk",
  "ic-cdk-macros",
@@ -226,8 +226,8 @@ dependencies = [
  "serde_bytes",
  "serializer",
  "tracing",
- "types",
- "utils",
+ "types 0.1.0",
+ "utils 0.1.0",
 ]
 
 [[package]]
@@ -298,6 +298,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "candid_gen"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7#c65b84be6663b82ff1387523f89aa7fa98b46eb7"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "canister_api_macros"
 version = "0.1.0"
 dependencies = [
@@ -319,7 +328,7 @@ dependencies = [
  "index_canister",
  "index_canister_client",
  "serde",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -332,8 +341,9 @@ version = "0.1.0"
 dependencies = [
  "canister_client",
  "clap",
+ "index_canister",
  "tokio",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -346,7 +356,7 @@ dependencies = [
  "tracing",
  "tracing-attributes",
  "tracing-subscriber",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -355,13 +365,18 @@ version = "0.1.0"
 source = "git+https://github.com/open-ic/ic-utils?rev=b06d3b984e39fa3a23828521934ef0370b720b18#b06d3b984e39fa3a23828521934ef0370b720b18"
 
 [[package]]
+name = "canister_state_macros"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/ic-utils?rev=cfc89a86ae59ee7a12e155ddbc2df74713575071#cfc89a86ae59ee7a12e155ddbc2df74713575071"
+
+[[package]]
 name = "canister_upgrader"
 version = "0.1.0"
 dependencies = [
  "canister_client",
  "clap",
  "tokio",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -491,6 +506,32 @@ checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 dependencies = [
  "generic-array",
  "typenum",
+]
+
+[[package]]
+name = "cycles_dispenser"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7#c65b84be6663b82ff1387523f89aa7fa98b46eb7"
+dependencies = [
+ "candid",
+ "candid_gen 0.1.0 (git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7)",
+ "serde",
+ "types 0.1.0 (git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7)",
+]
+
+[[package]]
+name = "cycles_dispenser_client"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7#c65b84be6663b82ff1387523f89aa7fa98b46eb7"
+dependencies = [
+ "canister_state_macros 0.1.0 (git+https://github.com/open-ic/ic-utils?rev=cfc89a86ae59ee7a12e155ddbc2df74713575071)",
+ "cycles_dispenser",
+ "ic-cdk",
+ "rmp-serde",
+ "serde",
+ "tracing",
+ "types 0.1.0 (git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7)",
+ "utils 0.1.0 (git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7)",
 ]
 
 [[package]]
@@ -878,7 +919,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -979,10 +1020,12 @@ source = "git+https://github.com/hpeebles/cdk-rs?rev=f758bf78e6ec18850e6d023c4f6
 dependencies = [
  "candid",
  "cfg-if",
+ "futures",
  "ic-cdk-macros",
  "ic0",
  "serde",
  "serde_bytes",
+ "slotmap",
 ]
 
 [[package]]
@@ -1069,10 +1112,10 @@ name = "index_canister"
 version = "0.1.0"
 dependencies = [
  "candid",
- "candid_gen",
+ "candid_gen 0.1.0",
  "serde",
  "serde_bytes",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -1083,7 +1126,7 @@ dependencies = [
  "ic-cdk",
  "index_canister",
  "tracing",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -1094,7 +1137,7 @@ dependencies = [
  "canister_client_macros",
  "ic-agent",
  "index_canister",
- "types",
+ "types 0.1.0",
 ]
 
 [[package]]
@@ -1107,7 +1150,8 @@ dependencies = [
  "candid",
  "canister_api_macros",
  "canister_logger",
- "canister_state_macros",
+ "canister_state_macros 0.1.0 (git+https://github.com/open-ic/ic-utils?rev=b06d3b984e39fa3a23828521934ef0370b720b18)",
+ "cycles_dispenser_client",
  "futures",
  "http_request",
  "ic-cdk",
@@ -1116,8 +1160,8 @@ dependencies = [
  "serde",
  "serializer",
  "tracing",
- "types",
- "utils",
+ "types 0.1.0",
+ "utils 0.1.0",
 ]
 
 [[package]]
@@ -2044,6 +2088,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "slotmap"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1e08e261d0e8f5c43123b7adf3e4ca1690d655377ac93a03b2c9d3e98de1342"
+dependencies = [
+ "version_check",
+]
+
+[[package]]
 name = "smallvec"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2398,6 +2451,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "types"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7#c65b84be6663b82ff1387523f89aa7fa98b46eb7"
+dependencies = [
+ "candid",
+ "serde",
+ "serde_bytes",
+]
+
+[[package]]
 name = "unicode-bidi"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2462,7 +2525,19 @@ dependencies = [
  "serde_bytes",
  "sha3",
  "tracing",
- "types",
+ "types 0.1.0",
+]
+
+[[package]]
+name = "utils"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7#c65b84be6663b82ff1387523f89aa7fa98b46eb7"
+dependencies = [
+ "candid",
+ "getrandom",
+ "ic-cdk",
+ "rand",
+ "types 0.1.0 (git+https://github.com/open-ic/cycles-dispenser?rev=c65b84be6663b82ff1387523f89aa7fa98b46eb7)",
 ]
 
 [[package]]

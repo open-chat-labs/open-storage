@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 canister_client = { path = "../libraries/canister_client" }
 clap = { workspace = true, features = ["derive"] }
+index_canister = { path = "../canisters/index/api" }
 tokio = { workspace = true, features = ["full"] }
 types = { path = "../libraries/types" }
