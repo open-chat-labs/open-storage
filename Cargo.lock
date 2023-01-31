@@ -220,7 +220,6 @@ dependencies = [
  "ic-stable-structures",
  "index_canister",
  "index_canister_c2c_client",
- "itertools",
  "num-traits",
  "serde",
  "serde_bytes",

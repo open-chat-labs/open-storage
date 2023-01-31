@@ -19,10 +19,8 @@ fn post_upgrade(args: Args) {
     let memory = get_upgrades_memory();
     let reader = BufferedReader::new(BUFFER_SIZE, Reader::new(&memory, 0));
 
-    let (mut data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
+    let (data, log_messages, trace_messages): (Data, Vec<LogMessage>, Vec<LogMessage>) =
         serializer::deserialize(reader).unwrap();
-
-    data.files.recalculate_count();
 
     init_logger(data.test_mode);
     init_state(env, data, args.wasm_version);
