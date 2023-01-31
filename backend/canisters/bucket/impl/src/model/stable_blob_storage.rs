@@ -197,7 +197,7 @@ mod tests {
         let hash = default_hash();
         let key = Key::new(hash, 123456789);
 
-        let key_round_tripped = Key::from_bytes(Cow::Owned(key.to_bytes()));
+        let key_round_tripped = Key::from_bytes(key.to_bytes());
 
         assert_eq!(key.prefix, key_round_tripped.prefix);
         assert_eq!(key.chunk_index_bytes, key_round_tripped.chunk_index_bytes);
