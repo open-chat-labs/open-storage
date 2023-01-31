@@ -2,7 +2,6 @@ use crate::model::files::{Files, RemoveFileResult};
 use crate::model::index_sync_state::{EventToSync, IndexSyncState};
 use crate::model::users::Users;
 use candid::{CandidType, Principal};
-use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -27,7 +26,6 @@ enum StateVersion {
 }
 
 thread_local! {
-    static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
     static WASM_VERSION: RefCell<Timestamped<Version>> = RefCell::default();
 }
 

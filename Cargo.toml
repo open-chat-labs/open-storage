@@ -13,7 +13,6 @@ members = [
     "backend/libraries/canister_api_macros",
     "backend/libraries/canister_client",
     "backend/libraries/canister_client_macros",
-    "backend/libraries/canister_logger",
     "backend/libraries/http_request",
     "backend/libraries/serializer",
     "backend/libraries/types",
@@ -22,8 +21,9 @@ members = [
 
 [workspace.dependencies]
 arrayref = "0.3.6"
-candid = "0.8.3"
-canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "b06d3b984e39fa3a23828521934ef0370b720b18" }
+candid = "0.8.4"
+canister_logger = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
+canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
 clap = "3.2.22"
 dirs = "4.0.0"
 futures = "0.3.24"

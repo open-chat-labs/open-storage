@@ -1,7 +1,6 @@
 use crate::model::blobs::Blobs;
 use crate::model::buckets::Buckets;
 use candid::{CandidType, Principal};
-use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
 use index_canister::init::CyclesDispenserConfig;
 use serde::{Deserialize, Serialize};
@@ -27,7 +26,6 @@ const MIN_CYCLES_BALANCE: Cycles = 20_000_000_000_000; // 20T
 const BUCKET_CANISTER_TOP_UP_AMOUNT: Cycles = 5_000_000_000_000; // 5T
 
 thread_local! {
-    static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
     static WASM_VERSION: RefCell<Timestamped<Version>> = RefCell::default();
 }
 

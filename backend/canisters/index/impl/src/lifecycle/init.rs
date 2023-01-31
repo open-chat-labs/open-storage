@@ -1,7 +1,6 @@
-use crate::lifecycle::{init_cycles_dispenser_client, init_logger, init_state};
+use crate::lifecycle::{init_cycles_dispenser_client, init_state};
 use crate::Data;
 use canister_api_macros::trace;
-use canister_logger::set_panic_hook;
 use ic_cdk_macros::init;
 use index_canister::init::Args;
 use tracing::info;
@@ -10,8 +9,7 @@ use utils::env::canister::CanisterEnv;
 #[init]
 #[trace]
 fn init(args: Args) {
-    set_panic_hook();
-    init_logger(args.test_mode);
+    canister_logger::init(args.test_mode);
 
     if let Some(config) = &args.cycles_dispenser_config {
         init_cycles_dispenser_client(config.canister_id, config.min_cycles_balance);
