@@ -1,14 +1,15 @@
 use crate::{HeaderField, HttpResponse};
-use canister_logger::LogMessage;
+use canister_logger::LogEntry;
 use serde_bytes::ByteBuf;
 use std::borrow::Cow;
 use std::io::Write;
+use types::TimestampMillis;
 
-pub fn encode_logs(messages: Vec<LogMessage>) -> HttpResponse {
+pub fn encode_logs(entries: Vec<LogEntry>, since: TimestampMillis) -> HttpResponse {
     let mut body = Vec::new();
 
-    for message in messages.into_iter() {
-        writeln!(&mut body, "{}", message.json).unwrap();
+    for entry in entries.into_iter().filter(|e| e.timestamp > since) {
+        writeln!(&mut body, "{}", entry.message).unwrap();
     }
 
     HttpResponse {
