@@ -22,6 +22,7 @@ futures = { workspace = true }
 http_request = { path = "../../../libraries/http_request" }
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
+ic-stable-structures = { workspace = true }
 index_canister = { path = "../api" }
 serde = { workspace = true }
 serializer = { path = "../../../libraries/serializer" }
