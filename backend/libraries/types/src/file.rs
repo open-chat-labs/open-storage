@@ -8,6 +8,7 @@ pub struct FileAdded {
     pub owner: UserId,
     pub hash: Hash,
     pub size: u64,
+    #[serde(default)]
     pub timestamp: TimestampMillis,
 }
 
