@@ -25,7 +25,7 @@ ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 index_canister = { path = "../api" }
 serde = { workspace = true }
-serializer = { path = "../../../libraries/serializer" }
+serializer = { workspace = true }
 tracing = { workspace = true }
 types = { path = "../../../libraries/types" }
 utils = { path = "../../../libraries/utils" }
