@@ -120,7 +120,7 @@ fn chunk_bytes(mut blob_bytes: Vec<u8>, chunk_index: u32) -> (ByteBuf, bool) {
 
 fn build_token(blob_id: u128, index: u32) -> Token {
     Token {
-        key: format!("blobs/{}", blob_id),
+        key: format!("blobs/{blob_id}"),
         content_encoding: String::default(),
         index: index.into(),
         sha256: None,

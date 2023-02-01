@@ -39,13 +39,13 @@ fn prepare(runtime_state: &RuntimeState) -> Result<PrepareResult, NotifyLowBalan
     } else if runtime_state.data.buckets.get(&caller).is_some() {
         Ok(PrepareResult { bucket: caller, top_up })
     } else {
-        panic!("Caller not recognised. {}", caller);
+        panic!("Caller not recognised. {caller}");
     }
 }
 
 fn commit(bucket: CanisterId, top_up: CyclesTopUp, runtime_state: &mut RuntimeState) {
     runtime_state.data.total_cycles_spent_on_canisters += top_up.amount;
     if !runtime_state.data.buckets.mark_cycles_top_up(&bucket, top_up) {
-        panic!("Bucket not found. {:?}", bucket);
+        panic!("Bucket not found. {bucket}");
     }
 }

@@ -88,10 +88,10 @@ impl HttpResponse {
     }
 
     fn moved(status_code: u16, location: &str, max_age: Option<u32>) -> HttpResponse {
-        let mut headers = vec![HeaderField("Location".to_owned(), location.to_owned())];
+        let mut headers = vec![HeaderField("Location".to_string(), location.to_owned())];
 
         if let Some(max_age) = max_age {
-            let value = format!("public, max-age={}", max_age);
+            let value = format!("public, max-age={max_age}");
             headers.push(HeaderField("Cache-Control".to_owned(), value));
         }
 
