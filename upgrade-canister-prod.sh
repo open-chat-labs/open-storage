@@ -6,8 +6,7 @@ VERSION=$3
 
 # Pass in the dfx identity name
 # eg './upgrade-canister-prod.sh openstorage index 1.0.0'
-./generate-wasm.sh index_canister_impl
-./generate-wasm.sh bucket_canister_impl
+./generate-wasm.sh ${CANISTER_NAME}_canister_impl
 
 INDEX_CANISTER_ID=$(dfx canister --network ic id index)
 
