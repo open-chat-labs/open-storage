@@ -2013,6 +2013,7 @@ dependencies = [
 [[package]]
 name = "serializer"
 version = "0.1.0"
+source = "git+https://github.com/open-ic/ic-utils?rev=2656695f78e5234be04561d353da7b057b11d553#2656695f78e5234be04561d353da7b057b11d553"
 dependencies = [
  "rmp-serde",
  "serde",

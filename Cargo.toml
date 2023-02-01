@@ -14,7 +14,6 @@ members = [
     "backend/libraries/canister_client",
     "backend/libraries/canister_client_macros",
     "backend/libraries/http_request",
-    "backend/libraries/serializer",
     "backend/libraries/types",
     "backend/libraries/utils"
 ]
@@ -45,6 +44,7 @@ serde = "1.0.145"
 serde_bytes = "0.11.7"
 serde_json = "1.0.86"
 sha3 = "0.10.5"
+serializer = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
 syn = "1.0.102"
 tokio = "1.21.2"
 tracing = "0.1.37"
