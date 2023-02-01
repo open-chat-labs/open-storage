@@ -1,4 +1,4 @@
-use crate::{FileId, Hash, UserId};
+use crate::{FileId, Hash, TimestampMillis, UserId};
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +8,7 @@ pub struct FileAdded {
     pub owner: UserId,
     pub hash: Hash,
     pub size: u64,
+    pub timestamp: TimestampMillis,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

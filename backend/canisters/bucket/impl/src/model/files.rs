@@ -83,6 +83,7 @@ impl Files {
                     file_id,
                     hash: args.hash,
                     size: args.total_size,
+                    timestamp: now,
                 });
                 let pending_file: PendingFile = args.into();
                 if pending_file.is_completed() {
@@ -175,6 +176,7 @@ impl Files {
                 owner: caller,
                 hash,
                 size,
+                timestamp: now,
             })
         } else {
             // There should never be a file_id clash
