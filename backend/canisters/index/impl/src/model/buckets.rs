@@ -65,6 +65,7 @@ impl Buckets {
             Some(self.active_buckets[index].canister_id)
         }
     }
+
     pub fn sync_event(&mut self, event: EventToSync) {
         for bucket in self.iter_mut() {
             bucket.sync_state.enqueue(event.clone());

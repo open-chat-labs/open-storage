@@ -114,6 +114,7 @@ impl Data {
             owner,
             hash,
             size,
+            ..
         } = file;
 
         if let Some(user) = self.users.get_mut(&owner) {

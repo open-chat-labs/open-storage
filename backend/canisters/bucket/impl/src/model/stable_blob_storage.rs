@@ -94,7 +94,6 @@ impl Default for StableBlobStorage {
     }
 }
 
-#[allow(dead_code)]
 #[repr(packed)]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct Key {
