@@ -20,7 +20,7 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
         } else {
             bytes_used
                 .checked_add(args.file_size)
-                .unwrap_or_else(|| panic!("'bytes_used' overflowed for {}", user_id))
+                .unwrap_or_else(|| panic!("'bytes_used' overflowed for {user_id}"))
         };
 
         if bytes_used_after_upload > byte_limit {

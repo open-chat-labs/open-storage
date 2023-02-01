@@ -32,7 +32,7 @@ pub async fn upgrade_bucket_canister(identity: BasicIdentity, url: String, index
         .unwrap();
 
     if !matches!(response, index_canister::update_bucket_canister_wasm::Response::Success) {
-        panic!("{:?}", response);
+        panic!("{response:?}");
     }
     println!("Bucket canister wasm upgraded to version {version}");
 }

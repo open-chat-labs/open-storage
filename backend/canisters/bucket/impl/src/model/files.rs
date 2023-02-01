@@ -348,7 +348,7 @@ impl Files {
     fn remove_blob(&mut self, hash: &Hash) {
         if let Some(size) = self.blobs.data_size(hash) {
             self.blobs.remove(hash);
-            self.bytes_used = self.bytes_used.checked_sub(size as u64).expect("'bytes used' underflowed");
+            self.bytes_used = self.bytes_used.checked_sub(size).expect("'bytes used' underflowed");
         }
     }
 

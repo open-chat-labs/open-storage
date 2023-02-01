@@ -121,7 +121,7 @@ impl Data {
                 let bytes_used_after_upload = user
                     .bytes_used
                     .checked_add(size)
-                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {}", owner));
+                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {owner}"));
 
                 if bytes_used_after_upload > user.byte_limit {
                     return Err(FileRejected {

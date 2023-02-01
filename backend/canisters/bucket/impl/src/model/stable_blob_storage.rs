@@ -40,7 +40,7 @@ impl StableBlobStorage {
             let key = Key::new(hash, index as u32);
 
             if self.blobs.insert(key, Chunk::new(bytes.to_vec())).is_some() {
-                panic!("A blob already exists with hash {:?}", hash);
+                panic!("A blob already exists with hash {hash:?}");
             }
         }
         self.count = self.count.saturating_add(1);

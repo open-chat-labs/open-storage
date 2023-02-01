@@ -25,7 +25,7 @@ impl FromStr for CanisterName {
         match s {
             "index" => Ok(CanisterName::Index),
             "bucket" => Ok(CanisterName::Bucket),
-            _ => Err(format!("Unrecognised canister name: {}", s)),
+            _ => Err(format!("Unrecognised canister name: {s}")),
         }
     }
 }
