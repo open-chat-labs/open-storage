@@ -73,4 +73,4 @@ jobs:
       - uses: arduino/setup-protoc@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: ./scripts/run-integration-tests.sh
+      - run: ./run-integration-tests.sh
