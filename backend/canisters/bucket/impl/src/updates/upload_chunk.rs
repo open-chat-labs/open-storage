@@ -75,9 +75,7 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
                     .index_sync_state
                     .enqueue(EventToSync::FileRemoved(FileRemoved {
                         file_id,
-                        owner: user_id,
-                        hash: hm.provided_hash,
-                        blob_deleted: !runtime_state.data.files.contains_hash(&hm.provided_hash),
+                        meta_data: hm.meta_data,
                     }));
             }
 

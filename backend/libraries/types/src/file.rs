@@ -5,19 +5,21 @@ use serde::{Deserialize, Serialize};
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct FileAdded {
     pub file_id: FileId,
-    pub owner: UserId,
     pub hash: Hash,
     pub size: u64,
-    #[serde(default)]
-    pub timestamp: TimestampMillis,
+    pub meta_data: FileMetaData,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FileRemoved {
     pub file_id: FileId,
+    pub meta_data: FileMetaData,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct FileMetaData {
     pub owner: UserId,
-    pub hash: Hash,
-    pub blob_deleted: bool,
+    pub created: TimestampMillis,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]

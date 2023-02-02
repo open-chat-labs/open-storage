@@ -7,14 +7,13 @@ use types::{CanisterId, CanisterWasm, Cycles, Version};
 
 const MAX_CONCURRENT_CANISTER_UPGRADES: u32 = 1;
 const MIN_CYCLES_BALANCE: Cycles = 60_000_000_000_000; // 60T
-const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 10_000_000_000_000; // 10T;
+const BUCKET_CANISTER_INITIAL_CYCLES_BALANCE: Cycles = 25_000_000_000_000; // 25T;
 
 #[heartbeat]
 fn heartbeat() {
     ensure_sufficient_active_buckets::run();
-    sync_users_with_buckets::run();
+    sync_buckets::run();
     upgrade_canisters::run();
-    recalculate_blob_metrics::run();
 }
 
 mod ensure_sufficient_active_buckets {
@@ -89,7 +88,7 @@ mod ensure_sufficient_active_buckets {
     }
 }
 
-mod sync_users_with_buckets {
+mod sync_buckets {
     use super::*;
 
     pub fn run() {
@@ -198,16 +197,5 @@ mod upgrade_canisters {
             from_version,
             to_version,
         });
-    }
-}
-
-mod recalculate_blob_metrics {
-    use super::*;
-
-    pub fn run() {
-        mutate_state(|state| {
-            let now = state.env.now();
-            state.data.blobs.recalculate_metrics_if_due(now);
-        })
     }
 }

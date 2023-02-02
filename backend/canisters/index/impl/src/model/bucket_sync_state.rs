@@ -2,7 +2,7 @@ use crate::MAX_EVENTS_TO_SYNC_PER_BATCH;
 use bucket_canister::c2c_sync_index::Args;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use types::{AccessorId, UserId};
+use types::{AccessorId, FileId, UserId};
 
 // We want to send events to the each bucket in order, so while a sync is in progress we avoid sending
 // more events in case the first batch fails and the second succeeds. If a sync fails, the args that
@@ -33,6 +33,7 @@ impl BucketSyncState {
                 users_removed: Vec::new(),
                 accessors_removed: Vec::new(),
                 user_ids_updated: Vec::new(),
+                files_to_remove: Vec::new(),
             };
 
             for _ in 0..MAX_EVENTS_TO_SYNC_PER_BATCH {
@@ -42,6 +43,7 @@ impl BucketSyncState {
                         EventToSync::UserRemoved(r) => args.users_removed.push(r),
                         EventToSync::AccessorRemoved(r) => args.accessors_removed.push(r),
                         EventToSync::UserIdUpdated(old, new) => args.user_ids_updated.push((old, new)),
+                        EventToSync::FileToRemove(file_id) => args.files_to_remove.push(file_id),
                     }
                 } else {
                     break;
@@ -68,4 +70,5 @@ pub enum EventToSync {
     UserRemoved(UserId),
     AccessorRemoved(AccessorId),
     UserIdUpdated(UserId, UserId),
+    FileToRemove(FileId),
 }

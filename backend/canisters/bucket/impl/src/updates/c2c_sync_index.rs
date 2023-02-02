@@ -34,6 +34,12 @@ fn c2c_sync_index_impl(args: Args, runtime_state: &mut RuntimeState) -> Response
         files_removed.extend(runtime_state.data.files.remove_accessor(&accessor_id));
     }
 
+    for file_id in args.files_to_remove {
+        if let RemoveFileResult::Success(file_removed) = runtime_state.data.files.remove_unchecked(file_id) {
+            files_removed.push(file_removed);
+        }
+    }
+
     if files_removed.len() > MAX_EVENTS_TO_SYNC_PER_BATCH {
         // If there are too many events to sync in a single batch, queue the excess events to be
         // synced later via heartbeat
