@@ -15,7 +15,7 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
     if let Some(user) = runtime_state.data.users.get(&user_id) {
         let byte_limit = user.byte_limit;
         let bytes_used = user.bytes_used;
-        let bytes_used_after_upload = if runtime_state.data.blobs.user_owns_blob(&user_id, &args.file_hash) {
+        let bytes_used_after_upload = if runtime_state.data.files.user_owns_blob(user_id, args.file_hash) {
             bytes_used
         } else {
             bytes_used
@@ -23,7 +23,7 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
                 .unwrap_or_else(|| panic!("'bytes_used' overflowed for {user_id}"))
         };
 
-        if bytes_used_after_upload > byte_limit {
+        if bytes_used_after_upload > byte_limit && !user.delete_oldest_if_limit_exceeded {
             return AllowanceExceeded(ProjectedAllowance {
                 byte_limit,
                 bytes_used,
@@ -34,8 +34,8 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
 
         let bucket = runtime_state
             .data
-            .blobs
-            .bucket(&args.file_hash)
+            .files
+            .bucket_for_blob(args.file_hash)
             .or_else(|| runtime_state.data.buckets.allocate(args.file_hash));
 
         if let Some(canister_id) = bucket {

@@ -9,6 +9,7 @@ members = [
     "backend/canisters/index/c2c_client",
     "backend/canisters/index/client",
     "backend/canisters/index/impl",
+    "backend/integration_tests",
     "backend/libraries/candid_gen",
     "backend/libraries/canister_api_macros",
     "backend/libraries/canister_client",
@@ -33,8 +34,10 @@ ic-agent = "0.23.0"
 ic-cdk = "0.6.8"
 ic-cdk-macros = "0.6.8"
 ic-stable-structures = "0.5.0"
+ic-state-machine-tests = { git = "https://github.com/dfinity/ic", rev = "467663a9d0dc6eac152bcd92df18850e2aed1632" }
 ic-utils = "0.23.0"
 itertools = "0.10.5"
+lazy_static = "1.4.0"
 num-traits = "0.2.15"
 proc-macro2 = "1.0.47"
 quote = "1.0.21"

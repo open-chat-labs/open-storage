@@ -85,6 +85,7 @@ struct Data {
     index_canister_id: CanisterId,
     users: Users,
     files: Files,
+    #[serde(skip_deserializing)]
     index_sync_state: IndexSyncState,
     created: TimestampMillis,
     test_mode: bool,

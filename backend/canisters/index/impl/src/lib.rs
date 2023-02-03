@@ -1,5 +1,6 @@
-use crate::model::blobs::Blobs;
+use crate::model::bucket_sync_state::EventToSync;
 use crate::model::buckets::Buckets;
+use crate::model::files::Files;
 use candid::{CandidType, Principal};
 use canister_state_macros::canister_state;
 use index_canister::init::CyclesDispenserConfig;
@@ -7,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use types::{
-    CanisterId, CanisterWasm, Cycles, CyclesTopUp, FileAdded, FileRejected, FileRejectedReason, FileRemoved, Hash,
-    TimestampMillis, Timestamped, UserId, Version,
+    CanisterId, CanisterWasm, Cycles, CyclesTopUp, FileAdded, FileRejected, FileRejectedReason, FileRemoved, TimestampMillis,
+    Timestamped, UserId, Version,
 };
 use utils::canister::{CanistersRequiringUpgrade, FailedUpgradeCount};
 use utils::env::Environment;
@@ -52,7 +53,7 @@ impl RuntimeState {
     }
 
     pub fn metrics(&self) -> Metrics {
-        let blob_metrics = self.data.blobs.metrics();
+        let file_metrics = self.data.files.metrics();
         let bucket_upgrade_metrics = self.data.canisters_requiring_upgrade.metrics();
 
         Metrics {
@@ -60,10 +61,10 @@ impl RuntimeState {
             now: self.env.now(),
             cycles_balance: self.env.cycles_balance(),
             wasm_version: WASM_VERSION.with(|v| **v.borrow()),
-            blob_count: blob_metrics.blob_count,
-            total_blob_bytes: blob_metrics.total_blob_bytes,
-            file_count: blob_metrics.file_count,
-            total_file_bytes: blob_metrics.total_file_bytes,
+            blob_count: file_metrics.blob_count,
+            total_blob_bytes: file_metrics.total_blob_bytes,
+            file_count: file_metrics.file_count,
+            total_file_bytes: file_metrics.total_file_bytes,
             active_buckets: self.data.buckets.iter_active_buckets().map(|b| b.into()).collect(),
             full_buckets: self.data.buckets.iter_full_buckets().map(|b| b.into()).collect(),
             bucket_upgrades_pending: bucket_upgrade_metrics.pending as u64,
@@ -80,7 +81,8 @@ struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecordInternal>,
-    pub blobs: Blobs,
+    #[serde(default)]
+    pub files: Files,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
     pub total_cycles_spent_on_canisters: Cycles,
@@ -99,7 +101,7 @@ impl Data {
             service_principals: service_principals.into_iter().collect(),
             bucket_canister_wasm,
             users: HashMap::new(),
-            blobs: Blobs::default(),
+            files: Files::default(),
             buckets: Buckets::default(),
             canisters_requiring_upgrade: CanistersRequiringUpgrade::default(),
             total_cycles_spent_on_canisters: 0,
@@ -109,50 +111,62 @@ impl Data {
     }
 
     pub fn add_file_reference(&mut self, bucket: CanisterId, file: FileAdded) -> Result<(), FileRejected> {
-        let FileAdded {
-            file_id,
-            owner,
-            hash,
-            size,
-            ..
-        } = file;
-
-        if let Some(user) = self.users.get_mut(&owner) {
-            if !self.blobs.user_owns_blob(&owner, &hash) {
+        let user_id = file.meta_data.owner;
+        if let Some(user) = self.users.get_mut(&user_id) {
+            if !self.files.user_owns_blob(user_id, file.hash) {
                 let bytes_used_after_upload = user
                     .bytes_used
-                    .checked_add(size)
-                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {owner}"));
+                    .checked_add(file.size)
+                    .unwrap_or_else(|| panic!("'bytes_used' overflowed for {user_id}"));
 
-                if bytes_used_after_upload > user.byte_limit {
-                    return Err(FileRejected {
-                        file_id,
-                        reason: FileRejectedReason::AllowanceExceeded,
-                    });
-                } else {
-                    user.bytes_used = bytes_used_after_upload;
-                    user.blobs_owned.insert(hash);
+                let allowance_exceeded_by = bytes_used_after_upload.saturating_sub(user.byte_limit);
+                if allowance_exceeded_by > 0 {
+                    if user.delete_oldest_if_limit_exceeded {
+                        let mut total_size = 0u64;
+                        let files_to_delete: Vec<_> = self
+                            .files
+                            .iter_user_files_from_oldest(user_id)
+                            .take_while(|f| {
+                                let take_next = total_size < allowance_exceeded_by;
+                                let size = self.files.blob_size(&f.hash).unwrap_or_default();
+                                total_size = total_size.saturating_add(size);
+                                take_next
+                            })
+                            .collect();
+
+                        for file_to_delete in files_to_delete {
+                            if let Some(bucket) = self.buckets.get_mut(&file_to_delete.bucket) {
+                                bucket.sync_state.enqueue(EventToSync::FileToRemove(file_to_delete.file_id));
+                            }
+                        }
+                    } else {
+                        return Err(FileRejected {
+                            file_id: file.file_id,
+                            reason: FileRejectedReason::AllowanceExceeded,
+                        });
+                    }
                 }
+
+                user.bytes_used = bytes_used_after_upload;
             }
+
+            self.files.add(file, bucket);
+            Ok(())
         } else {
-            return Err(FileRejected {
-                file_id,
+            Err(FileRejected {
+                file_id: file.file_id,
                 reason: FileRejectedReason::UserNotFound,
-            });
+            })
         }
-
-        self.blobs.add(hash, size, owner, bucket);
-
-        Ok(())
     }
 
     pub fn remove_file_reference(&mut self, bucket: CanisterId, file: FileRemoved) {
-        let FileRemoved { owner, hash, .. } = file;
-
-        if let Some(bytes_removed) = self.blobs.remove(hash, owner, bucket) {
-            if let Some(user) = self.users.get_mut(&owner) {
-                user.bytes_used = user.bytes_used.saturating_sub(bytes_removed);
-                user.blobs_owned.remove(&hash);
+        let user_id = file.meta_data.owner;
+        if let Ok(result) = self.files.remove(file, bucket) {
+            if !self.files.user_owns_blob(user_id, result.hash) {
+                if let Some(user) = self.users.get_mut(&user_id) {
+                    user.bytes_used = user.bytes_used.saturating_sub(result.size);
+                }
             }
         }
     }
@@ -161,8 +175,14 @@ impl Data {
 #[derive(Serialize, Deserialize, Debug)]
 struct UserRecordInternal {
     pub byte_limit: u64,
+    #[serde(skip_deserializing)]
     pub bytes_used: u64,
-    pub blobs_owned: HashSet<Hash>,
+    #[serde(default = "bool_true")]
+    pub delete_oldest_if_limit_exceeded: bool,
+}
+
+fn bool_true() -> bool {
+    true
 }
 
 #[derive(CandidType, Serialize, Debug)]

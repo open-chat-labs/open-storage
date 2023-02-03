@@ -7,7 +7,7 @@ use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
-use types::{AccessorId, FileAdded, FileId, FileRemoved, Hash, TimestampMillis, UserId};
+use types::{AccessorId, FileAdded, FileId, FileMetaData, FileRemoved, Hash, TimestampMillis, UserId};
 use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
@@ -35,6 +35,13 @@ impl File {
     pub fn can_be_removed_by(&self, principal: Principal) -> bool {
         // TODO accessors should have roles rather than always being allowed to remove files
         self.owner == principal || self.accessors.contains(&principal)
+    }
+
+    pub fn meta_data(&self) -> FileMetaData {
+        FileMetaData {
+            owner: self.owner,
+            created: self.created,
+        }
     }
 }
 
@@ -73,17 +80,18 @@ impl Files {
         }
 
         let file_id = args.file_id;
-        let now = args.now;
         let mut file_added = None;
 
         let completed_file: Option<PendingFile> = match self.pending_files.entry(file_id) {
             Vacant(e) => {
                 file_added = Some(FileAdded {
-                    owner: args.owner,
                     file_id,
                     hash: args.hash,
                     size: args.total_size,
-                    timestamp: now,
+                    meta_data: FileMetaData {
+                        owner: args.owner,
+                        created: args.now,
+                    },
                 });
                 let pending_file: PendingFile = args.into();
                 if pending_file.is_completed() {
@@ -117,9 +125,13 @@ impl Files {
                     provided_hash: completed_file.hash,
                     actual_hash: hash,
                     chunk_count: completed_file.chunk_count(),
+                    meta_data: FileMetaData {
+                        owner: completed_file.owner,
+                        created: completed_file.created,
+                    },
                 });
             }
-            self.insert_completed_file(file_id, completed_file, now);
+            self.insert_completed_file(file_id, completed_file);
             file_completed = true;
         }
 
@@ -144,6 +156,17 @@ impl Files {
         }
     }
 
+    pub fn remove_unchecked(&mut self, file_id: FileId) -> RemoveFileResult {
+        if let Occupied(e) = self.files.entry(file_id) {
+            let file = e.remove();
+            let file_removed = self.process_removed_file(file_id, file);
+
+            RemoveFileResult::Success(file_removed)
+        } else {
+            RemoveFileResult::NotFound
+        }
+    }
+
     pub fn forward(
         &mut self,
         caller: UserId,
@@ -162,6 +185,7 @@ impl Files {
         self.accessors_map.link_many(caller, accessors.iter().copied(), new_file_id);
         self.reference_counts.incr(hash);
 
+        let meta_data = file.meta_data();
         let new_file = File {
             owner: caller,
             created: now,
@@ -173,10 +197,9 @@ impl Files {
         if self.files.insert(new_file_id, new_file).is_none() {
             ForwardFileResult::Success(FileAdded {
                 file_id: new_file_id,
-                owner: caller,
                 hash,
                 size,
-                timestamp: now,
+                meta_data,
             })
         } else {
             // There should never be a file_id clash
@@ -205,9 +228,7 @@ impl Files {
                         let file = e.remove();
                         files_removed.push(FileRemoved {
                             file_id,
-                            owner: file.owner,
-                            hash: file.hash,
-                            blob_deleted: delete_blob,
+                            meta_data: file.meta_data(),
                         });
                     }
                 }
@@ -272,10 +293,6 @@ impl Files {
         files_removed
     }
 
-    pub fn contains_hash(&self, hash: &Hash) -> bool {
-        self.blobs.exists(hash)
-    }
-
     pub fn data_size(&self, hash: &Hash) -> Option<u64> {
         self.blobs.data_size(hash)
     }
@@ -291,7 +308,19 @@ impl Files {
         }
     }
 
-    fn insert_completed_file(&mut self, file_id: FileId, completed_file: PendingFile, now: TimestampMillis) {
+    // TODO remove this!
+    pub fn iter_files_added(&self) -> impl Iterator<Item = FileAdded> + '_ {
+        self.files.iter().filter_map(|(file_id, file)| {
+            self.blobs.data_size(&file.hash).map(|size| FileAdded {
+                file_id: *file_id,
+                hash: file.hash,
+                size,
+                meta_data: file.meta_data(),
+            })
+        })
+    }
+
+    fn insert_completed_file(&mut self, file_id: FileId, completed_file: PendingFile) {
         self.accessors_map
             .link_many(completed_file.owner, completed_file.accessors.iter().copied(), file_id);
 
@@ -309,7 +338,7 @@ impl Files {
             file_id,
             File {
                 owner: completed_file.owner,
-                created: now,
+                created: completed_file.created,
                 accessors: completed_file.accessors,
                 hash: completed_file.hash,
                 mime_type: completed_file.mime_type,
@@ -318,10 +347,8 @@ impl Files {
     }
 
     fn process_removed_file(&mut self, file_id: FileId, file: File) -> FileRemoved {
-        let mut blob_deleted = false;
         if self.reference_counts.decr(file.hash) == 0 {
             self.remove_blob(&file.hash);
-            blob_deleted = true;
         }
 
         for accessor_id in file.accessors.iter() {
@@ -330,9 +357,7 @@ impl Files {
 
         FileRemoved {
             file_id,
-            owner: file.owner,
-            hash: file.hash,
-            blob_deleted,
+            meta_data: file.meta_data(),
         }
     }
 
@@ -573,6 +598,7 @@ pub struct HashMismatch {
     pub provided_hash: Hash,
     pub actual_hash: Hash,
     pub chunk_count: u32,
+    pub meta_data: FileMetaData,
 }
 
 pub struct ChunkSizeMismatch {
