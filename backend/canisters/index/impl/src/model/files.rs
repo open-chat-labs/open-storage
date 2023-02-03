@@ -78,12 +78,12 @@ impl Files {
             } else {
                 self.blob_reference_counts.insert(blob_reference, count_remaining);
             }
-            size = size.or_else(|| self.blob_sizes.get(&hash));
 
-            Ok(RemoveFileSuccess {
-                hash,
-                size: size.unwrap_or_default(),
-            })
+            let size = size.or_else(|| self.blob_sizes.get(&hash)).unwrap_or_default();
+            let total_file_bytes = self.total_file_bytes.get().saturating_sub(size);
+            self.total_file_bytes.set(total_file_bytes).unwrap();
+
+            Ok(RemoveFileSuccess { hash, size })
         } else {
             Err(())
         }
@@ -401,5 +401,48 @@ mod tests {
             .collect();
 
         assert_eq!(created_dates, (30u64..40).collect::<Vec<_>>())
+    }
+
+    #[test]
+    fn add_then_remove_leaves_empty() {
+        let mut files = Files::default();
+        let user_id = UserId::from_slice(&[1]);
+        let bucket = CanisterId::from_slice(&[2]);
+
+        for i in 0u8..10 {
+            files.add(
+                FileAdded {
+                    file_id: i.into(),
+                    hash: [i; 32],
+                    size: i.into(),
+                    meta_data: FileMetaData {
+                        owner: user_id,
+                        created: i.into(),
+                    },
+                },
+                bucket,
+            );
+        }
+
+        for i in 0u8..10 {
+            files
+                .remove(
+                    FileRemoved {
+                        file_id: i.into(),
+                        meta_data: FileMetaData {
+                            owner: user_id,
+                            created: i.into(),
+                        },
+                    },
+                    bucket,
+                )
+                .unwrap();
+        }
+
+        assert!(files.files_by_user.is_empty());
+        assert!(files.blob_reference_counts.is_empty());
+        assert!(files.blob_sizes.is_empty());
+        assert_eq!(*files.total_file_bytes.get(), 0);
+        assert_eq!(*files.total_blob_bytes.get(), 0);
     }
 }
