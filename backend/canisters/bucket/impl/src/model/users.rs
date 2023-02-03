@@ -40,7 +40,6 @@ impl Users {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserRecord {
-    #[serde(alias = "files_uploaded")]
     files_owned: HashMap<FileId, FileStatusInternal>,
 }
 

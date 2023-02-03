@@ -81,7 +81,6 @@ struct Data {
     pub service_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecordInternal>,
-    #[serde(default)]
     pub files: Files,
     pub buckets: Buckets,
     pub canisters_requiring_upgrade: CanistersRequiringUpgrade,
@@ -175,14 +174,8 @@ impl Data {
 #[derive(Serialize, Deserialize, Debug)]
 struct UserRecordInternal {
     pub byte_limit: u64,
-    #[serde(skip_deserializing)]
     pub bytes_used: u64,
-    #[serde(default = "bool_true")]
     pub delete_oldest_if_limit_exceeded: bool,
-}
-
-fn bool_true() -> bool {
-    true
 }
 
 #[derive(CandidType, Serialize, Debug)]

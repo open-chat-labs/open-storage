@@ -17,7 +17,6 @@ pub struct Files {
     reference_counts: ReferenceCounts,
     accessors_map: AccessorsMap,
     blobs: StableBlobStorage,
-    #[serde(default)]
     expiration_queue: BTreeMap<TimestampMillis, VecDeque<FileId>>,
     bytes_used: u64,
 }
@@ -306,18 +305,6 @@ impl Files {
             file_count: self.files.len() as u64,
             blob_count: self.blobs.len(),
         }
-    }
-
-    // TODO remove this!
-    pub fn iter_files_added(&self) -> impl Iterator<Item = FileAdded> + '_ {
-        self.files.iter().filter_map(|(file_id, file)| {
-            self.blobs.data_size(&file.hash).map(|size| FileAdded {
-                file_id: *file_id,
-                hash: file.hash,
-                size,
-                meta_data: file.meta_data(),
-            })
-        })
     }
 
     fn insert_completed_file(&mut self, file_id: FileId, completed_file: PendingFile) {
