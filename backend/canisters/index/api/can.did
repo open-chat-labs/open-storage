@@ -53,6 +53,7 @@ type AllocatedBucketArgs =
     record {
         file_hash: Hash;
         file_size: nat64;
+        file_id_seed: opt nat64;
     };
 
 type AllocatedBucketResponse =
@@ -66,6 +67,7 @@ type AllocatedBucketResponse =
 type AllocatedBucketSuccessResult =
     record {
         canister_id: CanisterId;
+        file_id: FileId;
         chunk_size: nat32;
         byte_limit: nat64;
         bytes_used: nat64;

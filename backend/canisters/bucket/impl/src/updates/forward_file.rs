@@ -16,19 +16,21 @@ fn forward_file(args: Args) -> Response {
 fn forward_file_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let caller = runtime_state.env.caller();
     let now = runtime_state.env.now();
-    let new_file_id = runtime_state.generate_new_file_id();
+    let canister_id = runtime_state.env.canister_id();
+    let file_id_seed = runtime_state.env.random_u64();
     let accessors = args.accessors.into_iter().collect();
 
     match runtime_state
         .data
         .files
-        .forward(caller, args.file_id, new_file_id, accessors, now)
+        .forward(caller, args.file_id, canister_id, file_id_seed, accessors, now)
     {
         ForwardFileResult::Success(f) => {
             let user = runtime_state.data.users.get_mut(&caller).unwrap();
-            user.set_file_status(new_file_id, FileStatusInternal::Complete(IndexSyncComplete::No));
+            let file_id = f.file_id;
+            user.set_file_status(file_id, FileStatusInternal::Complete(IndexSyncComplete::No));
             runtime_state.data.index_sync_state.enqueue(EventToSync::FileAdded(f));
-            Success(new_file_id)
+            Success(file_id)
         }
         // TODO Add this back in once we support access tokens
         // ForwardFileResult::NotAuthorized => NotAuthorized,

@@ -29,6 +29,7 @@ pub enum Response {
     ChunkSizeMismatch,
     Full,
     HashMismatch,
+    InvalidFileId,
     UserNotFound,
 }
 

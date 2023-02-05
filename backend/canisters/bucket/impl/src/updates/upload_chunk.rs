@@ -7,6 +7,7 @@ use bucket_canister::upload_chunk_v2::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
 use types::{FileRemoved, RejectedReason, UserId};
+use utils::file_id::validate_file_id;
 
 #[update(guard = "caller_is_known_user")]
 #[trace]
@@ -19,6 +20,10 @@ fn upload_chunk_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let now = runtime_state.env.now();
     let user = runtime_state.data.users.get_mut(&user_id).unwrap();
     let file_id = args.file_id;
+
+    if !validate_file_id(file_id, runtime_state.env.canister_id()) {
+        return InvalidFileId;
+    }
 
     let mut index_sync_complete = IndexSyncComplete::No;
     if let Some(status) = user.file_status(&file_id) {

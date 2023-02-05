@@ -9,6 +9,7 @@ export type UploadChunkResponse =
     | "allowance_exceeded"
     | "user_not_found"
     | "hash_mismatch"
+    | "invalid_file_id"
     | "full";
 
 export type ForwardFileResponse =

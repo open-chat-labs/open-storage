@@ -33,6 +33,9 @@ export function uploadChunkResponse(candid: CandidUploadChunkResponse): UploadCh
     if ("HashMismatch" in candid) {
         return "hash_mismatch";
     }
+    if ("InvalidFileId" in candid) {
+        return "invalid_file_id";
+    }
     if ("Full" in candid) {
         return "full";
     }

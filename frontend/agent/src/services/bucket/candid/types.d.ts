@@ -60,6 +60,7 @@ export type UploadChunkResponse = { 'ChunkAlreadyExists' : null } |
   { 'HashMismatch' : null } |
   { 'FileAlreadyExists' : null } |
   { 'AllowanceExceeded' : null } |
+  { 'InvalidFileId' : null } |
   { 'UserNotFound' : null };
 export type UserId = Principal;
 export interface Version {

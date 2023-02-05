@@ -51,20 +51,6 @@ impl RuntimeState {
         self.data.users.exists(&caller)
     }
 
-    pub fn generate_new_file_id(&mut self) -> FileId {
-        loop {
-            let mut file_id = 0u128;
-            file_id += self.env.random_u32() as u128;
-            file_id += (self.env.random_u32() as u128) << 32;
-            file_id += (self.env.random_u32() as u128) << 64;
-            file_id += (self.env.random_u32() as u128) << 96;
-
-            if self.data.files.get(&file_id).is_none() {
-                return file_id;
-            }
-        }
-    }
-
     pub fn metrics(&self) -> Metrics {
         let file_metrics = self.data.files.metrics();
 
