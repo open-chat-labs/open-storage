@@ -46,7 +46,11 @@ pub mod happy_path {
             env,
             sender,
             canister_id,
-            &index_canister::allocated_bucket_v2::Args { file_hash, file_size },
+            &index_canister::allocated_bucket_v2::Args {
+                file_hash,
+                file_size,
+                file_id_seed: None,
+            },
         );
 
         if let index_canister::allocated_bucket_v2::Response::Success(result) = response {
