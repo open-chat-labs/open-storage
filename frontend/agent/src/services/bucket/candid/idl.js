@@ -63,6 +63,7 @@ export const idlFactory = ({ IDL }) => {
     'HashMismatch' : IDL.Null,
     'FileAlreadyExists' : IDL.Null,
     'AllowanceExceeded' : IDL.Null,
+    'InvalidFileId' : IDL.Null,
     'UserNotFound' : IDL.Null,
   });
   return IDL.Service({

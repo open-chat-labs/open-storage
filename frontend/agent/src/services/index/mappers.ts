@@ -16,6 +16,7 @@ export function allocatedBucketResponse(
         return {
             kind: "success",
             canisterId: candid.Success.canister_id,
+            fileId: candid.Success.file_id,
             chunkSize: candid.Success.chunk_size,
             projectedAllowance: projectedAllowance(candid.Success.projected_allowance),
         };

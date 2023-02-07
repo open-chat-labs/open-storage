@@ -9,6 +9,7 @@ export type AllocatedBucketResponse =
 export type AllocatedBucketSuccess = {
     kind: "success";
     canisterId: Principal;
+    fileId: bigint;
     chunkSize: number;
     projectedAllowance: ProjectedAllowance,
 };

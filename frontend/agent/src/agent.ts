@@ -1,6 +1,5 @@
 import type { HttpAgent } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
-import { v1 as uuidv1 } from "uuid";
 import type {
     AllowanceExceeded,
     ProjectedAllowance,
@@ -12,6 +11,7 @@ import { BucketClient } from "./services/bucket/bucket.client";
 import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
 import { hashBytes } from "./utils/hash";
+import { random64 } from "./utils/rng";
 
 export type { UploadFileResponse, UserResponse };
 
@@ -40,7 +40,8 @@ export class OpenStorageAgent {
 
         const allocatedBucketResponse = await this.indexClient.allocatedBucket(
             hash,
-            BigInt(fileSize)
+            BigInt(fileSize),
+            random64(),
         );
 
         if (allocatedBucketResponse.kind !== "success") {
@@ -48,8 +49,8 @@ export class OpenStorageAgent {
             throw new Error(allocatedBucketResponse.kind);
         }
 
-        const fileId = OpenStorageAgent.newFileId();
         const bucketCanisterId = allocatedBucketResponse.canisterId;
+        const fileId = allocatedBucketResponse.fileId;
         const chunkSize = allocatedBucketResponse.chunkSize;
         const chunkCount = Math.ceil(fileSize / chunkSize);
         const chunkIndexes = [...Array(chunkCount).keys()];
@@ -128,10 +129,6 @@ export class OpenStorageAgent {
             case "file_not_found":
                 return forwardFileResponse;
         }
-    }
-
-    private static newFileId(): bigint {
-        return BigInt(parseInt(uuidv1().replace(/-/g, ""), 16));
     }
 }
 

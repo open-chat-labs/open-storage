@@ -27,9 +27,11 @@ fn upload_file() {
     let file_hash = hash_bytes(&file);
     let file_size = file.len() as u64;
 
-    let bucket = client::index::happy_path::allocated_bucket(&env, user_id, index_canister_id, &file).canister_id;
+    let allocated_bucket_response = client::index::happy_path::allocated_bucket(&env, user_id, index_canister_id, &file);
+    let bucket = allocated_bucket_response.canister_id;
+    let file_id = allocated_bucket_response.file_id;
 
-    let file_id = client::bucket::happy_path::upload_file(&mut env, user_id, bucket, file, None);
+    client::bucket::happy_path::upload_file(&mut env, user_id, bucket, file_id, file, None);
 
     let file_info_response = client::bucket::happy_path::file_info(&env, user_id, bucket, file_id);
 

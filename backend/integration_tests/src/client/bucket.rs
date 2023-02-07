@@ -12,7 +12,6 @@ generate_update_call!(forward_file);
 generate_update_call!(upload_chunk_v2);
 
 pub mod happy_path {
-    use crate::rng::random_file_id;
     use crate::{tick_many, DEFAULT_MIME_TYPE};
     use candid::Principal;
     use ic_state_machine_tests::StateMachine;
@@ -24,10 +23,10 @@ pub mod happy_path {
         env: &mut StateMachine,
         sender: Principal,
         canister_id: CanisterId,
+        file_id: FileId,
         file: Vec<u8>,
         expiry: Option<TimestampMillis>,
-    ) -> FileId {
-        let file_id = random_file_id();
+    ) {
         let hash = hash_bytes(&file);
         let chunk_size = 1000;
         let total_size = file.len() as u64;
@@ -55,8 +54,6 @@ pub mod happy_path {
 
         // Tick a few times to propagate the file to the index and finalize state
         tick_many(env, 10);
-
-        file_id
     }
 
     pub fn file_info(

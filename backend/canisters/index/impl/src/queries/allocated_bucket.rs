@@ -3,6 +3,7 @@ use canister_api_macros::trace;
 use ic_cdk_macros::query;
 use index_canister::allocated_bucket_v2::{Response::*, *};
 use index_canister::ProjectedAllowance;
+use utils::file_id::generate_file_id;
 
 #[query]
 #[trace]
@@ -39,8 +40,17 @@ fn allocated_bucket_impl(args: Args, runtime_state: &RuntimeState) -> Response {
             .or_else(|| runtime_state.data.buckets.allocate(args.file_hash));
 
         if let Some(canister_id) = bucket {
+            let now = runtime_state.env.now();
+
             Success(SuccessResult {
                 canister_id,
+                file_id: generate_file_id(
+                    canister_id,
+                    user_id,
+                    args.file_hash,
+                    args.file_id_seed.unwrap_or_default(),
+                    now,
+                ),
                 chunk_size: DEFAULT_CHUNK_SIZE_BYTES,
                 byte_limit,
                 bytes_used,

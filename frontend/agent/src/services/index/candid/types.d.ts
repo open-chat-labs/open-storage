@@ -7,6 +7,7 @@ export type AddOrUpdateUsersResponse = { 'Success' : null };
 export interface AllocatedBucketArgs {
   'file_hash' : Hash,
   'file_size' : bigint,
+  'file_id_seed' : [] | [bigint],
 }
 export type AllocatedBucketResponse = {
     'Success' : AllocatedBucketSuccessResult
@@ -21,6 +22,7 @@ export interface AllocatedBucketSuccessResult {
   'bytes_used' : bigint,
   'projected_allowance' : ProjectedAllowance,
   'chunk_size' : number,
+  'file_id' : FileId,
 }
 export interface CanForwardArgs { 'file_hash' : Hash, 'file_size' : bigint }
 export type CanForwardResponse = { 'Success' : ProjectedAllowance } |

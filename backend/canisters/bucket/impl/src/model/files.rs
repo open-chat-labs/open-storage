@@ -7,7 +7,8 @@ use serde_bytes::ByteBuf;
 use std::cmp::Ordering;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
-use types::{AccessorId, FileAdded, FileId, FileMetaData, FileRemoved, Hash, TimestampMillis, UserId};
+use types::{AccessorId, CanisterId, FileAdded, FileId, FileMetaData, FileRemoved, Hash, TimestampMillis, UserId};
+use utils::file_id::generate_file_id;
 use utils::hasher::hash_bytes;
 
 #[derive(Serialize, Deserialize, Default)]
@@ -170,7 +171,8 @@ impl Files {
         &mut self,
         caller: UserId,
         file_id: FileId,
-        new_file_id: FileId,
+        canister_id: CanisterId,
+        file_id_seed: u64,
         accessors: HashSet<UserId>,
         now: TimestampMillis,
     ) -> ForwardFileResult {
@@ -180,6 +182,7 @@ impl Files {
         };
 
         let hash = file.hash;
+        let new_file_id = generate_file_id(canister_id, caller, hash, file_id_seed, now);
 
         self.accessors_map.link_many(caller, accessors.iter().copied(), new_file_id);
         self.reference_counts.incr(hash);

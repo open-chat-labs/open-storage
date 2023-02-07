@@ -25,6 +25,7 @@ type UploadChunkResponse =
         ChunkSizeMismatch;
         Full;
         HashMismatch;
+        InvalidFileId;
         UserNotFound;
     };
 

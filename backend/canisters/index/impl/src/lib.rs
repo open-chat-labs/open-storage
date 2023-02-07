@@ -126,10 +126,13 @@ impl Data {
                             .files
                             .iter_user_files_from_oldest(user_id)
                             .take_while(|f| {
-                                let take_next = total_size < allowance_exceeded_by;
-                                let size = self.files.blob_size(&f.hash).unwrap_or_default();
-                                total_size = total_size.saturating_add(size);
-                                take_next
+                                if total_size < allowance_exceeded_by {
+                                    let size = self.files.blob_size(&f.hash).unwrap_or_default();
+                                    total_size = total_size.saturating_add(size);
+                                    true
+                                } else {
+                                    false
+                                }
                             })
                             .collect();
 

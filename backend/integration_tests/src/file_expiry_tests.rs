@@ -26,11 +26,13 @@ fn file_is_removed_after_expiry_date() {
 
     let file = vec![1u8; 1000];
 
-    let bucket = client::index::happy_path::allocated_bucket(&env, user_id, index_canister_id, &file).canister_id;
+    let allocated_bucket_response = client::index::happy_path::allocated_bucket(&env, user_id, index_canister_id, &file);
+    let bucket = allocated_bucket_response.canister_id;
+    let file_id = allocated_bucket_response.file_id;
 
     let now: TimestampMillis = env.time().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as u64;
 
-    let file_id = client::bucket::happy_path::upload_file(&mut env, user_id, bucket, file, Some(now + 1000));
+    client::bucket::happy_path::upload_file(&mut env, user_id, bucket, file_id, file, Some(now + 1000));
 
     env.advance_time(Duration::from_millis(999));
     env.tick();

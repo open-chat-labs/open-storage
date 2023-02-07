@@ -24,8 +24,16 @@ pub struct Files {
 
 impl Files {
     pub fn add(&mut self, file: FileAdded, bucket: CanisterId) {
-        self.files_by_user
-            .insert((&file).into(), HashAndBucket { hash: file.hash, bucket });
+        if let Some(existing) = self
+            .files_by_user
+            .insert((&file).into(), HashAndBucket { hash: file.hash, bucket })
+        {
+            if existing.hash == file.hash && existing.bucket == bucket {
+                return;
+            } else {
+                panic!("FileId already in use! {}", file.file_id);
+            }
+        }
 
         let blob_reference = BlobReference {
             hash: file.hash,
