@@ -5,6 +5,7 @@ fn main() {
     generate_candid_method!(index, can_forward, query);
     generate_candid_method!(index, user, query);
 
+    generate_candid_method!(index, add_bucket_canister, update);
     generate_candid_method!(index, add_or_update_users, update);
     generate_candid_method!(index, remove_accessor, update);
     generate_candid_method!(index, remove_user, update);
