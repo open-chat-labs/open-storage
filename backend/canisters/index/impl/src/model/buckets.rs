@@ -83,10 +83,14 @@ impl Buckets {
             .collect()
     }
 
-    pub fn archive(&mut self, canister_id: CanisterId) {
-        if let Some(index) = self.active_buckets.iter().position(|b| b.canister_id == canister_id) {
-            let bucket = self.active_buckets.remove(index);
-            self.full_buckets.insert(canister_id, bucket);
+    pub fn set_full(&mut self, canister_id: CanisterId, full: bool) {
+        if full {
+            if let Some(index) = self.active_buckets.iter().position(|b| b.canister_id == canister_id) {
+                let bucket = self.active_buckets.remove(index);
+                self.full_buckets.insert(canister_id, bucket);
+            }
+        } else if let Some(bucket) = self.full_buckets.remove(&canister_id) {
+            self.active_buckets.push(bucket);
         }
     }
 

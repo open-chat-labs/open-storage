@@ -29,7 +29,7 @@ fn c2c_sync_bucket_impl(args: Args, runtime_state: &mut RuntimeState) -> Respons
     }
 
     if args.bytes_remaining <= 0 {
-        runtime_state.data.buckets.archive(bucket);
+        runtime_state.data.buckets.set_full(bucket, true);
     }
 
     Response::Success(SuccessResult { files_rejected })

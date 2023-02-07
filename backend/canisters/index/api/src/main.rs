@@ -9,6 +9,7 @@ fn main() {
     generate_candid_method!(index, add_or_update_users, update);
     generate_candid_method!(index, remove_accessor, update);
     generate_candid_method!(index, remove_user, update);
+    generate_candid_method!(index, set_bucket_full, update);
     generate_candid_method!(index, update_user_id, update);
 
     candid::export_service!();
