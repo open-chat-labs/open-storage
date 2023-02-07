@@ -1,4 +1,3 @@
-use crate::model::bucket_sync_state::EventToSync;
 use crate::{mutate_state, RuntimeState};
 use bucket_canister::c2c_sync_index::{Args, Response, SuccessResult};
 use ic_cdk_macros::heartbeat;
@@ -74,17 +73,10 @@ mod ensure_sufficient_active_buckets {
 
         if let Ok(canister_id) = result {
             let bucket = BucketRecord::new(canister_id, args.canister_wasm.version);
-            mutate_state(|state| commit(bucket, state))
+            mutate_state(|state| state.data.add_bucket(bucket, true))
         } else {
             mutate_state(|state| state.data.buckets.release_creation_lock());
         }
-    }
-
-    fn commit(mut bucket: BucketRecord, runtime_state: &mut RuntimeState) {
-        for user_id in runtime_state.data.users.keys() {
-            bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
-        }
-        runtime_state.data.buckets.add_bucket(bucket, true);
     }
 }
 

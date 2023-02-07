@@ -1,3 +1,4 @@
+pub mod add_bucket_canister;
 pub mod add_or_update_users;
 pub mod add_service_principals;
 pub mod c2c_notify_low_balance;
