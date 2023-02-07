@@ -8,6 +8,7 @@ use index_canister::add_bucket_canister::{Response::*, *};
 use types::{CanisterId, CanisterWasm};
 use utils::canister::create_and_install;
 
+// dfx canister --network ic call index add_bucket_canister '(record { canister_id = principal "myzmx-wqaaa-aaaar-ad2ua-cai" })'
 #[update(guard = "caller_is_service_principal")]
 #[trace]
 async fn add_bucket_canister(args: Args) -> Response {
