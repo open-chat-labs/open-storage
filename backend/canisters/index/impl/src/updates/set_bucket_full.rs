@@ -4,6 +4,7 @@ use canister_api_macros::trace;
 use ic_cdk_macros::update;
 use index_canister::set_bucket_full::{Response::*, *};
 
+// dfx canister --network ic call index set_bucket_full '(record { bucket = principal "r2x27-giaaa-aaaaf-aabba-cai"; full = true })'
 #[update(guard = "caller_is_service_principal")]
 #[trace]
 fn set_bucket_full(args: Args) -> Response {
