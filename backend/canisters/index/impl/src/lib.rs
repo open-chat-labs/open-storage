@@ -1,5 +1,5 @@
 use crate::model::bucket_sync_state::EventToSync;
-use crate::model::buckets::Buckets;
+use crate::model::buckets::{BucketRecord, Buckets};
 use crate::model::files::Files;
 use candid::{CandidType, Principal};
 use canister_state_macros::canister_state;
@@ -171,6 +171,13 @@ impl Data {
                 }
             }
         }
+    }
+
+    pub fn add_bucket(&mut self, mut bucket: BucketRecord, release_creation_lock: bool) {
+        for user_id in self.users.keys() {
+            bucket.sync_state.enqueue(EventToSync::UserAdded(*user_id))
+        }
+        self.buckets.add_bucket(bucket, release_creation_lock);
     }
 }
 

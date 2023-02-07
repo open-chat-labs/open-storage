@@ -1,5 +1,17 @@
 import "../../../libraries/types/can.did";
 
+type AddBucketCanisterArgs =
+    record {
+        canister_id: CanisterId;
+    };
+
+type AddBucketCanisterResponse =
+    variant {
+        Success;
+        BucketAlreadyAdded;
+        InternalError: text;
+    };
+
 type AddOrUpdateUsersArgs =
     record {
         users: vec UserConfig;
@@ -113,6 +125,7 @@ type UserRecord =
     };
 
 service: {
+    add_bucket_canister: (AddBucketCanisterArgs) -> (AddBucketCanisterResponse);
     add_or_update_users: (AddOrUpdateUsersArgs) -> (AddOrUpdateUsersResponse);
     remove_user: (RemoveUserArgs) -> (RemoveUserResponse);
     remove_accessor: (RemoveAccessorArgs) -> (RemoveAccessorResponse);
