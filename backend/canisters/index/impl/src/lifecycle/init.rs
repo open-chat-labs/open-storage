@@ -16,7 +16,7 @@ fn init(args: Args) {
         init_cycles_dispenser_client(config.canister_id, config.min_cycles_balance);
     }
 
-    let env = Box::new(CanisterEnv::new_insecure());
+    let env = Box::new(CanisterEnv::default());
     let data = Data::new(
         args.service_principals,
         args.bucket_canister_wasm,
