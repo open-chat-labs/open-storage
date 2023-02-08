@@ -67,6 +67,10 @@ fn start_streaming_file(file_id: FileId, runtime_state: &RuntimeState) -> HttpRe
                     HeaderField("Content-Type".to_string(), file.mime_type.clone()),
                     HeaderField("Cache-Control".to_string(), CACHE_HEADER_VALUE.to_string()),
                     HeaderField("Access-Control-Allow-Origin".to_string(), "*".to_string()),
+                    HeaderField(
+                        "Content-Security-Policy".to_string(),
+                        "default-src 'none'; img-src *; media-src *; style-src 'unsafe-inline'".to_string(),
+                    ),
                 ],
                 body: Cow::Owned(chunk_bytes),
                 streaming_strategy,
