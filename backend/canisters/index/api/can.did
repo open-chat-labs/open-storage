@@ -76,7 +76,7 @@ type AllocatedBucketArgs =
     record {
         file_hash: Hash;
         file_size: nat64;
-        file_id_seed: opt nat64;
+        file_id_seed: opt nat;
     };
 
 type AllocatedBucketResponse =
