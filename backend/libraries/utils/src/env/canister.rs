@@ -2,7 +2,7 @@ use crate::env::Environment;
 use crate::time;
 use candid::Principal;
 use rand::rngs::StdRng;
-use rand::{RngCore, SeedableRng};
+use rand::SeedableRng;
 use types::{CanisterId, Cycles, TimestampMillis};
 
 pub struct CanisterEnv {
@@ -36,11 +36,11 @@ impl Environment for CanisterEnv {
         ic_cdk::id()
     }
 
-    fn random_u32(&mut self) -> u32 {
-        self.rng.next_u32()
-    }
-
     fn cycles_balance(&self) -> Cycles {
         ic_cdk::api::canister_balance().into()
+    }
+
+    fn rng(&mut self) -> &mut StdRng {
+        &mut self.rng
     }
 }

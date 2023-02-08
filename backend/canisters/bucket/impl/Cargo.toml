@@ -22,6 +22,7 @@ ic-stable-structures = { workspace = true }
 index_canister = { path = "../../index/api" }
 index_canister_c2c_client = { path = "../../index/c2c_client" }
 num-traits = { workspace = true }
+rand_core = { workspace = true }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
 serializer = { workspace = true }

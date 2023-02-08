@@ -406,6 +406,7 @@ dependencies = [
  "index_canister",
  "index_canister_c2c_client",
  "num-traits",
+ "rand_core 0.6.4",
  "serde",
  "serde_bytes",
  "serializer",

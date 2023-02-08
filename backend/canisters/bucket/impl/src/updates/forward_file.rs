@@ -6,6 +6,7 @@ use crate::{mutate_state, RuntimeState};
 use bucket_canister::forward_file::{Response::*, *};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
+use rand_core::RngCore;
 
 #[update(guard = "caller_is_known_user")]
 #[trace]
@@ -17,7 +18,7 @@ fn forward_file_impl(args: Args, runtime_state: &mut RuntimeState) -> Response {
     let caller = runtime_state.env.caller();
     let now = runtime_state.env.now();
     let canister_id = runtime_state.env.canister_id();
-    let file_id_seed = runtime_state.env.random_u64();
+    let file_id_seed = runtime_state.env.rng().next_u64();
     let accessors = args.accessors.into_iter().collect();
 
     match runtime_state
