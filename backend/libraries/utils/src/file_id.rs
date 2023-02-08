@@ -1,7 +1,7 @@
 use crate::hasher::{hash_bytes, hash_stream};
 use types::{CanisterId, FileId, Hash, TimestampMillis, UserId};
 
-pub fn generate_file_id(bucket: CanisterId, owner: UserId, file_hash: Hash, seed: u64, now: TimestampMillis) -> FileId {
+pub fn generate_file_id(bucket: CanisterId, owner: UserId, file_hash: Hash, seed: u128, now: TimestampMillis) -> FileId {
     let bucket_hash = hash_bytes(bucket);
     let suffix_hash = hash_stream(
         [

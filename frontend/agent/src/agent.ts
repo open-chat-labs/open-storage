@@ -11,7 +11,7 @@ import { BucketClient } from "./services/bucket/bucket.client";
 import { IndexClient } from "./services/index/index.client";
 import type { IIndexClient } from "./services/index/index.client.interface";
 import { hashBytes } from "./utils/hash";
-import { random64 } from "./utils/rng";
+import { random128 } from "./utils/rng";
 
 export type { UploadFileResponse, UserResponse };
 
@@ -41,7 +41,7 @@ export class OpenStorageAgent {
         const allocatedBucketResponse = await this.indexClient.allocatedBucket(
             hash,
             BigInt(fileSize),
-            random64(),
+            random128(),
         );
 
         if (allocatedBucketResponse.kind !== "success") {

@@ -7,7 +7,7 @@ use types::{CanisterId, FileId, Hash};
 pub struct Args {
     pub file_hash: Hash,
     pub file_size: u64,
-    pub file_id_seed: Option<u64>,
+    pub file_id_seed: Option<u128>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]

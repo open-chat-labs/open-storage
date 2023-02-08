@@ -172,7 +172,7 @@ impl Files {
         caller: UserId,
         file_id: FileId,
         canister_id: CanisterId,
-        file_id_seed: u64,
+        file_id_seed: u128,
         accessors: HashSet<UserId>,
         now: TimestampMillis,
     ) -> ForwardFileResult {

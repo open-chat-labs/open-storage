@@ -2,6 +2,10 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export type AccessorId = Principal;
+export interface AddBucketCanisterArgs { 'canister_id' : CanisterId }
+export type AddBucketCanisterResponse = { 'BucketAlreadyAdded' : null } |
+  { 'Success' : null } |
+  { 'InternalError' : string };
 export interface AddOrUpdateUsersArgs { 'users' : Array<UserConfig> }
 export type AddOrUpdateUsersResponse = { 'Success' : null };
 export interface AllocatedBucketArgs {
@@ -43,6 +47,8 @@ export interface RemoveAccessorArgs { 'accessor_id' : AccessorId }
 export type RemoveAccessorResponse = { 'Success' : null };
 export interface RemoveUserArgs { 'user_id' : UserId }
 export type RemoveUserResponse = { 'Success' : null };
+export interface SetBucketFullArgs { 'full' : boolean, 'bucket' : CanisterId }
+export type SetBucketFullResponse = { 'Success' : null };
 export type TimestampMillis = bigint;
 export type TimestampNanos = bigint;
 export interface UpdateUserIdArgs {
@@ -64,6 +70,10 @@ export interface Version {
   'patch' : number,
 }
 export interface _SERVICE {
+  'add_bucket_canister' : ActorMethod<
+    [AddBucketCanisterArgs],
+    AddBucketCanisterResponse
+  >,
   'add_or_update_users' : ActorMethod<
     [AddOrUpdateUsersArgs],
     AddOrUpdateUsersResponse
@@ -75,6 +85,7 @@ export interface _SERVICE {
   'can_forward' : ActorMethod<[CanForwardArgs], CanForwardResponse>,
   'remove_accessor' : ActorMethod<[RemoveAccessorArgs], RemoveAccessorResponse>,
   'remove_user' : ActorMethod<[RemoveUserArgs], RemoveUserResponse>,
+  'set_bucket_full' : ActorMethod<[SetBucketFullArgs], SetBucketFullResponse>,
   'update_user_id' : ActorMethod<[UpdateUserIdArgs], UpdateUserIdResponse>,
   'user' : ActorMethod<[UserArgs], UserResponse>,
 }
