@@ -20,7 +20,7 @@ bucket_canister = { path = "../../bucket/api" }
 bucket_canister_c2c_client = { path = "../../bucket/c2c_client" }
 futures = { workspace = true }
 http_request = { path = "../../../libraries/http_request" }
-ic-cdk = { workspace = true }
+ic-cdk = { workspace = true, features = ["timers"] }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 index_canister = { path = "../api" }

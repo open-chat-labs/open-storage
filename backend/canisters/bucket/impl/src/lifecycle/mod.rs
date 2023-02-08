@@ -1,5 +1,7 @@
-use crate::{init_state as set_state, Data, RuntimeState, WASM_VERSION};
+use crate::{init_state as set_state, mutate_state, Data, RuntimeState, WASM_VERSION};
+use tracing::{error, trace};
 use types::{Timestamped, Version};
+use utils::env::canister::CanisterEnv;
 use utils::env::Environment;
 
 mod heartbeat;
@@ -15,4 +17,19 @@ fn init_state(env: Box<dyn Environment>, data: Data, wasm_version: Version) {
 
     set_state(runtime_state);
     WASM_VERSION.with(|v| *v.borrow_mut() = Timestamped::new(wasm_version, now));
+}
+
+fn reseed_rng() {
+    ic_cdk::spawn(reseed_rng_inner());
+
+    async fn reseed_rng_inner() {
+        match ic_cdk::api::management_canister::main::raw_rand().await {
+            Ok((bytes,)) => {
+                let seed: [u8; 32] = bytes.try_into().unwrap();
+                mutate_state(|state| state.env = Box::new(CanisterEnv::new(seed)));
+                trace!("Successfully reseeded rng");
+            }
+            Err(error) => error!(?error, "Failed to call 'raw_rand'"),
+        }
+    }
 }
