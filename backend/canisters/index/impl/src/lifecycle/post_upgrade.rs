@@ -1,4 +1,4 @@
-use crate::lifecycle::{init_cycles_dispenser_client, init_state, reseed_rng, BUFFER_SIZE};
+use crate::lifecycle::{init_cycles_dispenser_client, init_env, init_state, BUFFER_SIZE};
 use crate::memory::get_upgrades_memory;
 use crate::Data;
 use canister_api_macros::trace;
@@ -6,14 +6,12 @@ use canister_logger::LogEntry;
 use ic_cdk_macros::post_upgrade;
 use ic_stable_structures::reader::{BufferedReader, Reader};
 use index_canister::post_upgrade::Args;
-use std::time::Duration;
 use tracing::info;
-use utils::env::canister::CanisterEnv;
 
 #[post_upgrade]
 #[trace]
 fn post_upgrade(args: Args) {
-    let env = Box::<CanisterEnv>::default();
+    let env = init_env();
 
     let memory = get_upgrades_memory();
     let reader = BufferedReader::new(BUFFER_SIZE, Reader::new(&memory, 0));
@@ -27,8 +25,6 @@ fn post_upgrade(args: Args) {
     }
 
     init_state(env, data, args.wasm_version);
-
-    ic_cdk::timer::set_timer(Duration::default(), reseed_rng);
 
     info!(version = %args.wasm_version, "Post-upgrade complete");
 }
