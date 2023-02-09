@@ -36,6 +36,10 @@ impl Users {
             false
         }
     }
+
+    pub fn len(&self) -> usize {
+        self.users.len()
+    }
 }
 
 #[derive(Serialize, Deserialize, Default)]
