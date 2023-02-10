@@ -1,4 +1,5 @@
 use crate::{init_state as set_state, mutate_state, Data, RuntimeState, WASM_VERSION};
+use std::time::Duration;
 use tracing::{error, info, trace};
 use types::{CanisterId, Cycles, Timestamped, Version};
 use utils::env::canister::CanisterEnv;
@@ -11,6 +12,11 @@ mod post_upgrade;
 mod pre_upgrade;
 
 const BUFFER_SIZE: usize = 4 * 1024 * 1024; // 4MB
+
+fn init_env() -> Box<CanisterEnv> {
+    ic_cdk_timers::set_timer(Duration::default(), reseed_rng);
+    Box::default()
+}
 
 fn init_state(env: Box<dyn Environment>, data: Data, wasm_version: Version) {
     let now = env.now();

@@ -22,19 +22,21 @@ members = [
 [workspace.dependencies]
 arrayref = "0.3.6"
 candid = "0.8.4"
-canister_logger = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
-canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
+canister_logger = { git = "https://github.com/open-ic/ic-utils", rev = "4bcf677f878b6cd9d2a818c5fc1c2f89ad110f8c" }
+canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "4bcf677f878b6cd9d2a818c5fc1c2f89ad110f8c" }
 clap = "3.2.22"
+cycles_dispenser_client = { git = "https://github.com/open-ic/cycles-dispenser", rev = "fedf3fb1f407000aae1390d46769ae9cea0a8b49" }
 dirs = "4.0.0"
 futures = "0.3.24"
 generic-array = "0.14.6"
 getrandom = "0.2.8"
 hex = "0.4.3"
 ic-agent = "0.23.0"
-ic-cdk = "0.6.8"
+ic-cdk = "0.7.0"
 ic-cdk-macros = "0.6.8"
+ic-cdk-timers = "0.1.0"
 ic-stable-structures = "0.5.0"
-ic-state-machine-tests = { git = "https://github.com/dfinity/ic", rev = "467663a9d0dc6eac152bcd92df18850e2aed1632" }
+ic-state-machine-tests = { git = "https://github.com/dfinity/ic", rev = "7445081734e6d896d090295967d50710975c4f25" }
 ic-utils = "0.23.0"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
@@ -47,7 +49,7 @@ serde = "1.0.145"
 serde_bytes = "0.11.7"
 serde_json = "1.0.86"
 sha3 = "0.10.5"
-serializer = { git = "https://github.com/open-ic/ic-utils", rev = "2656695f78e5234be04561d353da7b057b11d553" }
+serializer = { git = "https://github.com/open-ic/ic-utils", rev = "4bcf677f878b6cd9d2a818c5fc1c2f89ad110f8c" }
 syn = "1.0.102"
 tokio = "1.21.2"
 tracing = "0.1.37"
@@ -58,7 +60,3 @@ tracing-subscriber = "0.3.16"
 lto = true
 opt-level = "z"
 codegen-units = 1
-
-[patch.crates-io]
-ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "f758bf78e6ec18850e6d023c4f60586376d24885" }
-ic-cdk-macros = { git = "https://github.com/hpeebles/cdk-rs", rev = "f758bf78e6ec18850e6d023c4f60586376d24885" }
