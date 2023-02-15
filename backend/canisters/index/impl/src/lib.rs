@@ -42,9 +42,14 @@ impl RuntimeState {
         RuntimeState { env, data }
     }
 
-    pub fn is_caller_service_principal(&self) -> bool {
+    pub fn is_caller_governance_principal(&self) -> bool {
         let caller = self.env.caller();
-        self.data.service_principals.contains(&caller)
+        self.data.governance_principals.contains(&caller)
+    }
+
+    pub fn is_caller_user_controller(&self) -> bool {
+        let caller = self.env.caller();
+        self.data.user_controllers.contains(&caller)
     }
 
     pub fn is_caller_bucket(&self) -> bool {
@@ -79,7 +84,10 @@ impl RuntimeState {
 
 #[derive(Serialize, Deserialize)]
 struct Data {
-    pub service_principals: HashSet<Principal>,
+    #[serde(default = "user_index")]
+    pub user_controllers: HashSet<Principal>,
+    #[serde(alias = "service_principals")]
+    pub governance_principals: HashSet<Principal>,
     pub bucket_canister_wasm: CanisterWasm,
     pub users: HashMap<UserId, UserRecordInternal>,
     pub files: Files,
@@ -90,15 +98,21 @@ struct Data {
     pub test_mode: bool,
 }
 
+fn user_index() -> HashSet<Principal> {
+    HashSet::from_iter([Principal::from_text("4bkt6-4aaaa-aaaaf-aaaiq-cai").unwrap()])
+}
+
 impl Data {
     fn new(
-        service_principals: Vec<Principal>,
+        user_controllers: Vec<Principal>,
+        governance_principals: Vec<Principal>,
         bucket_canister_wasm: CanisterWasm,
         cycles_dispenser_config: Option<CyclesDispenserConfig>,
         test_mode: bool,
     ) -> Data {
         Data {
-            service_principals: service_principals.into_iter().collect(),
+            user_controllers: user_controllers.into_iter().collect(),
+            governance_principals: governance_principals.into_iter().collect(),
             bucket_canister_wasm,
             users: HashMap::new(),
             files: Files::default(),

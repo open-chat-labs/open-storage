@@ -12,7 +12,15 @@ async fn main() {
 
     let cycles_dispenser_config = cycles_dispenser_config(&opts);
 
-    install_service_canisters(identity, opts.url, opts.index, cycles_dispenser_config, opts.test_mode).await;
+    install_service_canisters(
+        identity,
+        opts.url,
+        opts.user_controller,
+        opts.index,
+        cycles_dispenser_config,
+        opts.test_mode,
+    )
+    .await;
 }
 
 fn cycles_dispenser_config(opts: &Opts) -> Option<CyclesDispenserConfig> {
@@ -31,6 +39,7 @@ struct Opts {
     #[clap(parse(try_from_str))]
     test_mode: bool,
     controller: String,
+    user_controller: CanisterId,
     index: CanisterId,
     cycles_dispenser_canister_id: Option<CanisterId>,
     min_cycles_balance: Option<Cycles>,

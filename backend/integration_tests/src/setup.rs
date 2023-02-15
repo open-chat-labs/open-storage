@@ -48,12 +48,14 @@ fn try_take_existing_env() -> Option<TestEnv> {
 
 fn install_service(env: &mut StateMachine, controller: Principal) -> CanisterId {
     let index_canister_id = create_canister(env, None);
+    let user_controller = random_principal();
 
     let index_canister_wasm = wasms::INDEX.clone();
     let bucket_canister_wasm = wasms::BUCKET.clone();
 
     let index_init_args = index_canister::init::Args {
-        service_principals: vec![controller],
+        governance_principals: vec![controller],
+        user_controllers: vec![user_controller],
         bucket_canister_wasm,
         cycles_dispenser_config: None,
         wasm_version: Version::min(),

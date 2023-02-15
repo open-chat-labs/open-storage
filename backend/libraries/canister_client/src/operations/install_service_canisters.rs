@@ -7,7 +7,12 @@ use ic_utils::interfaces::ManagementCanister;
 use index_canister::init::CyclesDispenserConfig;
 use types::{CanisterId, Version};
 
-pub async fn create_and_install_service_canisters(identity: BasicIdentity, url: String, test_mode: bool) -> CanisterId {
+pub async fn create_and_install_service_canisters(
+    identity: BasicIdentity,
+    user_controller: Principal,
+    url: String,
+    test_mode: bool,
+) -> CanisterId {
     let principal = identity.sender().unwrap();
     let agent = build_ic_agent(url, identity).await;
     let management_canister = build_management_canister(&agent);
@@ -16,7 +21,15 @@ pub async fn create_and_install_service_canisters(identity: BasicIdentity, url: 
 
     println!("index canister id: {index_canister_id}");
 
-    install_service_canisters_impl(principal, &index_canister_id, &management_canister, None, test_mode).await;
+    install_service_canisters_impl(
+        principal,
+        user_controller,
+        &index_canister_id,
+        &management_canister,
+        None,
+        test_mode,
+    )
+    .await;
 
     index_canister_id
 }
@@ -24,6 +37,7 @@ pub async fn create_and_install_service_canisters(identity: BasicIdentity, url: 
 pub async fn install_service_canisters(
     identity: BasicIdentity,
     url: String,
+    user_controller: Principal,
     index_canister_id: CanisterId,
     cycles_dispenser_config: Option<CyclesDispenserConfig>,
     test_mode: bool,
@@ -34,6 +48,7 @@ pub async fn install_service_canisters(
 
     install_service_canisters_impl(
         principal,
+        user_controller,
         &index_canister_id,
         &management_canister,
         cycles_dispenser_config,
@@ -44,6 +59,7 @@ pub async fn install_service_canisters(
 
 async fn install_service_canisters_impl(
     principal: Principal,
+    user_controller: Principal,
     index_canister_id: &CanisterId,
     management_canister: &ManagementCanister<'_>,
     cycles_dispenser_config: Option<CyclesDispenserConfig>,
@@ -54,7 +70,8 @@ async fn install_service_canisters_impl(
     let index_canister_wasm = get_canister_wasm(CanisterName::Index, version);
     let bucket_canister_wasm = get_canister_wasm(CanisterName::Bucket, Version::min());
     let index_init_args = index_canister::init::Args {
-        service_principals: vec![principal],
+        user_controllers: vec![user_controller],
+        governance_principals: vec![principal],
         bucket_canister_wasm,
         cycles_dispenser_config,
         wasm_version: Version::min(),

@@ -1,10 +1,10 @@
-use crate::guards::caller_is_service_principal;
+use crate::guards::caller_is_governance_principal;
 use crate::{mutate_state, RuntimeState};
 use canister_api_macros::trace;
 use ic_cdk_macros::update;
 use index_canister::update_bucket_canister_wasm::{Response::*, *};
 
-#[update(guard = "caller_is_service_principal")]
+#[update(guard = "caller_is_governance_principal")]
 #[trace]
 fn update_bucket_canister_wasm(args: Args) -> Response {
     mutate_state(|state| update_bucket_canister_wasm_impl(args, state))
