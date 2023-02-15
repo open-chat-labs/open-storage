@@ -4,7 +4,7 @@ pub fn caller_is_governance_principal() -> Result<(), String> {
     if read_state(|state| state.is_caller_governance_principal()) {
         Ok(())
     } else {
-        Err("Caller is not a service principal".to_owned())
+        Err("Caller is not a governance principal".to_owned())
     }
 }
 
@@ -12,7 +12,7 @@ pub fn caller_is_user_controller() -> Result<(), String> {
     if read_state(|state| state.is_caller_user_controller()) {
         Ok(())
     } else {
-        Err("Caller is not a service principal".to_owned())
+        Err("Caller is not a user controller".to_owned())
     }
 }
 
